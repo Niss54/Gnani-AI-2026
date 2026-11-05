@@ -1,0 +1,18 @@
+{
+  "name": "revclaim-ai-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "RevClaim AI — Autonomous Indic Voice Agent for Unpaid Invoices & B2B Revenue Recovery",
+  "workspaces": [
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "npm --prefix frontend run dev",
+    "build": "npm --prefix frontend run build",
+    "start": "npm --prefix frontend run start",
+    "lint": "npm --prefix frontend run lint",
+    "test": "node tests/e2e.test.mjs",
+    "test:gnani": "node tests/gnani-benchmark.mjs",
+    "test:all": "node tests/gnani-benchmark.mjs && node tests/e2e.test.mjs"
+  }
+}

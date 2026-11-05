@@ -1,0 +1,402 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@source "../node_modules/streamdown/dist/index.js";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --radius: 0.625rem;
+  --background: oklch(0.985 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.6 0.17 162.48);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.965 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.965 0 0);
+  --muted-foreground: oklch(0.5 0 0);
+  --accent: oklch(0.965 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.91 0 0);
+  --input: oklch(0.91 0 0);
+  --ring: oklch(0.6 0.17 162.48);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: oklch(0.14 0 0);
+  --foreground: oklch(0.96 0 0);
+  --card: oklch(0.18 0 0);
+  --card-foreground: oklch(0.96 0 0);
+  --popover: oklch(0.21 0 0);
+  --popover-foreground: oklch(0.96 0 0);
+  --primary: oklch(0.65 0.17 162.48);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.22 0 0);
+  --secondary-foreground: oklch(0.96 0 0);
+  --muted: oklch(0.22 0 0);
+  --muted-foreground: oklch(0.65 0 0);
+  --accent: oklch(0.25 0 0);
+  --accent-foreground: oklch(0.96 0 0);
+  --destructive: oklch(0.65 0.22 25);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 12%);
+  --ring: oklch(0.65 0.17 162.48);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.18 0 0);
+  --sidebar-foreground: oklch(0.96 0 0);
+  --sidebar-primary: oklch(0.65 0.17 162.48);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.22 0 0);
+  --sidebar-accent-foreground: oklch(0.96 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.5 0 0);
+}
+
+@theme inline {
+  --font-sans:
+    var(--font-public-sans), ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+    'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-mono:
+    var(--font-commit-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    'Liberation Mono', 'Courier New', monospace;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+}
+
+/* ── Claymorphism Design System (Light & Dark) ────────────────────────────── */
+.clay-card {
+  background: #ffffff;
+  border-radius: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow:
+    10px 14px 28px -4px rgba(100, 116, 139, 0.12),
+    -8px -8px 20px 0px rgba(255, 255, 255, 0.95),
+    inset 2px 2px 4px 0px rgba(255, 255, 255, 0.8),
+    inset -2px -2px 4px 0px rgba(148, 163, 184, 0.12);
+  color: #0f172a;
+}
+
+.dark .clay-card {
+  background: #18181c;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    10px 14px 28px -4px rgba(0, 0, 0, 0.55),
+    -3px -3px 12px 0px rgba(255, 255, 255, 0.02),
+    inset 1.5px 1.5px 3px 0px rgba(255, 255, 255, 0.07),
+    inset -2px -2px 4px 0px rgba(0, 0, 0, 0.45);
+  color: #f4f4f5;
+}
+
+.clay-card-flat {
+  background: #f8fafc;
+  border-radius: 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow:
+    6px 8px 18px -2px rgba(100, 116, 139, 0.08),
+    -4px -4px 14px 0px rgba(255, 255, 255, 0.9),
+    inset 1px 1px 2px 0px rgba(255, 255, 255, 0.9),
+    inset -1px -1px 2px 0px rgba(148, 163, 184, 0.08);
+  color: #1e293b;
+}
+
+.dark .clay-card-flat {
+  background: #202026;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow:
+    6px 8px 18px -2px rgba(0, 0, 0, 0.4),
+    -2px -2px 8px 0px rgba(255, 255, 255, 0.02),
+    inset 1px 1px 2px 0px rgba(255, 255, 255, 0.06),
+    inset -1px -1px 2px 0px rgba(0, 0, 0, 0.35);
+  color: #f4f4f5;
+}
+
+.clay-inset {
+  background: #edf2f7;
+  border-radius: 1.25rem;
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  box-shadow:
+    inset 4px 4px 10px rgba(148, 163, 184, 0.22),
+    inset -4px -4px 10px rgba(255, 255, 255, 0.95);
+}
+
+.dark .clay-inset {
+  background: #121215;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow:
+    inset 4px 4px 14px rgba(0, 0, 0, 0.65),
+    inset -2px -2px 8px rgba(255, 255, 255, 0.02);
+}
+
+.clay-btn {
+  background: #ffffff;
+  border-radius: 1rem;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow:
+    4px 6px 14px -2px rgba(100, 116, 139, 0.12),
+    -3px -3px 10px 0px rgba(255, 255, 255, 0.95),
+    inset 1.5px 1.5px 3px rgba(255, 255, 255, 0.9),
+    inset -1.5px -1.5px 3px rgba(148, 163, 184, 0.12);
+  color: #1e293b;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.dark .clay-btn {
+  background: #25252c;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow:
+    4px 6px 14px -2px rgba(0, 0, 0, 0.45),
+    -1px -1px 6px 0px rgba(255, 255, 255, 0.02),
+    inset 1.5px 1.5px 3px rgba(255, 255, 255, 0.08),
+    inset -1.5px -1.5px 3px rgba(0, 0, 0, 0.4);
+  color: #f4f4f5;
+}
+
+.clay-btn:hover {
+  transform: translateY(-1.5px) scale(1.01);
+  box-shadow:
+    6px 10px 18px -2px rgba(100, 116, 139, 0.16),
+    -4px -4px 12px 0px rgba(255, 255, 255, 1),
+    inset 1.5px 1.5px 3px rgba(255, 255, 255, 0.95),
+    inset -1.5px -1.5px 3px rgba(148, 163, 184, 0.12);
+}
+
+.dark .clay-btn:hover {
+  background: #2f2f38;
+  box-shadow:
+    6px 10px 18px -2px rgba(0, 0, 0, 0.55),
+    -2px -2px 8px 0px rgba(255, 255, 255, 0.03),
+    inset 1.5px 1.5px 3px rgba(255, 255, 255, 0.1),
+    inset -1.5px -1.5px 3px rgba(0, 0, 0, 0.4);
+  color: #ffffff;
+}
+
+.clay-btn:active {
+  transform: translateY(1.5px) scale(0.98);
+  box-shadow:
+    2px 3px 6px -1px rgba(100, 116, 139, 0.15),
+    inset 2px 2px 4px rgba(148, 163, 184, 0.22),
+    inset -2px -2px 4px rgba(255, 255, 255, 0.8);
+}
+
+.dark .clay-btn:active {
+  box-shadow:
+    2px 3px 6px -1px rgba(0, 0, 0, 0.4),
+    inset 2px 2px 5px rgba(0, 0, 0, 0.5),
+    inset -1.5px -1.5px 4px rgba(255, 255, 255, 0.04);
+}
+
+/* ── Primary Button (Unified Brand Emerald CTA) ── */
+.clay-btn-primary {
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+  color: #ffffff !important;
+  font-weight: 700;
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow:
+    0 8px 20px -3px rgba(16, 185, 129, 0.4),
+    0 3px 8px -2px rgba(16, 185, 129, 0.25),
+    inset 1.5px 1.5px 3px rgba(255, 255, 255, 0.4),
+    inset -1.5px -1.5px 3px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.dark .clay-btn-primary {
+  background: linear-gradient(135deg, #047857 0%, #10b981 100%);
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow:
+    0 8px 22px -3px rgba(16, 185, 129, 0.45),
+    0 3px 8px -2px rgba(16, 185, 129, 0.3),
+    inset 1.5px 1.5px 3px rgba(255, 255, 255, 0.3),
+    inset -1.5px -1.5px 3px rgba(0, 0, 0, 0.25);
+}
+
+.clay-btn-primary:hover {
+  transform: translateY(-1.5px) scale(1.01);
+  box-shadow:
+    0 12px 26px -3px rgba(16, 185, 129, 0.5),
+    0 4px 10px -2px rgba(16, 185, 129, 0.35),
+    inset 1.5px 1.5px 3px rgba(255, 255, 255, 0.5),
+    inset -1.5px -1.5px 3px rgba(0, 0, 0, 0.15);
+}
+
+.clay-btn-primary:active {
+  transform: translateY(1.5px) scale(0.98);
+  box-shadow:
+    0 3px 8px -2px rgba(16, 185, 129, 0.35),
+    inset 2px 2px 4px rgba(0, 0, 0, 0.25),
+    inset -1.5px -1.5px 3px rgba(255, 255, 255, 0.3);
+}
+
+/* ── Danger Button ── */
+.clay-btn-danger {
+  background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+  color: #ffffff !important;
+  font-weight: 700;
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow:
+    0 8px 18px -3px rgba(239, 68, 68, 0.4),
+    inset 1.5px 1.5px 3px rgba(255, 255, 255, 0.35),
+    inset -1.5px -1.5px 3px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.dark .clay-btn-danger {
+  background: linear-gradient(135deg, #b91c1c 0%, #ef4444 100%);
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow:
+    0 8px 20px -3px rgba(239, 68, 68, 0.45),
+    inset 1.5px 1.5px 3px rgba(255, 255, 255, 0.25),
+    inset -1.5px -1.5px 3px rgba(0, 0, 0, 0.2);
+}
+
+.clay-btn-danger:hover {
+  transform: translateY(-1.5px) scale(1.01);
+  box-shadow:
+    0 12px 24px -3px rgba(239, 68, 68, 0.5),
+    inset 1.5px 1.5px 3px rgba(255, 255, 255, 0.45),
+    inset -1.5px -1.5px 3px rgba(0, 0, 0, 0.15);
+}
+
+.clay-btn-danger:active {
+  transform: translateY(1.5px) scale(0.98);
+  box-shadow:
+    0 3px 6px -2px rgba(239, 68, 68, 0.35),
+    inset 2px 2px 4px rgba(0, 0, 0, 0.25),
+    inset -1.5px -1.5px 3px rgba(255, 255, 255, 0.2);
+}
+
+/* ── Pill / Badges ── */
+.clay-pill {
+  border-radius: 9999px;
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  box-shadow:
+    3px 4px 10px -2px rgba(100, 116, 139, 0.1),
+    -2px -2px 6px rgba(255, 255, 255, 0.9),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.8),
+    inset -1px -1px 2px rgba(148, 163, 184, 0.1);
+  color: #1e293b;
+}
+
+.dark .clay-pill {
+  background: #24242a;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    3px 4px 10px -2px rgba(0, 0, 0, 0.35),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.06),
+    inset -1px -1px 2px rgba(0, 0, 0, 0.3);
+  color: #f4f4f5;
+}
+
+/* ── Global Scrollbar Styles (Exact Match to nissh.info: Pure Minimalist Clean UI) ── */
+html,
+body,
+* {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+*::-webkit-scrollbar {
+  display: none !important;
+  width: 0px !important;
+  height: 0px !important;
+}
+
+/* ── Clean Native System Cursors ── */
+button,
+a,
+[role="button"],
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+select,
+.cursor-pointer,
+.clay-btn,
+.clay-btn-primary,
+.clay-btn-danger,
+.clay-pill {
+  cursor: pointer;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="number"],
+input[type="tel"],
+input[type="password"],
+input[type="search"],
+textarea,
+[contenteditable="true"] {
+  cursor: text;
+}
+
+/* ── Clean Spline 3D Viewer Watermarks & Attribution Links ── */
+spline-viewer::part(logo),
+spline-viewer #logo,
+spline-viewer a[href*="spline.design"],
+a[href*="spline.design"] {
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+}
+

@@ -12,12 +12,18 @@
 Built for **The Great Indian AI Challenge & Agentic AI Hackathon by Gnani.ai** | Team: **Pookie Baddies**  
 *Primary Track: Sovereign Indic Voice Agents, Prisma v3.0 STT & Timbre v3.0 TTS · Agentic Workflows: Inya.ai Paradigm*
 
+> [!TIP]
+> 🏆 **Gnani.ai Hackathon Evaluators / Judges:**  
+> Looking for the official **1-Page Solution Pitch** required for evaluation?  
+> 👉 **[Read Official 1-Page Solution Pitch (docs/ONE_PAGE_SOLUTION_PITCH.md)](./docs/ONE_PAGE_SOLUTION_PITCH.md)** — Evaluator executive brief, problem statement, Gnani.ai API depth, and verified benchmark metrics in under 60 seconds!  
+> *(The complete, comprehensive engineering architecture, telemetry proofs, and legal frameworks are detailed in full below).*
+
 > [!IMPORTANT]
 > **The Core Thesis: Sovereign Indic Voice AI, Statutory Legal Clout (MSMED Act), Zero Financial Leakage.**  
 > *"Freelancers and Indian MSMEs shouldn't have to choose between their dignity and getting paid."*  
 > RevClaim AI deploys **"Sarah from Accounts & Billing"**—an empathetic, sovereign Indic voice recovery specialist powered by **Gnani.ai Vachana (Prisma v3.0 STT + Timbre v3.0 Expressive TTS)**, **LiveKit Cloud WebRTC / Twilio PSTN**, and **Groq LPU**. She calls delinquent debtors on their phones in authentic Hindi, Hinglish, or regional Indic dialects, resolves cash-flow friction with flexible milestone payment schedules, grounds requests in **MSMED Act Section 16** statutory legal authority (3x RBI penal interest), and dispatches **instant Razorpay Payment Gateway checkout links & UPI QR codes** directly to WhatsApp and email. Payments are captured via Razorpay, reconciled via HMAC-SHA256 cryptographic webhooks, and credited directly to the MSME's bank account.
 
-[![GitHub Repo](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Niss54/RevClaim-AI)
+[![GitHub Repo](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Niss54/Gnani-AI-2026)
 [![Gnani.ai](https://img.shields.io/badge/Gnani.ai-10%2F10_Sovereign_Voice-orange?style=for-the-badge&logo=googlepodcasts&logoColor=white)](https://vachana.ai)
 [![Hybrid Graph RAG](https://img.shields.io/badge/Hybrid_Graph_RAG-Multi--Hop_Veil_Piercing-8A2BE2?style=for-the-badge&logo=neo4j&logoColor=white)](#-sovereign-hybrid-graph-rag--corporate-veil-piercing)
 [![Bhashini MeitY](https://img.shields.io/badge/Bhashini_MeitY-26_Indic_Languages-success?style=for-the-badge&logo=india&logoColor=white)](https://bhashini.gov.in)
@@ -813,7 +819,7 @@ node tests/e2e.test.mjs
 
 ### 1. Clone & Install Dependencies
 ```bash
-git clone https://github.com/Niss54/RevClaim-AI.git
+git clone https://github.com/Niss54/Gnani-AI-2026.git
 cd RevClaim-AI/frontend
 pnpm install
 ```

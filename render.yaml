@@ -1,0 +1,44 @@
+services:
+  # 1. Python FastAPI Backend Service
+  - type: web
+    name: revclaim-ai-backend
+    runtime: python
+    buildCommand: "pip install -r backend/requirements.txt"
+    startCommand: "uvicorn main:app --app-dir backend --host 0.0.0.0 --port $PORT"
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: DEEPGRAM_API_KEY
+        sync: false
+      - key: MEM0_API_KEY
+        sync: false
+      - key: ELEVENLABS_API_KEY
+        sync: false
+
+  # 2. Next.js 15 Fullstack / Frontend Service
+  - type: web
+    name: revclaim-ai-frontend
+    runtime: node
+    buildCommand: "npm install && npm run build"
+    startCommand: "npm run start"
+    envVars:
+      - key: NODE_VERSION
+        value: 20.x
+      - key: NEXT_PUBLIC_SUPABASE_URL
+        sync: false
+      - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
+        sync: false
+      - key: NEXT_PUBLIC_BACKEND_URL
+        fromService:
+          type: web
+          name: revclaim-ai-backend
+          property: host

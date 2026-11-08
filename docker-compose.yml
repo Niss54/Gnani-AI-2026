@@ -1,0 +1,58 @@
+version: "3.8"
+
+services:
+  # Python FastAPI Backend (Voice pipelines, Deepgram, Mem0, ElevenLabs, Groq, Gemini)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: revclaim-ai-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - HOST=0.0.0.0
+    env_file:
+      - ./backend/.env
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    networks:
+      - revclaim-net
+
+  # Next.js 15 Fullstack / Frontend (Autonomous Voice Dashboard & Settlement UI)
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: revclaim-ai-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - HOSTNAME=0.0.0.0
+      - NEXT_PUBLIC_DEMO_MODE=true
+      - NEXT_PUBLIC_BACKEND_URL=http://backend:8000
+    env_file:
+      - .env
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 25s
+    networks:
+      - revclaim-net
+
+networks:
+  revclaim-net:
+    driver: bridge

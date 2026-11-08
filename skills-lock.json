@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "skills": {
+    "gravitas": {
+      "source": "udaysharmadev/Gravitas",
+      "sourceType": "github",
+      "skillPath": "skills/gravitas/SKILL.md",
+      "computedHash": "1ef9a8048a626aafe7c87f74cefaf030e71cff6231abad5e917cc5d9cd1fdefb"
+    },
+    "gravitas-typescript": {
+      "source": "udaysharmadev/Gravitas",
+      "sourceType": "github",
+      "skillPath": "skills/gravitas-typescript/SKILL.md",
+      "computedHash": "2bf8a9058b727bbfe8d88e84defbf141f82cff7242bbbe6e928dd6e9cd2feecb"
+    },
+    "gravitas-highstakes": {
+      "source": "udaysharmadev/Gravitas",
+      "sourceType": "github",
+      "skillPath": "skills/gravitas-highstakes/SKILL.md",
+      "computedHash": "3cf9b0169c838ccfe9e99f95efecf252f93dff8353ccce7f039ee7f0de3fffdc"
+    }
+  }
+}

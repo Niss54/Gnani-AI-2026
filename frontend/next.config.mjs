@@ -7,7 +7,7 @@ const __dirname = path.dirname(__filename);
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  outputFileTracingRoot: path.resolve(__dirname, ".."),
+  ...(process.env.VERCEL ? {} : { outputFileTracingRoot: path.resolve(__dirname, "..") }),
   eslint: {
     // Ignore ESLint errors/prompts during production builds on Vercel CI
     ignoreDuringBuilds: true,
@@ -26,7 +26,7 @@ const nextConfig = {
   },
   async rewrites() {
     const backendUrl =
-      process.env.NEXT_PUBLIC_BACKEND_URL || "https://revclaim-ai.onrender.com";
+      process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_URL || "https://gnani-ai-2026.onrender.com";
     return [
       {
         source: "/api/py/:path*",

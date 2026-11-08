@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
     const company = body.company || query;
 
     // Call Python FastAPI backend if online
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:8000';
+    const backendUrl = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'https://gnani-ai-2026.onrender.com';
     try {
       const res = await fetch(`${backendUrl}/api/graph-rag/query`, {
         method: 'POST',

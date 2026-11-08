@@ -3,7 +3,7 @@ import { SOVEREIGN_GRAPH_TOPOLOGY } from '@/lib/hybrid-graph-rag';
 
 export async function GET() {
   try {
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:8000';
+    const backendUrl = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'https://gnani-ai-2026.onrender.com';
     try {
       const res = await fetch(`${backendUrl}/api/graph-rag/topology`);
       if (res.ok) {

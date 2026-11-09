@@ -45,7 +45,7 @@ BHASHINI_INFERENCE_KEY=<your_bhashini_inference_key>
 
 ### Step 4: Click Deploy!
 - Deployment finishes in ~60 seconds.
-- You will receive a live URL: `https://revclaim-ai.vercel.app`.
+- You will receive a live URL: `https://rev-claim-ai.vercel.app`.
 
 ---
 

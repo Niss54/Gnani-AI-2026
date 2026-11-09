@@ -8,7 +8,7 @@
   ],
   "scripts": {
     "dev": "npm --prefix frontend run dev",
-    "build": "npm --prefix frontend run build",
+    "build": "npm --prefix frontend run build && node -e \"const fs=require('fs'); if(fs.existsSync('frontend/.next')) fs.cpSync('frontend/.next', '.next', {recursive:true}); if(fs.existsSync('frontend/public')) fs.cpSync('frontend/public', 'public', {recursive:true});\"",
     "start": "npm --prefix frontend run start",
     "lint": "npm --prefix frontend run lint",
     "test": "node tests/e2e.test.mjs",

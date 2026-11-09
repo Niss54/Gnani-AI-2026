@@ -62,7 +62,7 @@ npm --prefix frontend run build
 > 🐦 **Official Submission Thread on X (Twitter):** [View Live Pitch & Walkthrough on X (@NMaurya26722)](https://x.com/NMaurya26722/status/2116311937701269773?s=20)  
 > *(Covers the ₹8.1 Lakh Crore late-payment crisis, live phone dialing via Twilio PSTN, real-time Gnani.ai Indic voice negotiation audio, MSMED Act Section 16 statutory enforcement, and instant Razorpay UPI/QR settlement)*
 
-[🌐 Live Cockpit](https://revclaim-ai.vercel.app) · [🎥 3-Min Demo Video (Drive)](https://drive.google.com/file/d/1nMTP9TPcwLxU29sr53sYRh6zndnHNZdF/view?usp=sharing) · [🐦 Pitch & Demo Thread (X)](https://x.com/NMaurya26722/status/2116311937701269773?s=20) · [🛡️ Adversarial Judge Defense](./evaluation/defense/JUDGE_DEFENSE_PLAYBOOK.md) · [👥 Real Beta Pilot Evidence](./evaluation/PILOT_USER_EVIDENCE.md) · [🏛️ MSME Legal Shield](./evaluation/defense/ADVERSARIAL_DEFENSE_AND_EDGE_CASES.md)
+[🌐 Live Cockpit](https://rev-claim-ai.vercel.app) · [🎥 3-Min Demo Video (Drive)](https://drive.google.com/file/d/1nMTP9TPcwLxU29sr53sYRh6zndnHNZdF/view?usp=sharing) · [🐦 Pitch & Demo Thread (X)](https://x.com/NMaurya26722/status/2116311937701269773?s=20) · [🛡️ Adversarial Judge Defense](./evaluation/defense/JUDGE_DEFENSE_PLAYBOOK.md) · [👥 Real Beta Pilot Evidence](./evaluation/PILOT_USER_EVIDENCE.md) · [🏛️ MSME Legal Shield](./evaluation/defense/ADVERSARIAL_DEFENSE_AND_EDGE_CASES.md)
 
 </div>
 
@@ -871,7 +871,7 @@ All project documentation is strictly organized and audited under **Gravitas** r
 | :--- | :--- | :--- |
 | **Google Drive Demo Video** | [Watch Full 3-Minute Live Walkthrough (Drive)](https://drive.google.com/file/d/1nMTP9TPcwLxU29sr53sYRh6zndnHNZdF/view?usp=sharing) | [![Demo Video](https://img.shields.io/badge/Demo_Video-Google_Drive-E01E5A?style=for-the-badge&logo=googledrive&logoColor=white)](https://drive.google.com/file/d/1nMTP9TPcwLxU29sr53sYRh6zndnHNZdF/view?usp=sharing) |
 | **Official X (Twitter) Submission** | [View Official Pitch & Demo on X (@NMaurya26722)](https://x.com/NMaurya26722/status/2116311937701269773?s=20) | [![X Thread](https://img.shields.io/badge/X_Thread-@NMaurya26722-000000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/NMaurya26722/status/2116311937701269773?s=20) |
-| **Live Deployed Cockpit** | [Launch Web Cockpit (Vercel)](https://revclaim-ai.vercel.app) | [![Live Cockpit](https://img.shields.io/badge/Vercel-Live_Deployment-black?style=for-the-badge&logo=vercel&logoColor=white)](https://revclaim-ai.vercel.app) |
+| **Live Deployed Cockpit** | [Launch Web Cockpit (Vercel)](https://rev-claim-ai.vercel.app) | [![Live Cockpit](https://img.shields.io/badge/Vercel-Live_Deployment-black?style=for-the-badge&logo=vercel&logoColor=white)](https://rev-claim-ai.vercel.app) |
 
 </div>
 

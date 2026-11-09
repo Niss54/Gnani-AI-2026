@@ -78,7 +78,7 @@ This guide covers the full setup for:
 1. Go to **[GitHub Developer Settings > OAuth Apps](https://github.com/settings/developers)**.
 2. Click **New OAuth App**:
    - **Application name:** `RevClaim AI`
-   - **Homepage URL:** `http://localhost:3000` (or your Vercel production URL, e.g. `https://revclaim-ai.vercel.app`)
+   - **Homepage URL:** `http://localhost:3000` (or your Vercel production URL, e.g. `https://rev-claim-ai.vercel.app`)
    - **Authorization callback URL:** `https://<YOUR-PROJECT-ID>.supabase.co/auth/v1/callback`
      *(Example: `https://ubpebgmzhgkzdbeblnmo.supabase.co/auth/v1/callback`)*
 3. Click **Register application**.

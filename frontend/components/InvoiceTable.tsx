@@ -407,7 +407,7 @@ export function InvoiceTable({
                 <span className="size-2 rounded-full bg-emerald-500 animate-ping" />
                 <span className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
                   <Sparkles className="size-3.5 text-indigo-600 dark:text-indigo-400" />
-                  Live Evaluation Dispatcher (Real Call, Real WhatsApp & Email)
+                  Live Outbound Dispatcher (Real Call, Real WhatsApp & Email)
                 </span>
               </div>
               <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">
@@ -426,7 +426,7 @@ export function InvoiceTable({
                 <input
                   id="eval-phone-input"
                   name="evalPhone"
-                  aria-label="Evaluation phone number"
+                  aria-label="Recipient phone number"
                   type="text"
                   value={evalPhone}
                   onChange={(e) => setEvalPhone(e.target.value)}
@@ -442,7 +442,7 @@ export function InvoiceTable({
                 <input
                   id="eval-email-input"
                   name="evalEmail"
-                  aria-label="Evaluation email address"
+                  aria-label="Recipient email address"
                   type="email"
                   value={evalEmail}
                   onChange={(e) => setEvalEmail(e.target.value)}
@@ -458,7 +458,7 @@ export function InvoiceTable({
                 <input
                   id="eval-name-input"
                   name="evalName"
-                  aria-label="Evaluation recipient name"
+                  aria-label="Recipient name"
                   type="text"
                   value={evalName}
                   onChange={(e) => setEvalName(e.target.value)}
@@ -865,12 +865,12 @@ export function InvoiceTable({
               </div>
             </div>
 
-            {/* Gnani.ai Hackathon Evaluation Callout */}
+            {/* Automated Net Settlement Policy Callout */}
             <div className="mt-4 rounded-xl border border-sky-300/80 bg-sky-50/90 p-3 text-xs text-sky-950 dark:border-sky-800/80 dark:bg-sky-950/40 dark:text-sky-200">
               <div className="flex items-start gap-2">
                 <ShieldCheck className="size-4 shrink-0 text-sky-600 mt-0.5" />
                 <div>
-                  <span className="font-black">Gnani.ai Evaluation &amp; Economic Impact:</span>
+                  <span className="font-black">Automated Escrow &amp; Net Settlement Policy:</span>
                   <p className="mt-0.5 text-[11px] leading-relaxed text-sky-900/90 dark:text-sky-300/90">
                     &ldquo;Monetization is real, automated, and leakage-proof. The debtor pays via Razorpay Gateway (UPI, Cards, NetBanking).
                     RevClaim automatically retains its flat ₹475 success fee at the gateway level before remitting the remaining ₹49,525

@@ -425,7 +425,7 @@ export function SamarDashboard() {
     try {
       confetti({ particleCount: 75, spread: 65, origin: { y: 0.2 } });
     } catch (_) {}
-    toast.success('Welcome back, Nishant Maurya! Judge demo session initialized.');
+    toast.success('Welcome back, Nishant Maurya! Demo workspace initialized.');
   };
 
   const handleLoginClick = () => {

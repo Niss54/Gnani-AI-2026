@@ -72,9 +72,9 @@ export function parseVoiceToInvoice(transcript: string): VoiceParsedInvoice {
 
   // 3. Extract Debtor Person & Company Name
   let clientName = "Apex Solutions";
-  let debtorPerson = "Rajesh";
+  let debtorPerson = "Accounts Desk";
 
-  // Check pattern: "for [Person] at [Company]" e.g. "for Rajesh at Apex Corp"
+  // Check pattern: "for [Person] at [Company]" e.g. "for Apex Retail Solutions"
   const pacMatch = clean.match(/(?:for|client|debtor)\s+([A-Za-z0-9]+(?:\s+[A-Za-z0-9]+)?)\s+(?:at|from|of)\s+([A-Za-z0-9\s]+?)(?=\s+(?:for|due|amount|\$|₹|\d|actually|nahi|$))/i);
   if (pacMatch && pacMatch[1] && pacMatch[2]) {
     debtorPerson = pacMatch[1].trim();

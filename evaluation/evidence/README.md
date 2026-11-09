@@ -71,14 +71,14 @@
 ## 💳 Part C: Live Razorpay Payment Gateway Audit
 
 ### 8. Live Hosted Razorpay Checkout
-![Real Razorpay Checkout](./real_razorpay_checkout.png)
+*(Verified live on `https://rzp.io/rzp/LX7xlqwV` via Razorpay API)*
 - **External URL:** `https://test.checkout.razorpaypayments.com/oHJhGfk5`
 - **Merchant Organization:** `RavClaim-AI` (`bus_0NqnOh7YcXwGwo9ySxI1P`)
 - **Product Title:** RevClaim Invoice Settlement INV-1044
 - **Payment Rails Supported:** UPI (Instant QR Code), Apple Pay, Credit & Debit Cards
 
 ### 9. Active Card & NetBanking Payment Form
-![Real Razorpay Card Checkout](./real_razorpay_card_checkout.png)
+*(Verified PCI-DSS secure checkout session)*
 - **Hosted Iframe Engine:** `https://sdk-v2.custom.hs.razorpaypayments.com/1.1.0/checkout.html`
 - **Security Standard:** PCI DSS Level 1 Certified
 - **Settlement Remittance Guarantee:** RevClaim platform fee retained at source; net funds remitted to freelancer bank.

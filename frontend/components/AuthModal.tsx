@@ -92,7 +92,7 @@ export function AuthModal({ isOpen, onClose, onDemoLogin }: AuthModalProps) {
         )}
 
         <div className="space-y-3">
-          {/* ⚡ Option 1: Demo Mode for Judges (Instant Access) */}
+          {/* ⚡ Option 1: Explore Live Demo (1-Click Access) (Instant Access) */}
           <button
             type="button"
             onClick={handleDemoMode}
@@ -110,7 +110,7 @@ export function AuthModal({ isOpen, onClose, onDemoLogin }: AuthModalProps) {
               <div className="flex flex-col">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-black tracking-wide text-white">
-                    Demo Mode for Judges
+                    Explore Live Demo (1-Click Access)
                   </span>
                   <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-300/30 text-emerald-100 border border-emerald-300/40">
                     Instant Access

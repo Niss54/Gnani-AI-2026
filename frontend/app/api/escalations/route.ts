@@ -24,7 +24,7 @@ const DEMO_ESCALATIONS = [
     id: 1,
     ref: 'ESC-0001',
     caller_user_id: 'deb-nexus-corp',
-    caller_name: 'Nexus Corp (Vikram Malhotra)',
+    caller_name: 'Nexus Corp (Accounts Desk)',
     language: 'Hindi / English',
     urgency: 'high',
     what_happened: 'Debtor requested 10% cash settlement discount for milestone 2 completion',

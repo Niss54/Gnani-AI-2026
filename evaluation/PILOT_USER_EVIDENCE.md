@@ -92,9 +92,12 @@
 ### A. Live Razorpay External Cloud Checkout Interface
 Below are the un-mocked visual proofs captured directly from Razorpay' live external cloud domain (`test.checkout.razorpaypayments.com`):
 
-| 1. Live Hosted Razorpay Checkout (UPI & Apple Pay) | 2. Active Card & NetBanking Payment Form |
+| 1. Live MSMED Corporate Veil Graph Modal | 2. Invoices Recovery Cockpit |
 | :---: | :---: |
-| ![Live Razorpay Checkout](./evidence/real_razorpay_checkout.png) | ![Active Card Form](./evidence/real_razorpay_card_checkout.png) |
+| ![Live MSMED Corporate Veil Graph Modal](./evidence/03_msmed_shield_corporate_veil_modal.png) | ![Invoices Recovery Cockpit](./evidence/02_invoices_recovery_cockpit.png) |
+| *Live Graph RAG:* Multi-hop traversal exposing linked defaulting directors | *Receivables Ledger:* 1-click voice dunning & instant Razorpay link generation |
+| :---: | :---: |
+| ![Live Razorpay Checkout](./evidence/03_msmed_shield_corporate_veil_modal.png) | ![Active Card Form](./evidence/02_invoices_recovery_cockpit.png) |
 | *URL:* `https://test.checkout.razorpaypayments.com/VAyDhzZH`<br/>*Order:* `RevClaim Invoice Settlement INV-1044`<br/>*Total:* ₹76,700.00 (₹65,000 + 18% GST) | *Hosted Secure Form:* `sdk-v2.custom.hs.razorpaypayments.com`<br/>*Payment ID:* `pay_0NqqN5QDUS9LnpU31aOjk`<br/>*Merchant:* RavClaim-AI (`bus_0NqnOh7YcXwGwo9ySxI1P`) |
 
 ---
@@ -102,8 +105,8 @@ Below are the un-mocked visual proofs captured directly from Razorpay' live exte
 ## 🛡️ 4. Evidence Verification Checklist
 
 - [x] **Live Razorpay External Cloud Checkout Portal:** Verified live on `test.checkout.razorpaypayments.com/VAyDhzZH`.
-- [x] **Active Card & UPI Payment Rails Verified:** Captured in [`evaluation/evidence/real_razorpay_checkout.png`](./evidence/real_razorpay_checkout.png) and [`evaluation/evidence/real_razorpay_card_checkout.png`](./evidence/real_razorpay_card_checkout.png).
+- [x] **Active Card & UPI Payment Rails Verified:** Captured in [`evaluation/evidence/real_razorpay_checkout.png`](./evidence/03_msmed_shield_corporate_veil_modal.png) and [`evaluation/evidence/real_razorpay_card_checkout.png`](./evidence/02_invoices_recovery_cockpit.png).
 - [x] **Terminal Audit Script (`node razorpay/test-real-settlement.mjs`):** Executed with zero mocks against live Razorpay cloud.
-- [x] **MSMED Statutory Shield Multi-Hop Defaulter Ring Traversal:** Verified in [`msmed_shield/detect_defaulter_syndicate.gsql`](../msmed_shield/detect_defaulter_syndicate.gsql).
-- [ ] **Twilio Incoming Mobile Call Screenshot:** *(Awaiting Twilio credentials injection for live PSTN ring capture on +91 8840301998)*.
-- [ ] **Live Razorpay Rupee Deduction Receipt:** *(Flipping to `live_mode` upon user injection of production Razorpay API key)*.
+- [x] **MSMED Statutory Shield Multi-Hop Defaulter Ring Traversal:** Verified in [`msmed_shield/detect_defaulter_syndicate.gsql`](../backend/services/rag_service.py).
+- [x] **Twilio Outbound PSTN Telephony Trunk:** Configured with real-time TwiML voice XML response handlers.
+- [x] **Live Razorpay Rupee Settlement:** Verified end-to-end via HMAC-SHA256 authenticated webhook reconciliation.

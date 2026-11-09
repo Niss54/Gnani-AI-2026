@@ -38,7 +38,7 @@
 | **Recovery Fails** | Hassle / upfront retainer | ?0 | **?0 (100% Success-Based)** |
 | **Freelancer Retains** | 70% � 80% | 97.5% | **99.5%+ of their invoice!** |
 
-* **Code Verification:** Verified in [`frontend/lib/db.ts`](../frontend/lib/db.ts#L44-L55) and audited in [`tests/e2e.test.mjs`](../tests/e2e.test.mjs#L235-L255) (Test 5/8).
+* **Code Verification:** Verified in [`frontend/lib/db.ts`](../../frontend/lib/db.ts#L44-L55) and audited in [`tests/e2e.test.mjs`](../../tests/e2e.test.mjs#L235-L255) (Test 5/8).
 
 ---
 
@@ -73,7 +73,7 @@
 +------------------------------------------------------------------------+
 ```
 
-* **Live UI Verification:** Table mein **`[??? Bank Wire]`** button dabane par live VAN modal khulta hai jisme copyable A/C number aur real-time split guarantee box render hota hai ([`frontend/components/InvoiceTable.tsx`](../frontend/components/InvoiceTable.tsx#L830-L935)).
+* **Live UI Verification:** Table mein **`[??? Bank Wire]`** button dabane par live VAN modal khulta hai jisme copyable A/C number aur real-time split guarantee box render hota hai ([`frontend/components/InvoiceTable.tsx`](../../frontend/components/InvoiceTable.tsx#L830-L935)).
 
 ---
 
@@ -104,7 +104,7 @@
    > *"Aapka verify karna bilkul sahi hai Rahul! Security ke liye aap Nishant Maurya ko direct call kar sakte hain. Aap chahein toh direct corporate bank transfer bhi kar sakte hain to Beneficiary: 'Nishant Maurya - RevClaim Collection', A/C: REVCINV1042, IFSC: HDFC0000050 bina kisi link ke."*
 5. **Zero Phishing Panic:** Sarah immediately pauses automated dunning loops and flags the dashboard as `MANUAL_VERIFICATION_REQUESTED`.
 
-* **Code Verification:** Tested with 0ms latency in [`frontend/lib/llm.ts`](../frontend/lib/llm.ts#L89-L125) and [`backend/services/llm_service.py`](../backend/services/llm_service.py#L72-L95).
+* **Code Verification:** Tested with 0ms latency in [`frontend/lib/llm.ts`](../../frontend/lib/llm.ts#L89-L125) and [`backend/services/llm_service.py`](../../backend/services/llm_service.py#L72-L95).
 
 ---
 
@@ -126,7 +126,7 @@
 3. **Verified PSTN Trunk Proof:**  
    In our hackathon demo video, we demonstrated an actual physical cellular phone ringing live on camera over Twilio PSTN using our verified developer trunk (`+91 8840301998`). We don't hide behind silent fake mocks�our telephony is 100% transparent."*
 
-* **Code Verification:** Enforced in [`frontend/components/TwilioSetupModal.tsx`](../frontend/components/TwilioSetupModal.tsx#L25-L115) and [`frontend/components/InvoiceTable.tsx`](../frontend/components/InvoiceTable.tsx#L89-L115).
+* **Code Verification:** Enforced in [`frontend/components/TwilioSetupModal.tsx`](../../frontend/components/TwilioSetupModal.tsx#L25-L115) and [`frontend/components/InvoiceTable.tsx`](../../frontend/components/InvoiceTable.tsx#L89-L115).
 
 ---
 
@@ -166,7 +166,7 @@
    Gnani.ai is an Indic TTS pioneer. We deploy Gnani.ai Timbre v3.0 exclusively to synthesize warm, natural Hinglish and Hindi voice audio.
 3. **The Result:** We deploy an airtight, sovereign Indic architecture engineered specifically for the Gnani.ai challenge."*
 
-* **Code Verification:** Verified in [`frontend/lib/voice-intake.ts`](../frontend/lib/voice-intake.ts), [`frontend/lib/gnani.ts`](../frontend/lib/gnani.ts), and Test 7/8 in [`tests/e2e.test.mjs`](../tests/e2e.test.mjs).
+* **Code Verification:** Verified in [`frontend/lib/voice-intake.ts`](../../frontend/lib/voice-intake.ts), [`frontend/lib/gnani.ts`](../../frontend/lib/gnani.ts), and Test 7/8 in [`tests/e2e.test.mjs`](../../tests/e2e.test.mjs).
 
 ---
 
@@ -185,7 +185,7 @@
 
 *This creates authentic commercial urgency without hostility, backed by immediate Razorpay UPI checkout."*
 
-* **Code Verification:** Formalized in [rontend/lib/gnani.ts](../frontend/lib/gnani.ts), [	ests/gnani-benchmark.mjs](../tests/gnani-benchmark.mjs), and verified in Test 7/9 and Benchmark 4/5.
+* **Code Verification:** Formalized in [frontend/lib/gnani.ts](../../frontend/lib/gnani.ts), [tests/gnani-benchmark.mjs](../../tests/gnani-benchmark.mjs), and verified in Test 7/9 and Benchmark 4/5.
 ---
 
 ## ?? 10-Second Stage Pitch Summary (Memorize This)

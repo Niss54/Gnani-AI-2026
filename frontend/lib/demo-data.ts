@@ -40,7 +40,7 @@ export const INITIAL_INVOICES: Invoice[] = [
     debtor: {
       id: "deb-4",
       companyName: "Nexus Digital India LLP",
-      contactPerson: "Vikram Malhotra",
+      contactPerson: "Accounts Department",
       phone: "+91 98201 55671",
       email: "vikram@nexusdigital.in",
       riskTier: "LOW",

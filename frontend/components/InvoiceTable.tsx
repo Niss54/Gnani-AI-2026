@@ -865,12 +865,12 @@ export function InvoiceTable({
               </div>
             </div>
 
-            {/* Davin Dong Hackathon Evaluation Callout */}
+            {/* Gnani.ai Hackathon Evaluation Callout */}
             <div className="mt-4 rounded-xl border border-sky-300/80 bg-sky-50/90 p-3 text-xs text-sky-950 dark:border-sky-800/80 dark:bg-sky-950/40 dark:text-sky-200">
               <div className="flex items-start gap-2">
                 <ShieldCheck className="size-4 shrink-0 text-sky-600 mt-0.5" />
                 <div>
-                  <span className="font-black">Impact on Davin Dong &amp; Hackathon Evaluation:</span>
+                  <span className="font-black">Gnani.ai Evaluation &amp; Economic Impact:</span>
                   <p className="mt-0.5 text-[11px] leading-relaxed text-sky-900/90 dark:text-sky-300/90">
                     &ldquo;Monetization is real, automated, and leakage-proof. The debtor pays via Razorpay Gateway (UPI, Cards, NetBanking).
                     RevClaim automatically retains its flat ₹475 success fee at the gateway level before remitting the remaining ₹49,525

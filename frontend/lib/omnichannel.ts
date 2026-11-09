@@ -117,13 +117,3 @@ export async function syncDebtorToLedger(debtorRecord: {
     timestamp,
   };
 }
-
-// Backward compatibility aliases during transition
-export const dispatchViaSocketWhatsApp = dispatchOmnichannelWhatsApp;
-export const dispatchViaSocketEmail = dispatchOmnichannelEmail;
-export const dispatchViaSocketSettlement = dispatchOmnichannelSettlement;
-export const syncDebtorToViaSocketDb = syncDebtorToLedger;
-export type ViaSocketDispatchParams = OmnichannelDispatchParams;
-export type ViaSocketEmailParams = OmnichannelEmailParams;
-export type ViaSocketSettlementParams = OmnichannelSettlementParams;
-export type ViaSocketResponse = OmnichannelResponse;

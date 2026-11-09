@@ -44,7 +44,7 @@ export async function orchestrateRecoveryCall(
     );
     return {
       channel: "livekit_webrtc",
-      engine: isIndianClient ? "gnani_indic" : "elevenlabs",
+      engine: "gnani_indic",
       sessionId: livekitSession.roomName,
       status: "connected",
       details: livekitSession,

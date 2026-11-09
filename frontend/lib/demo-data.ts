@@ -39,10 +39,10 @@ export const INITIAL_INVOICES: Invoice[] = [
     debtorId: "deb-4",
     debtor: {
       id: "deb-4",
-      companyName: "HyperScale Global Labs",
-      contactPerson: "Davin Dong",
-      phone: "+1 415 555 2671",
-      email: "davin@hyperscalelabs.io",
+      companyName: "Nexus Digital India LLP",
+      contactPerson: "Vikram Malhotra",
+      phone: "+91 98201 55671",
+      email: "vikram@nexusdigital.in",
       riskTier: "LOW",
       createdAt: "2026-09-01T10:00:00Z"
     },

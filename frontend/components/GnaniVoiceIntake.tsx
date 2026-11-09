@@ -281,7 +281,7 @@ export function GnaniVoiceIntake({ onInvoiceCreated }: GnaniVoiceIntakeProps) {
                   <span className="font-bold text-slate-950 dark:text-white">&quot;{transcript}&quot;</span>
                 ) : (
                   <span className="text-slate-500 dark:text-slate-400 font-semibold">
-                    Say: &quot;Add an invoice for Davin at Acme Corp for 45 thousand due yesterday, actually make it 50 thousand.&quot;
+                    Say: &quot;Add an invoice for Rajesh at Apex Corp for 45 thousand due yesterday, actually make it 50 thousand.&quot;
                   </span>
                 )}
               </div>
@@ -297,12 +297,12 @@ export function GnaniVoiceIntake({ onInvoiceCreated }: GnaniVoiceIntakeProps) {
                   type="button"
                   onClick={() =>
                     handleApplySample(
-                      "Add an invoice for Davin at Acme Corp for 45 thousand due yesterday, actually make it 50 thousand."
+                      "Add an invoice for Rajesh at Apex Corp for 45 thousand due yesterday, actually make it 50 thousand."
                     )
                   }
                   className="text-left text-xs p-2.5 rounded-xl bg-white hover:bg-slate-50 dark:bg-zinc-900/60 dark:hover:bg-zinc-800 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-200 transition shadow-2xs font-medium"
                 >
-                  🎯 <strong>Self-Correction:</strong> &quot;Add an invoice for Davin at Acme Corp for 45 thousand due yesterday, <u>actually make it 50 thousand</u>.&quot;
+                  🎯 <strong>Self-Correction:</strong> &quot;Add an invoice for Rajesh at Apex Corp for 45 thousand due yesterday, <u>actually make it 50 thousand</u>.&quot;
                 </button>
                 <button
                   type="button"

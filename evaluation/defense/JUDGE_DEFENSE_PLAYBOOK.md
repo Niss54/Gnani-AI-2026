@@ -164,7 +164,7 @@
    * Voice engineering repository dossier (`PROMPTS.md`: 57 commits, ~12,600 words dictated).
 2. **Gnani.ai (Outbound Speaking):**  
    Gnani.ai is an Indic TTS pioneer. We deploy Gnani.ai Timbre v3.0 exclusively to synthesize warm, natural Hinglish and Hindi voice audio.
-3. **The Result:** We maximize both sponsor bounty tracks with zero architectural overlap."*
+3. **The Result:** We deploy an airtight, sovereign Indic architecture engineered specifically for the Gnani.ai challenge."*
 
 * **Code Verification:** Verified in [`frontend/lib/voice-intake.ts`](../frontend/lib/voice-intake.ts), [`frontend/lib/gnani.ts`](../frontend/lib/gnani.ts), and Test 7/8 in [`tests/e2e.test.mjs`](../tests/e2e.test.mjs).
 

@@ -180,7 +180,7 @@ export function LiveCallModal({
   const currentAudioRef = useRef<HTMLAudioElement | null>(null);
 
   const speakSarahReply = async (replyText: string, isEnglish: boolean = false) => {
-    // 1. Try ElevenLabs Ultra-Realistic Studio Female Voice (Warm & Empathetic)
+    // 1. Primary Indic Voice: Gnani.ai Timbre v3.0 (Shivani / High-EQ Voice Synthesis)
     try {
       if (currentAudioRef.current) {
         currentAudioRef.current.pause();
@@ -212,7 +212,7 @@ export function LiveCallModal({
         return;
       }
     } catch (e) {
-      console.warn("[TTS] ElevenLabs audio stream fallback:", e);
+      console.warn("[TTS] Gnani Timbre audio stream fallback:", e);
     }
 
     // 2. High-Quality Web Speech Fallback

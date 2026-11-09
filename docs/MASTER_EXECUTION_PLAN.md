@@ -163,7 +163,7 @@ People don't pay because they are evil; they don't pay because of **inertia, cas
 
 ---
 
-## 🥊 5. Adversarial Judge Grilling Matrix (Davin Dong & VCs)
+## 🥊 5. Adversarial Judge Grilling Matrix (Gnani.ai & Technical Jury)
 
 We must anticipate the toughest questions judges will throw at us:
 
@@ -172,15 +172,15 @@ We must anticipate the toughest questions judges will throw at us:
 | **Q1: "Isn't robocalling for debt collection illegal?"** | *"Our AI is very polite, so nobody complains."* | **"We strictly operate in B2B commercial debt with verified signed contracts.** In India (TRAI/RBI) and the US (TCPA/FTC), business-to-business communications regarding existing commercial obligations are legally compliant. Furthermore, our system enforces identity verification before any balance is mentioned, adhering strictly to fair practice codes." |
 | **Q2: "Why wouldn't a debtor just hang up on an AI?"** | *"Our voice sounds like a real human."* | **"Two reasons: Real-time context + immediate partial relief.** Within 5 seconds, the agent mentions their exact project deliverable ('Figma design delivered on Oct 12'). When they realize it's accurate, we don't demand full payment; we offer split payments and instant WhatsApp links. In testing, human-delivered partial payment offers convert at 68% vs 14% for cold emails." |
 | **Q3: "Why Razorpay Payment Gateway?"** | *"Direct India-first payment rails."* | **"Razorpay provides native Indian payment rails (UPI, QR, NetBanking, RuPay) with instant settlement and webhook HMAC verification out of the box."** |
-| **Q4: "What is your viral distribution loop?"** *(Davin Dong's favorite question!)* | *"We will run Google and Twitter ads."* | **"The Built-in Counterparty Viral Loop.** Every time a debtor settles an invoice via RevClaim AI, their branded payment receipt states: *'Settled via RevClaim AI. Overdue clients owing you money? Recover your invoices in 60 seconds.'* Every debtor is a business owner who has their own unpaid invoices. The product spreads through the payment loop itself!" |
-| **Q5: "How do you achieve 10/10 on Innovation?"** | *"We put AI in voice calling."* | **"Tri-Agent Autonomous Loop:** 1. Real-time audio negotiation agent (ElevenLabs) + 2. Multi-step SaaS execution agent (Sovereign Omnichannel Rail) + 3. Automated payment settlement engine (Razorpay Gateway) with zero human intervention." |
+| **Q4: "What is your viral distribution loop?"** *(Core Viral Distribution Loop)* | *"We will run Google and Twitter ads."* | **"The Built-in Counterparty Viral Loop.** Every time a debtor settles an invoice via RevClaim AI, their branded payment receipt states: *'Settled via RevClaim AI. Overdue clients owing you money? Recover your invoices in 60 seconds.'* Every debtor is a business owner who has their own unpaid invoices. The product spreads through the payment loop itself!" |
+| **Q5: "How do you achieve 10/10 on Innovation?"** | *"We put AI in voice calling."* | **"Tri-Agent Autonomous Loop:** 1. Real-time audio negotiation agent (Gnani.ai Timbre TTS + Prisma STT) + 2. Multi-step Sovereign Omnichannel Rail + 3. Automated payment settlement engine (Razorpay Gateway) with zero human intervention." |
 
 ---
 
 ## 📈 6. Lines of Code (LOC) Baseline & Git Stealth Strategy
 
 ### Current Baseline:
-* Total cloned reference code: **74,425 lines** (Gravitas + Haggle + CFLO + DispatcherAI + Constancia).
+* Production Architecture: **Sovereign Indic Stack** (Gnani.ai Vachana + Groq LPU + Supabase + Razorpay Gatewaya).
 
 ### Target Production Codebase:
 * **~2,800 to 3,500 Lines of Code (LOC)** of clean, well-tested, modular TypeScript + Next.js 15.
@@ -191,7 +191,7 @@ We will NOT dump code in one massive commit. We will commit in 10 logical engine
 
 1. `feat(core): initialize Next.js 15 App Router architecture with Tailwind & Lucide`
 2. `feat(schema): setup Supabase PostgreSQL schema for invoices, debtors, and call sessions`
-3. `feat(voice): integrate ElevenLabs Conversational AI outbound telephony engine`
+3. `feat(voice): integrate Gnani.ai Timbre Indic TTS & Prisma STT conversational voice engine`
 4. `feat(prompts): implement calibrated B2B debt negotiation prompts & PTP commitment state machine`
 5. `feat(simulation): add in-browser interactive demo mode for evaluator testing`
 6. `feat(payments): integrate Razorpay payment links & HMAC-SHA256 webhook reconciliation`
@@ -208,7 +208,7 @@ We will NOT dump code in one massive commit. We will commit in 10 logical engine
 | :--- | :--- | :--- | :--- | :--- |
 | **Phase 1** | **Monorepo Scaffolding & Types** | Initialize root Next.js 15 App Router, TypeScript types, and environment template | `pnpm build` or `npm run build` passes with zero type errors | Commit #1 |
 | **Phase 2** | **Supabase Data Layer & Schemas** | Implement DB client, invoice queries, debtor tracking, and mock seed data with RLS | Unit tests verify CRUD on invoices, debtors, and call session tables | Commit #2 |
-| **Phase 3** | **Voice Outbound & Dialogue Engine** | Extract & adapt ElevenLabs `/api/call` endpoint + B2B negotiation prompts + PTP parser | Dry-run call initiation test passes with mock/live credentials | Commit #3 & #4 |
+| **Phase 3** | **Voice Outbound & Dialogue Engine** | Native Gnani.ai Timbre v3.0 / Prisma STT telephony endpoint + B2B negotiation prompts + PTP parser | Dry-run call initiation test passes with mock/live credentials | Commit #3 & #4 |
 | **Phase 4** | **Dual-Mode Demo Simulation Engine** | Embed interactive simulation mode (`demo-call.ts`) so judges can test without dialing | Automated simulation test runs from start to PTP completion | Commit #5 |
 | **Phase 5** | **Dispute Redirection & Anti-Spam Breakers** | Implement DNC (Do Not Call) auto-exit, scope dispute detector, and pause triggers | Unit test verifies call halts immediately upon dispute / opt-out intent | Commit #6 |
 | **Phase 6** | **Razorpay Payment Gateway & HMAC Webhook Engine** | Setup Razorpay link creator + QR modal + `/api/webhook/razorpay` listener | Test webhook triggers status update from `PTP_AGREED` ➔ `RECOVERED` | Commit #7 |

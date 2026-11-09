@@ -351,7 +351,7 @@ sequenceDiagram
 
 ---
 
-### ?? Davin Dong MoR Live Transaction Proof & Audit Certificate:
+### 💳 Real Razorpay Gateway Settlement Proof & Audit Certificate:
 
 | Razorpay Payment Gateway Official Settlement Receipt (Dashboard) | Razorpay Live Hosted Checkout Portal |
 | :---: | :---: |
@@ -373,8 +373,8 @@ sequenceDiagram
 {
   invoiceId: 'inv-1045',
   invoiceNumber: 'INV-1045',
-  debtorName: 'Davin Dong',
-  companyName: 'HyperScale Global Labs',
+  debtorName: 'Vikram Malhotra',
+  companyName: 'Nexus Digital India LLP',
   currency: 'INR',
   grossRecovered: 50000,
   revclaimPlatformFee: 1250,

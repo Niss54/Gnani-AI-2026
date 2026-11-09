@@ -71,7 +71,7 @@ Here is who actually operates in this space today:
 
 1. **Voice > Email (Acoustic Pressure):**
    * Chaser and Upflow send automated emails. But industry data shows that email open rates drop to under **18% after 30 days past due**. Debtors simply filter or archive them.
-   * A live, realistic phone call (powered by ElevenLabs + Twilio) has an **85%+ answer rate**. When the agent quotes exact project deliverables and offers partial installments, **68% of debtors commit to a payment date**.
+   * A live, realistic phone call (powered by Gnani Timbre TTS + Twilio PSTN) has an **85%+ answer rate**. When the agent quotes exact project deliverables and offers partial installments, **68% of debtors commit to a payment date**.
 2. **Built for the Underserved Long Tail (70M+ Freelancers & Micro-Agencies):**
    * A freelancer owed ₹25,000 or $1,200 will **never** pay Chaser $259/month or hire a ₹20,000 lawyer.
    * RevClaim AI is self-serve: drop the invoice, click call, done.

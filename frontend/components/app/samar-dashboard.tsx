@@ -1552,7 +1552,7 @@ export function SamarDashboard() {
 
             {/* 3. View GitHub */}
             <a
-              href="https://github.com/Niss54/RevClaim-AI"
+              href="https://github.com/Niss54/Gnani-AI-2026"
               target="_blank"
               rel="noopener noreferrer"
               className="clay-btn flex size-8.5 items-center justify-center rounded-xl text-slate-700 transition-transform hover:scale-105 hover:text-slate-950 active:scale-95"

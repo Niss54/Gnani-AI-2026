@@ -81,10 +81,10 @@ STATUTORY ADVISORY:
 In compliance with Sections 15 & 16 of the MSMED Act 2006, prompt reconciliation ensures commercial continuity and prevents interest compounding.
 
 NEED AN INSTALLMENT PLAN OR HAVE QUESTIONS?
-If you would like to request a 50% split installment or have questions about deliverables, reply directly to this email or message Sarah on WhatsApp (+91 88403 01998).
+If you have questions about deliverables or schedules, reply directly to this email or message Sara on WhatsApp (+91 88403 01998).
 
 Sincerely,
-Sarah — Billing & Accounts Mediation Desk
+Sara — Billing & Accounts Mediation Desk
 RevClaim AI Technologies
 Contact: nishantma05@gmail.com | +91 88403 01998
 `;
@@ -378,13 +378,13 @@ function generateSettlementHtml(params: ResendEmailParams, note?: string): strin
                       Need an Installment Plan or Have Questions?
                     </div>
                     <div style="font-size: 12px; color: #64748b; line-height: 1.5; margin-bottom: 12px;">
-                      If you're facing a temporary cash crunch, Sarah from our billing desk can structure a 50% split plan (50% today, remainder next billing cycle).
+                      If you have questions about deliverables or installments, Sara from our billing desk can help.
                     </div>
                     <table role="presentation" cellspacing="0" cellpadding="0">
                       <tr>
                         <td>
-                          <a href="https://wa.me/918840301998?text=Hello%20Sarah,%20regarding%20invoice%20${params.invoiceNumber}" style="background-color: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; text-decoration: none; padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: 700; display: inline-block;">
-                            💬 Message Sarah on WhatsApp
+                          <a href="https://wa.me/918840301998?text=Hello%20Sara,%20regarding%20invoice%20${params.invoiceNumber}" style="background-color: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; text-decoration: none; padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: 700; display: inline-block;">
+                            💬 Message Sara on WhatsApp
                           </a>
                         </td>
                         <td style="padding-left: 10px;">

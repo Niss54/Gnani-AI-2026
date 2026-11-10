@@ -1,47 +1,52 @@
-async function test() {
+async function runTests() {
   const base = "http://localhost:3000/api/twilio/voice/respond";
 
-  console.log("=== RUNNING REGRESSION TESTS FOR VOICE RESPOND ===");
+  console.log("=== 5-STAGE CONVERSATION & INVOICE CONSISTENCY REGRESSION TESTS ===");
 
-  // Test 1: Delay
+  // Turn 1: Debtor confirms hearing
+  console.log("\n[TEST 1] Turn 1 - Debtor confirms hearing ('हाँ, सुन रहा हूँ'):");
   let res = await fetch(`${base}?clientName=Nishant&invoiceNumber=INV-2026-JEWEL-1042&amount=10000&phone=%2B918840301998&turn=1`, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({ SpeechResult: "Bhaiya abhi cash tight hai agle hafte dekhenge" }).toString()
+    body: new URLSearchParams({ SpeechResult: "हाँ, सुन रहा हूँ" }).toString()
   });
-  let text = await res.text();
-  console.log("\n[TEST 1] Objection / Cash Delay Turn 1:");
-  console.log(text);
+  console.log(await res.text());
 
-  // Test 2: Agreement
+  // Turn 2: Debtor gives excuse
+  console.log("\n[TEST 2] Turn 2 - Debtor pushes back / excuse ('नहीं, अभी पैसे नहीं हैं'):");
   res = await fetch(`${base}?clientName=Nishant&invoiceNumber=INV-2026-JEWEL-1042&amount=10000&phone=%2B918840301998&turn=2`, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({ SpeechResult: "Theek hai main pay kar dunga" }).toString()
+    body: new URLSearchParams({ SpeechResult: "नहीं, अभी पैसे नहीं हैं" }).toString()
   });
-  text = await res.text();
-  console.log("\n[TEST 2] Debtor Agrees Turn 2:");
-  console.log(text);
+  console.log(await res.text());
 
-  // Test 3: WhatsApp
+  // Turn 3: Debtor stalls
+  console.log("\n[TEST 3] Turn 3 - Debtor stalls ('देखते हैं बाद में'):");
   res = await fetch(`${base}?clientName=Nishant&invoiceNumber=INV-2026-JEWEL-1042&amount=10000&phone=%2B918840301998&turn=3`, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({ SpeechResult: "WhatsApp par bhej do" }).toString()
+    body: new URLSearchParams({ SpeechResult: "देखते हैं बाद में" }).toString()
   });
-  text = await res.text();
-  console.log("\n[TEST 3] Debtor Selects WhatsApp Turn 3:");
-  console.log(text);
+  console.log(await res.text());
 
-  // Test 4: Email
+  // Turn 4: Debtor agrees
+  console.log("\n[TEST 4] Turn 4 - Debtor agrees to pay ('ठीक है, लिंक भेज दो'):");
   res = await fetch(`${base}?clientName=Nishant&invoiceNumber=INV-2026-JEWEL-1042&amount=10000&phone=%2B918840301998&turn=4`, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({ SpeechResult: "Email par bhejo" }).toString()
+    body: new URLSearchParams({ SpeechResult: "ठीक है, लिंक भेज दो" }).toString()
   });
-  text = await res.text();
-  console.log("\n[TEST 4] Debtor Selects Email Turn 4:");
-  console.log(text);
+  console.log(await res.text());
+
+  // Turn 5: Debtor chooses Email
+  console.log("\n[TEST 5] Turn 5 - Debtor specifies Email ('ईमेल पर भेजो'):");
+  res = await fetch(`${base}?clientName=Nishant&invoiceNumber=INV-2026-JEWEL-1042&amount=10000&phone=%2B918840301998&turn=5`, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ SpeechResult: "ईमेल पर भेजो" }).toString()
+  });
+  console.log(await res.text());
 }
 
-test().catch(console.error);
+runTests().catch(console.error);

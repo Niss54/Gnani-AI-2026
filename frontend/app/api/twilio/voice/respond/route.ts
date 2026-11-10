@@ -36,12 +36,16 @@ function cleanAndSanitizeReply(text: string, clientName: string): string {
   cleaned = cleaned.replace(/साराह/g, "सारा");
   cleaned = cleaned.replace(/रेवक्लेम/g, "रेव-क्लेम");
 
-  // Fix currency symbols & special characters that cause TTS glitch / stutter
-  cleaned = cleaned.replace(/[â‚¹₹]\s*(\d[\d,]*)/g, "$1 rupaye");
-  cleaned = cleaned.replace(/[â‚¹₹]/g, " rupaye ");
-  cleaned = cleaned.replace(/\b3x\b/gi, "teen guna");
+  // Remove forced repetitive "theek hai?" at sentence ends
+  cleaned = cleaned.replace(/\s*theek hai\s*\?\s*$/i, ".");
+  cleaned = cleaned.replace(/\s*ठीक है\s*\?\s*$/, "।");
+
+  // Fix currency symbols & special characters that cause TTS glitch
+  cleaned = cleaned.replace(/[â‚¹₹]\s*(\d[\d,]*)/g, "$1 रुपये");
+  cleaned = cleaned.replace(/[â‚¹₹]/g, " रुपये ");
+  cleaned = cleaned.replace(/\b3x\b/gi, "तीन गुना");
   cleaned = cleaned.replace(/\bMSMED\b/gi, "M S M E D");
-  cleaned = cleaned.replace(/\bMSME\b/gi, "M S M E");
+  cleaned = cleaned.replace(/\bMSME\b/gi, "MSME");
 
   // STRICT USER CONSTRAINT: Strip out debtor name repetitions ("Nishant ji", "Nishant", "निशांत जी", etc.)
   const names = [
@@ -77,33 +81,44 @@ async function getAiNegotiationTurn(params: {
   amount: string;
   deliverable: string;
   turn: number;
-}): Promise<{ reply: string; isSettled: boolean; channel?: string | null; detectedLang: string }> {
+}): Promise<{ reply: string; isSettled: boolean; channel?: string | null; agreedAmount?: number; detectedLang: string }> {
   const { debtorSpeech, clientName, invoiceNumber, amount, deliverable, turn } = params;
   const groqKey = process.env.GROQ_API_KEY?.trim();
 
   const sysPrompt = `You are Sara from RevClaim AI accounts desk calling regarding invoice ${invoiceNumber} for ${deliverable}.
-Total was 30,000 rupaye, 20,000 already paid, remaining balance is ${amount} rupaye overdue by 21 days.
-This is negotiation Turn ${turn} of 5.
+Total was 30,000, 20,000 paid, remaining balance is 10,000 overdue.
 
 CRITICAL RULES:
 1. YOU ARE SARA (NEVER SARAH).
-2. DO NOT SAY "Nishant", "Nishant ji", "sir", or ANY name! Never address the person by name. Speak like a brisk corporate officer.
-3. Fast & Fluent Delivery: Keep replies short (10-15 words max), crisp and natural.
-4. No Symbols: Never write symbols like ₹ or $. Always write "rupaye" (e.g. "5000 rupaye").
-5. Spoken Acronyms: Write "M S M E D Act" and "teen guna penal interest".
-6. Multi-Lingual: Reply in the exact same language mix spoken by debtor (Hinglish / Hindi / Marathi / Gujarati / English).
-7. Flow:
-   - Excuses/Delay (Turn 1-2): "Deliverables complete hain. Aaj 5000 rupaye clear kar lijiye aur baaki agle hafte de dena. Theek hai?"
-   - Pushback/Delay (Turn 3-4): "M S M E D Act mein teen guna penal interest lagta hai. Aaj 5000 rupaye se matter close kar lijiye."
-   - Agreement / Commitment ("theek hai / haan / pay kar dunga / link bhej do / ho me karto"):
-     "Theek hai, main payment link aapke WhatsApp par bhejun ya Email par?" (Set "isSettled": false).
-   - If debtor chooses Email ("email / mail / ईमेल"):
-     "Theek hai, payment link aapke email par bhej diya hai. Dhanyavaad, aapka din shubh ho!" (Set "isSettled": true, "channel": "email").
-   - If debtor chooses WhatsApp ("whatsapp / text / व्हाट्सएप"):
-     "Theek hai, payment link aapke WhatsApp par bhej diya hai. Dhanyavaad, aapka din shubh ho!" (Set "isSettled": true, "channel": "whatsapp").
+2. DO NOT SAY "Nishant", "Nishant ji", or ANY person's name! Speak politely without naming the person.
+3. Natural, Professional Indian Hindi (Devanagari): Output replies in clean, natural Devanagari script.
+4. DO NOT ADD "Theek hai? Theek hai?" unnaturally to every sentence.
+5. STRICT 5-STAGE PROGRESSION:
+   - Stage 1 (Turn 1 - Debtor answers/confirms hearing you e.g. "haan", "sun raha hoon", "hello", "boliye"):
+     DO NOT offer 5,000 yet! Ask for full 10,000:
+     Reply: "जी, आपके प्रोजेक्ट का 10,000 रुपये का बकाया पेमेंट काफी समय से ओवरड्यू है। क्या हम आज इसे क्लियर कर सकते हैं?"
+     (Set "isSettled": false, "agreedAmount": 10000).
+   - Stage 2 (Turn 2 - Debtor makes excuse/delay/refusal e.g. "nahi", "paise nahi hain", "cash tight hai", "agle hafte"):
+     NOW offer the structured 5,000 installment:
+     Reply: "मैं समझ सकती हूँ। अगर पूरा 10,000 अभी संभव नहीं है, तो क्या आप 5,000 रुपये आज पे करके बाकी 5,000 अगले हफ्ते क्लियर कर सकते हैं?"
+     (Set "isSettled": false, "agreedAmount": 5000).
+   - Stage 3 (Turn 3 - Debtor stalls further e.g. "dekhte hain", "baad mein", "nahi dunga"):
+     Citing MSME compliance:
+     Reply: "देखिये, आगे डिले होने पर MSME नियमों के तहत पीनल इंटरेस्ट लग सकता है। हम चाहते हैं कि मामला शांति से सुलझ जाए। आज सिर्फ 5,000 रुपये देकर अकाउंट सेटल कर लीजिये।"
+     (Set "isSettled": false, "agreedAmount": 5000).
+   - Stage 4 (Agreement e.g. "theek hai", "pay kar dunga", "link bhej do", "haan kar dunga"):
+     Reply: "बहुत अच्छा! मैं 5,000 रुपये का पेमेंट लिंक आपके व्हाट्सएप पर भेजूँ या ईमेल पर?"
+     (Set "isSettled": false, "agreedAmount": 5000).
+   - Stage 5 (Channel Selection):
+     - If debtor chooses Email ("email", "mail", "ईमेल", "मेल"):
+       Reply: "जी, 5,000 रुपये का सेटलमेंट पेमेंट लिंक आपके ईमेल पर भेज दिया गया है। आपका दिन शुभ हो, धन्यवाद!"
+       (Set "isSettled": true, "channel": "email", "agreedAmount": 5000).
+     - If debtor chooses WhatsApp ("whatsapp", "text", "व्हाट्सएप"):
+       Reply: "जी, 5,000 रुपये का सेटलमेंट पेमेंट लिंक आपके व्हाट्सएप पर भेज दिया गया है। आपका दिन शुभ हो, धन्यवाद!"
+       (Set "isSettled": true, "channel": "whatsapp", "agreedAmount": 5000).
 
 Output MUST be strict JSON:
-{"reply": "...", "isSettled": boolean, "channel": "email" | "whatsapp" | null, "detectedLang": "Hindi" | "Marathi" | "Gujarati" | "English" | "Hinglish"}`;
+{"reply": "...", "isSettled": boolean, "channel": "email" | "whatsapp" | null, "agreedAmount": number, "detectedLang": "Hindi"}`;
 
   try {
     const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -119,7 +134,7 @@ Output MUST be strict JSON:
           { role: "user", content: debtorSpeech },
         ],
         response_format: { type: "json_object" },
-        temperature: 0.25,
+        temperature: 0.2,
       }),
     });
 
@@ -131,6 +146,7 @@ Output MUST be strict JSON:
           reply: content.reply,
           isSettled: Boolean(content.isSettled),
           channel: content.channel || null,
+          agreedAmount: content.agreedAmount || (turn >= 2 ? 5000 : 10000),
           detectedLang: content.detectedLang || "Hindi",
         };
       }
@@ -139,52 +155,80 @@ Output MUST be strict JSON:
     console.warn("[Groq Negotiation Turn Error]:", err);
   }
 
-  // Fallback intelligent heuristics if LLM network hiccups
+  // Reliable Fallback Stage Engine (Guarantees perfect logical dialogue)
   const lower = debtorSpeech.toLowerCase();
-  const mentionsEmail = lower.includes("email") || lower.includes("mail") || lower.includes("ईमेल");
-  if (mentionsEmail) {
+  const isEmail = lower.includes("email") || lower.includes("mail") || lower.includes("ईमेल") || lower.includes("मेल");
+  if (isEmail) {
     return {
-      reply: `Theek hai, payment link aapke email par bhej diya hai. Dhanyavaad, aapka din shubh ho!`,
+      reply: `जी, 5,000 रुपये का सेटलमेंट पेमेंट लिंक आपके ईमेल पर भेज दिया गया है। आपका दिन शुभ हो, धन्यवाद!`,
       isSettled: true,
       channel: "email",
+      agreedAmount: 5000,
       detectedLang: "Hindi",
     };
   }
 
-  const mentionsWhatsApp = lower.includes("whatsapp") || lower.includes("whats app") || lower.includes("message");
-  if (mentionsWhatsApp) {
+  const isWhatsApp = lower.includes("whatsapp") || lower.includes("whats app") || lower.includes("व्हाट्सएप") || lower.includes("message");
+  if (isWhatsApp) {
     return {
-      reply: `Theek hai, payment link aapke WhatsApp par bhej diya hai. Dhanyavaad, aapka din shubh ho!`,
+      reply: `जी, 5,000 रुपये का सेटलमेंट पेमेंट लिंक आपके व्हाट्सएप पर भेज दिया गया है। आपका दिन शुभ हो, धन्यवाद!`,
       isSettled: true,
       channel: "whatsapp",
+      agreedAmount: 5000,
       detectedLang: "Hindi",
     };
   }
 
   const isAgreement =
     lower.includes("theek hai") ||
+    lower.includes("theek") ||
     lower.includes("bhej do") ||
     lower.includes("pay kar") ||
-    lower.includes("karto") ||
     lower.includes("kar dunga") ||
-    lower.includes("aapi daish") ||
     lower.includes("okay") ||
     lower.includes("send link") ||
-    lower.includes("haan");
+    lower.includes("ठीक है") ||
+    lower.includes("भेज दो") ||
+    lower.includes("पे कर");
 
   if (isAgreement) {
     return {
-      reply: `Theek hai, main settlement link aapke WhatsApp par bhejun ya Email par?`,
+      reply: `बहुत अच्छा! मैं 5,000 रुपये का पेमेंट लिंक आपके व्हाट्सएप पर भेजूँ या ईमेल पर?`,
       isSettled: false,
       channel: null,
+      agreedAmount: 5000,
       detectedLang: "Hindi",
     };
   }
 
+  // Turn 1: Debtor confirms audibility ("हाँ", "सुन रहा हूँ", "hello", "boliye")
+  if (turn === 1) {
+    return {
+      reply: `जी, आपके प्रोजेक्ट का 10,000 रुपये का बकाया पेमेंट काफी समय से ओवरड्यू है। क्या हम आज इसे क्लियर कर सकते हैं?`,
+      isSettled: false,
+      channel: null,
+      agreedAmount: 10000,
+      detectedLang: "Hindi",
+    };
+  }
+
+  // Turn 2: Debtor gives first excuse / objection
+  if (turn === 2) {
+    return {
+      reply: `मैं समझ सकती हूँ। अगर पूरा 10,000 अभी संभव नहीं है, तो क्या आप 5,000 रुपये आज पे करके बाकी 5,000 अगले हफ्ते क्लियर कर सकते हैं?`,
+      isSettled: false,
+      channel: null,
+      agreedAmount: 5000,
+      detectedLang: "Hindi",
+    };
+  }
+
+  // Turn 3+: Debtor stalls or hesitates further
   return {
-    reply: `Samajh sakti hoon, par deliverables complete hain. Kya aap aaj 5,000 clear kar sakte hain aur baki agle hafte?`,
+    reply: `देखिये, आगे डिले होने पर MSME नियमों के तहत पीनल इंटरेस्ट लग सकता है। हम चाहते हैं कि मामला शांति से सुलझ जाए। आज सिर्फ 5,000 रुपये देकर अकाउंट सेटल कर लीजिये।`,
     isSettled: false,
     channel: null,
+    agreedAmount: 5000,
     detectedLang: "Hindi",
   };
 }
@@ -230,29 +274,27 @@ async function handleRespond(req: NextRequest) {
   console.log(`[Twilio Voice AI] Turn ${turn} Input from ${clientName}: "${speechResult}"`);
   logCall(`Turn ${turn} SpeechResult from ${clientName}: "${speechResult}"`);
 
-  const firstName = clientName.trim().split(" ")[0] || "Nishant";
-
   // Handle Silence / Timeout
   if (!speechResult.trim()) {
     if (turn >= 4) {
-      const finishText = `Lagta hai connection toot gaya. Maine payment link aapke WhatsApp aur email par bhej diya hai. Dhanyavaad!`;
+      const finishText = `शायद आवाज़ नहीं आ पा रही है। मैं थोड़ी देर में दोबारा संपर्क करती हूँ। धन्यवाद!`;
       const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say voice="Polly.Aditi" language="hi-IN">${escapeXml(finishText)}</Say>
+  <Say voice="Google.hi-IN-Neural2-A" language="hi-IN">${escapeXml(finishText)}</Say>
   <Hangup/>
 </Response>`.trim();
       return new NextResponse(xml, { headers: { "Content-Type": "text/xml; charset=utf-8" } });
     }
 
-    const promptText = `Main aapki aawaz nahi sun paayi. Kya aap jewellery website invoice ka payment discuss kar sakte hain?`;
+    const promptText = `क्या आप सुन पा रहे हैं? कृपया बताइये क्या ज्वेलरी इनवॉइस का पेमेंट आज डिस्कस कर सकते हैं?`;
     const nextUrl = `${baseUrl}/api/twilio/voice/respond?clientName=${encodeURIComponent(clientName)}&invoiceNumber=${encodeURIComponent(invoiceNumber)}&amount=${encodeURIComponent(amount)}&phone=${encodeURIComponent(phone)}&turn=${turn + 1}`;
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Gather input="dtmf speech" action="${escapeXml(nextUrl)}" method="POST" speechTimeout="auto" timeout="8" language="hi-IN" hints="haan, theek hai, link bhej do, pay kar dunga, agle hafte, paise, payment, jewellery, split, discount, kal, baad mein, ho me karto, aapi daish, email, whatsapp">
-    <Say voice="Polly.Aditi" language="hi-IN"><prosody rate="118%">${escapeXml(promptText)}</prosody></Say>
+  <Gather input="dtmf speech" action="${escapeXml(nextUrl)}" method="POST" speechTimeout="auto" timeout="8" language="hi-IN" hints="हाँ, ठीक है, लिंक भेज दो, पे कर दूंगा, अगले हफ्ते, पैसे, पेमेंट, ज्वेलरी, 5000, 10000, डिस्काउंट, कल, बाद में, ईमेल, व्हाट्सएप, haan, theek hai, link bhej do, email, whatsapp">
+    <Say voice="Google.hi-IN-Neural2-A" language="hi-IN">${escapeXml(promptText)}</Say>
   </Gather>
-  <Say voice="Polly.Aditi" language="hi-IN"><prosody rate="118%">Kya aap sun pa rahe hain?</prosody></Say>
+  <Say voice="Google.hi-IN-Neural2-A" language="hi-IN">क्या आप सुन पा रहे हैं?</Say>
 </Response>`.trim();
     return new NextResponse(xml, { headers: { "Content-Type": "text/xml; charset=utf-8" } });
   }
@@ -284,18 +326,21 @@ async function handleRespond(req: NextRequest) {
 
   // If Debtor Agreed OR max rounds reached: Send WhatsApp/Email payment link and gracefully exit
   if (aiTurn.isSettled || turn >= 5) {
-    const paymentUrl = `https://rzp.io/i/demo_jewel_${Date.now()}`;
+    // Agreed Token Settlement Amount (₹5,000 as agreed on the call)
+    const settleAmount = aiTurn.agreedAmount || (turn >= 2 ? 5000 : 10000);
+    const paymentUrl = `https://rzp.io/i/settle_${settleAmount}_${Date.now()}`;
 
     // STRICT USER RULE: Only dispatch email if debtor explicitly asked for email!
     if (isEmailExplicitlyRequested) {
-      console.log(`[Resend] Debtor explicitly requested email. Sending to nishantma05@gmail.com...`);
+      console.log(`[Resend] Debtor explicitly requested email. Sending agreed settlement (₹${settleAmount}) to nishantma05@gmail.com...`);
       sendRecoveryEmail({
         to: "nishantma05@gmail.com",
         clientName,
-        amount: Number(amount) || 10000,
+        amount: settleAmount,
         invoiceNumber,
         paymentLink: paymentUrl,
-        subject: `Invoice #${invoiceNumber} Settlement Commitment (₹${Number(amount).toLocaleString("en-IN")}) — RevClaim AI`,
+        subject: `Invoice #${invoiceNumber} Agreed Settlement Payment (₹${settleAmount.toLocaleString("en-IN")}) — RevClaim AI`,
+        deliverable: `Custom Luxury Jewellery Website Development (Agreed 50% Token Settlement: ₹${settleAmount.toLocaleString("en-IN")} today, balance ₹${(10000 - settleAmount).toLocaleString("en-IN")} in 7 days)`,
       }).catch((e) => console.warn("[Resend Email Notice]:", e?.message));
     } else {
       console.log(`[Twilio Settle] Settled via WhatsApp / other channel. Email NOT sent.`);
@@ -303,7 +348,7 @@ async function handleRespond(req: NextRequest) {
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say voice="Polly.Aditi" language="hi-IN"><prosody rate="118%">${escapeXml(aiTurn.reply)}</prosody></Say>
+  <Say voice="Google.hi-IN-Neural2-A" language="hi-IN">${escapeXml(aiTurn.reply)}</Say>
   <Pause length="1"/>
   <Hangup/>
 </Response>`.trim();
@@ -322,10 +367,10 @@ async function handleRespond(req: NextRequest) {
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Gather input="dtmf speech" action="${escapedNextUrl}" method="POST" speechTimeout="auto" timeout="8" language="hi-IN" hints="haan, theek hai, link bhej do, pay kar dunga, agle hafte, paise, payment, jewellery, split, discount, kal, baad mein, ho me karto, aapi daish, email, whatsapp">
-    <Say voice="Polly.Aditi" language="hi-IN"><prosody rate="118%">${escapeXml(aiTurn.reply)}</prosody></Say>
+  <Gather input="dtmf speech" action="${escapedNextUrl}" method="POST" speechTimeout="auto" timeout="8" language="hi-IN" hints="हाँ, ठीक है, लिंक भेज दो, पे कर दूंगा, अगले हफ्ते, पैसे, पेमेंट, ज्वेलरी, 5000, 10000, डिस्काउंट, कल, बाद में, ईमेल, व्हाट्सएप, haan, theek hai, link bhej do, email, whatsapp">
+    <Say voice="Google.hi-IN-Neural2-A" language="hi-IN">${escapeXml(aiTurn.reply)}</Say>
   </Gather>
-  <Say voice="Polly.Aditi" language="hi-IN"><prosody rate="118%">Kya aap sun pa rahe hain?</prosody></Say>
+  <Say voice="Google.hi-IN-Neural2-A" language="hi-IN">क्या आप सुन पा रहे हैं?</Say>
 </Response>`.trim();
 
   return new NextResponse(xml, {

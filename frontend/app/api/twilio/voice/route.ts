@@ -55,41 +55,41 @@ function handleVoice(req: NextRequest) {
   let audioLang = "Hindi";
 
   if (reqLang.toLowerCase().includes("mar") || reqLang === "mr") {
-    greetingText = `Namaskar! Me Sara bolat ahe RevClaim accounts desk varun. Jewellery website invoice chya 10,000 rupaye balance baddal bolayche hote. Aawaz yetoy ka maza?`;
+    greetingText = `नमस्कार! मी सारा बोलत आहे रेव्ह-क्लेम अकाउंट्स डेस्कवरून. तुमच्या ज्वेलरी वेबसाइट इनव्हॉइसच्या 10,000 रुपये बाकी पेमेंटबद्दल बोलायचे होते. माझा आवाज येतोय का?`;
     audioLang = "Marathi";
   } else if (reqLang.toLowerCase().includes("guj") || reqLang === "gu") {
-    greetingText = `Namaste! Hu Sara bolu chu RevClaim accounts desk mathi. Jewellery website na 10,000 rupiya baaki che. Shu tame mane sambhli sako cho?`;
+    greetingText = `નમસ્તે! હું સારા બોલું છું રેવ-ક્લેમ એકાઉન્ટ્સ ડેસ્ક પરથી. તમારી જ્વેલરી વેબસાઇટના 10,000 રૂપિયા બાકી છે. શું તમે મને સાંભળી શકો છો?`;
     audioLang = "Gujarati";
   } else if (reqLang.toLowerCase().includes("eng") || reqLang === "en") {
     greetingText = `Hello! This is Sara from RevClaim accounts desk regarding your jewellery website invoice for 10,000 rupees balance. Can you hear me clearly?`;
     audioLang = "English";
   } else {
-    // Default: Natural conversational Hinglish/Hindi
-    greetingText = `Namaste! Main Sara bol rahi hoon RevClaim accounts desk se, aapke jewellery website development invoice ke baare mein. Baki balance 10,000 rupaye pending hai. Kya aap mujhe sun pa rahe hain?`;
+    // Default: Fluent corporate Hindi in Devanagari for Google Neural2 / Indian voice engine
+    greetingText = `नमस्ते! मैं सारा बोल रही हूँ रेव-क्लेम अकाउंट्स डेस्क से, आपके ज्वेलरी वेबसाइट इनवॉइस के बारे में। क्या आप मुझे सुन पा रहे हैं?`;
     audioLang = "Hindi";
   }
 
   const audioUrl = `${baseUrl}/api/gnani/audio?text=${encodeURIComponent(greetingText)}&lang=${encodeURIComponent(audioLang)}&voice=Shivani`;
   const escapedAudioUrl = escapeXml(audioUrl);
 
-  const repeatText = `Kya aap sun pa rahe hain? Please bataiye kya abhi settle kar sakte hain?`;
+  const repeatText = `क्या आप सुन पा रहे हैं? कृपया बताइये क्या आप अभी बात कर सकते हैं?`;
   const repeatAudioUrl = `${baseUrl}/api/gnani/audio?text=${encodeURIComponent(repeatText)}&lang=Hindi&voice=Shivani`;
   const escapedRepeatAudioUrl = escapeXml(repeatAudioUrl);
 
-  const fallbackText = `Lagta hai aawaz nahi aa rahi hai. Main thodi der mein dobara connect karti hoon. Dhanyavaad!`;
+  const fallbackText = `शायद आपकी आवाज़ नहीं आ पा रही है। मैं थोड़ी देर में दोबारा संपर्क करती हूँ। धन्यवाद!`;
   const fallbackAudioUrl = `${baseUrl}/api/gnani/audio?text=${encodeURIComponent(fallbackText)}&lang=Hindi&voice=Shivani`;
   const escapedFallbackAudioUrl = escapeXml(fallbackAudioUrl);
 
-  // Twilio TwiML using native Indian Voice (Polly.Aditi) with SSML prosody rate for fast & fluent speech
+  // Twilio TwiML using Google Neural2 Hindi Female Voice (Ultra-fluent, natural Indian cadence)
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Gather input="dtmf speech" action="${escapedRespondUrl}" method="POST" speechTimeout="auto" timeout="8" language="hi-IN" hints="haan, theek hai, link bhej do, pay kar dunga, agle hafte, paise, payment, jewellery, split, discount, kal, baad mein, ho me karto, aapi daish, email, whatsapp">
-    <Say voice="Polly.Aditi" language="hi-IN"><prosody rate="118%">${escapeXml(greetingText)}</prosody></Say>
+  <Gather input="dtmf speech" action="${escapedRespondUrl}" method="POST" speechTimeout="auto" timeout="8" language="hi-IN" hints="हाँ, ठीक है, लिंक भेज दो, पे कर दूंगा, अगले हफ्ते, पैसे, पेमेंट, ज्वेलरी, 5000, 10000, डिस्काउंट, कल, बाद में, ईमेल, व्हाट्सएप, haan, theek hai, link bhej do, email, whatsapp">
+    <Say voice="Google.hi-IN-Neural2-A" language="hi-IN">${escapeXml(greetingText)}</Say>
   </Gather>
-  <Gather input="dtmf speech" action="${escapedRespondUrl}" method="POST" speechTimeout="auto" timeout="6" language="hi-IN" hints="haan, theek hai, link bhej do, pay kar dunga, email, whatsapp">
-    <Say voice="Polly.Aditi" language="hi-IN"><prosody rate="118%">${escapeXml(repeatText)}</prosody></Say>
+  <Gather input="dtmf speech" action="${escapedRespondUrl}" method="POST" speechTimeout="auto" timeout="6" language="hi-IN" hints="हाँ, ठीक है, लिंक भेज दो, पे कर दूंगा, ईमेल, व्हाट्सएप">
+    <Say voice="Google.hi-IN-Neural2-A" language="hi-IN">${escapeXml(repeatText)}</Say>
   </Gather>
-  <Say voice="Polly.Aditi" language="hi-IN"><prosody rate="118%">${escapeXml(fallbackText)}</prosody></Say>
+  <Say voice="Google.hi-IN-Neural2-A" language="hi-IN">${escapeXml(fallbackText)}</Say>
   <Hangup/>
 </Response>`.trim();
 

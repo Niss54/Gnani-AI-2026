@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./assets/readme/logo.png" alt="RevClaim AI Logo" width="140" />
+  <img src="./assets/readme/logo.png" alt="RevClaim AI Logo" width="130" style="border-radius: 24px; box-shadow: 0 8px 30px rgba(0,0,0,0.5);" />
 </p>
 
 <div align="center">
@@ -12,6 +12,17 @@
 Built for **The Great Indian AI Challenge & Agentic AI Hackathon by Gnani.ai** | Team: **Pookie Baddies**  
 *Primary Track: Sovereign Indic Voice Agents (Prisma v3.0 STT & Timbre v3.0 TTS) · Agentic Workflows: Inya.ai Paradigm*
 
+</div>
+
+> [!IMPORTANT]
+> ## 🏆 GNANI.AI HACKATHON EVALUATION BRIEF (1-PAGE SOLUTION PITCH)
+> **Evaluators & Judges:** Looking for the official executive solution brief, architecture blueprint, Gnani.ai 10/10 technical proof matrix, and live telemetry benchmarks in under 60 seconds?  
+> ### 👉 **[CLICK HERE TO READ OFFICIAL 1-PAGE SOLUTION PITCH (docs/ONE_PAGE_SOLUTION_PITCH.md)](./docs/ONE_PAGE_SOLUTION_PITCH.md)** 👈  
+> *Includes: Macro Economic Ground Truth (₹8.1T) • Live Gnani Prisma STT + Timbre TTS v3.0 Proof Matrix • Measured 214.35ms TTFB & 330KB Audio Stream Telemetry • 1-Line Terminal Verification (`npm run benchmark:gnani`)*
+
+<div align="center">
+
+[![1-Page Solution Pitch](https://img.shields.io/badge/🏆_Judge_Executive_Brief-1--Page_Solution_Pitch-FF5722?style=for-the-badge&logo=googledocs&logoColor=white)](./docs/ONE_PAGE_SOLUTION_PITCH.md)
 [![GitHub Repo](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Niss54/Gnani-AI-2026)
 [![Gnani.ai](https://img.shields.io/badge/Gnani.ai-10%2F10_Sovereign_Voice-orange?style=for-the-badge&logo=googlepodcasts&logoColor=white)](https://vachana.ai)
 [![Hybrid Graph RAG](https://img.shields.io/badge/Hybrid_Graph_RAG-Corporate_Veil_Piercing-8A2BE2?style=for-the-badge&logo=neo4j&logoColor=white)](#-sovereign-hybrid-graph-rag--corporate-veil-piercing)
@@ -26,7 +37,7 @@ Built for **The Great Indian AI Challenge & Agentic AI Hackathon by Gnani.ai** |
 
 <br/>
 
-[🌐 Live Cockpit](https://rev-claim-ai.vercel.app) · [🎥 3-Min Demo Video (Drive)](https://drive.google.com/file/d/1nMTP9TPcwLxU29sr53sYRh6zndnHNZdF/view?usp=sharing) · [🐦 Pitch & Demo Thread (X)](https://x.com/NMaurya26722/status/2116311937701269773?s=20) · [📄 1-Page Pitch](./docs/ONE_PAGE_SOLUTION_PITCH.md) · [🛡️ Judge Defense Playbook](./evaluation/defense/JUDGE_DEFENSE_PLAYBOOK.md) · [👥 Pilot Evidence](./evaluation/PILOT_USER_EVIDENCE.md)
+**[📄 1-Page Evaluator Pitch](./docs/ONE_PAGE_SOLUTION_PITCH.md)** · [🌐 Live Cockpit](https://rev-claim-ai.vercel.app) · [🎥 3-Min Demo Video (Drive)](https://drive.google.com/file/d/1nMTP9TPcwLxU29sr53sYRh6zndnHNZdF/view?usp=sharing) · [🐦 Pitch & Demo Thread (X)](https://x.com/NMaurya26722/status/2116311937701269773?s=20) · [🛡️ Judge Defense Playbook](./evaluation/defense/JUDGE_DEFENSE_PLAYBOOK.md) · [👥 Pilot Evidence](./evaluation/PILOT_USER_EVIDENCE.md)
 
 </div>
 

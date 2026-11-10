@@ -42,3 +42,8 @@ next-env.d.ts
 
 # Root build artifacts
 /public/
+
+# Binary & logs
+*.log
+*.exe
+twilio_calls.log

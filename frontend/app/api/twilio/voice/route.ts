@@ -1,4 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
+import fs from "node:fs";
+import path from "node:path";
+
+function logCall(msg: string) {
+  try {
+    const logLine = `[${new Date().toISOString()}] [Voice Route] ${msg}\n`;
+    fs.appendFileSync(path.resolve("twilio_calls.log"), logLine, "utf8");
+    console.log(logLine.trim());
+  } catch {}
+}
 
 export async function POST(req: NextRequest) {
   return handleVoice(req);
@@ -19,6 +29,7 @@ function escapeXml(unsafe: string): string {
 
 function handleVoice(req: NextRequest) {
   const { searchParams } = new URL(req.url);
+  logCall(`Incoming ${req.method} from Twilio: ${req.url}`);
   const clientName = searchParams.get("clientName") || "Nishant Maurya";
   const invoiceNumber = searchParams.get("invoiceNumber") || "INV-2026-JEWEL-1042";
   const amount = searchParams.get("amount") || "10000";
@@ -26,10 +37,13 @@ function handleVoice(req: NextRequest) {
   const deliverable = searchParams.get("deliverable") || "jewellery website development";
   const reqLang = searchParams.get("lang") || "Hindi";
 
+  const host = req.headers.get("x-forwarded-host") || req.headers.get("host");
+  const proto = req.headers.get("x-forwarded-proto") || "https";
   const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL && !process.env.NEXT_PUBLIC_APP_URL.includes("localhost")
-      ? process.env.NEXT_PUBLIC_APP_URL
-      : "https://rev-claim-ai.vercel.app";
+    process.env.TUNNEL_URL ||
+    (host && !host.includes("localhost")
+      ? `${proto}://${host}`
+      : "https://thumbnail-depend-moments-postage.trycloudflare.com");
 
   const rawRespondUrl = `${baseUrl}/api/twilio/voice/respond?clientName=${encodeURIComponent(clientName)}&invoiceNumber=${encodeURIComponent(invoiceNumber)}&amount=${encodeURIComponent(amount)}&phone=${encodeURIComponent(phone)}&turn=1`;
   const escapedRespondUrl = escapeXml(rawRespondUrl);
@@ -69,10 +83,10 @@ function handleVoice(req: NextRequest) {
   // Twilio TwiML streaming real Gnani.ai Shivani audio with interactive speech gather
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Gather input="dtmf speech" action="${escapedRespondUrl}" method="POST" speechTimeout="auto" timeout="6" language="hi-IN">
+  <Gather input="dtmf speech" action="${escapedRespondUrl}" method="POST" speechTimeout="auto" timeout="7" language="hi-IN" hints="haan, theek hai, link bhej do, pay kar dunga, agle hafte, paise, payment, jewellery, split, discount, kal, baad mein, ho me karto, aapi daish">
     <Play>${escapedAudioUrl}</Play>
   </Gather>
-  <Gather input="dtmf speech" action="${escapedRespondUrl}" method="POST" speechTimeout="auto" timeout="5" language="hi-IN">
+  <Gather input="dtmf speech" action="${escapedRespondUrl}" method="POST" speechTimeout="auto" timeout="5" language="hi-IN" hints="haan, theek hai, link bhej do, pay kar dunga">
     <Play>${escapedRepeatAudioUrl}</Play>
   </Gather>
   <Play>${escapedFallbackAudioUrl}</Play>

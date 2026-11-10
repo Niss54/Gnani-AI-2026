@@ -13,6 +13,7 @@
     "lint": "npm --prefix frontend run lint",
     "test": "node tests/e2e.test.mjs",
     "test:gnani": "node tests/gnani-benchmark.mjs",
+    "benchmark:gnani": "node scripts/benchmark-gnani.js",
     "test:all": "node tests/gnani-benchmark.mjs && node tests/e2e.test.mjs"
   }
 }

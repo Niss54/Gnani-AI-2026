@@ -1865,15 +1865,43 @@ export function SamarDashboard() {
                       role="button"
                       tabIndex={0}
                       title="Click to start voice negotiation call"
-                      className="group relative flex flex-1 min-h-[360px] cursor-pointer flex-col items-center justify-center overflow-hidden rounded-3xl bg-[#E8EEF5] transition-all hover:brightness-[1.02] focus:outline-none active:scale-[0.99] dark:border dark:border-white/[0.08] dark:bg-[#070b14] shadow-[inset_0_3px_12px_rgba(0,0,0,0.8)]"
+                      className="group relative flex flex-1 min-h-[360px] cursor-pointer flex-col items-center justify-center overflow-hidden rounded-3xl bg-[#E8EEF5] transition-all hover:brightness-[1.02] focus:outline-none active:scale-[0.99] dark:border dark:border-white/[0.08] dark:bg-[#0a0f1d] shadow-[inset_0_3px_12px_rgba(0,0,0,0.8)]"
                     >
-                      <div className="pointer-events-none absolute inset-0 hidden items-center justify-center dark:flex">
-                        <div className="size-80 rounded-full bg-gradient-to-tr from-cyan-500/15 via-sky-500/10 to-transparent blur-3xl" />
+                      {/* Ambient Cybernetic Glow */}
+                      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                        <div className="size-72 rounded-full bg-gradient-to-tr from-cyan-500/20 via-sky-500/15 to-emerald-500/10 blur-3xl animate-pulse" />
                       </div>
+
+                      {/* Fallback Animated AI Orb & Call Prompt (always visible behind or before Spline loads) */}
+                      <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-4 p-6 text-center select-none">
+                        <div className="relative flex items-center justify-center">
+                          <div className="absolute size-36 rounded-full bg-cyan-500/20 animate-ping duration-1000" />
+                          <div className="absolute size-28 rounded-full border border-cyan-400/30 dark:border-cyan-400/20 animate-spin duration-3000" />
+                          <div className="relative flex size-24 items-center justify-center rounded-full bg-gradient-to-tr from-cyan-500 via-sky-600 to-emerald-400 shadow-xl shadow-cyan-500/30 group-hover:scale-105 transition-transform duration-300">
+                            <Mic className="size-10 text-white animate-pulse" />
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-sm font-black tracking-wide text-slate-800 dark:text-cyan-300 drop-shadow-sm">
+                            Sarah AI Voice Recovery Room
+                          </p>
+                          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                            Click to launch LiveKit WebRTC &amp; Gnani Timbre v3.0 session
+                          </p>
+                        </div>
+                        <div className="inline-flex items-center gap-2 rounded-full bg-white/80 dark:bg-black/60 px-3.5 py-1.5 backdrop-blur-md border border-slate-200/60 dark:border-cyan-500/30 shadow-sm">
+                          <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
+                          <span className="text-[11px] font-bold tracking-wider text-slate-700 dark:text-cyan-200 uppercase">
+                            Dual-Homed • Sub-400ms Indic Latency
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Living 3D Spline Orb */}
                       <spline-viewer
                         url="https://prod.spline.design/4iC321jWjBLbdcUS/scene.splinecode"
                         loading="lazy"
-                        className="absolute inset-0 size-full cursor-pointer"
+                        className="absolute inset-0 size-full cursor-pointer z-10"
                         style={{
                           width: '100%',
                           height: '100%',

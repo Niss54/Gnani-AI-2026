@@ -1,5 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sendRecoveryEmail } from "@/lib/resend";
+import fs from "node:fs";
+import path from "node:path";
+
+function logCall(msg: string) {
+  try {
+    const logLine = `[${new Date().toISOString()}] [Respond Route] ${msg}\n`;
+    fs.appendFileSync(path.resolve("twilio_calls.log"), logLine, "utf8");
+    console.log(logLine.trim());
+  } catch {}
+}
 
 function escapeXml(unsafe: string): string {
   return unsafe
@@ -115,10 +125,13 @@ async function handleRespond(req: NextRequest) {
   const deliverable = searchParams.get("deliverable") || "jewellery website development";
   const turn = Number(searchParams.get("turn") || "1");
 
+  const host = req.headers.get("x-forwarded-host") || req.headers.get("host");
+  const proto = req.headers.get("x-forwarded-proto") || "https";
   const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL && !process.env.NEXT_PUBLIC_APP_URL.includes("localhost")
-      ? process.env.NEXT_PUBLIC_APP_URL
-      : "https://rev-claim-ai.vercel.app";
+    process.env.TUNNEL_URL ||
+    (host && !host.includes("localhost")
+      ? `${proto}://${host}`
+      : "https://thumbnail-depend-moments-postage.trycloudflare.com");
 
   let speechResult = "";
 
@@ -142,6 +155,7 @@ async function handleRespond(req: NextRequest) {
   }
 
   console.log(`[Twilio Voice AI] Turn ${turn} Input from ${clientName}: "${speechResult}"`);
+  logCall(`Turn ${turn} SpeechResult from ${clientName}: "${speechResult}"`);
 
   const firstName = clientName.trim().split(" ")[0] || "Nishant";
 
@@ -225,7 +239,7 @@ async function handleRespond(req: NextRequest) {
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Gather input="dtmf speech" action="${escapedNextUrl}" method="POST" speechTimeout="auto" timeout="6" language="hi-IN">
+  <Gather input="dtmf speech" action="${escapedNextUrl}" method="POST" speechTimeout="auto" timeout="7" language="hi-IN" hints="haan, theek hai, link bhej do, pay kar dunga, agle hafte, paise, payment, jewellery, split, discount, kal, baad mein, ho me karto, aapi daish">
     <Play>${escapedAudioUrl}</Play>
   </Gather>
   <Play>${escapeXml(silenceAudio)}</Play>

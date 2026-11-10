@@ -1,4 +1,41 @@
 import { NextRequest, NextResponse } from "next/server";
+import fs from "node:fs";
+import path from "node:path";
+
+function logCall(msg: string) {
+  try {
+    const logLine = `[${new Date().toISOString()}] [Gnani Audio Route] ${msg}\n`;
+    fs.appendFileSync(path.resolve("twilio_calls.log"), logLine, "utf8");
+    console.log(logLine.trim());
+  } catch {}
+}
+
+function addWavHeader(rawPcm: Buffer, sampleRate = 24000, numChannels = 1, bitDepth = 16): Buffer {
+  if (rawPcm.length >= 4 && rawPcm.toString("ascii", 0, 4) === "RIFF") {
+    return rawPcm;
+  }
+  const byteRate = (sampleRate * numChannels * bitDepth) / 8;
+  const blockAlign = (numChannels * bitDepth) / 8;
+  const dataSize = rawPcm.length;
+  const buffer = Buffer.alloc(44 + dataSize);
+
+  buffer.write("RIFF", 0);
+  buffer.writeUInt32LE(36 + dataSize, 4);
+  buffer.write("WAVE", 8);
+  buffer.write("fmt ", 12);
+  buffer.writeUInt32LE(16, 16);
+  buffer.writeUInt16LE(1, 20); // PCM
+  buffer.writeUInt16LE(numChannels, 22);
+  buffer.writeUInt32LE(sampleRate, 24);
+  buffer.writeUInt32LE(byteRate, 28);
+  buffer.writeUInt16LE(blockAlign, 32);
+  buffer.writeUInt16LE(bitDepth, 34);
+  buffer.write("data", 36);
+  buffer.writeUInt32LE(dataSize, 40);
+
+  rawPcm.copy(buffer, 44);
+  return buffer;
+}
 
 // In-memory cache to guarantee sub-10ms response for repeated phrases
 const audioCache = new Map<string, { buffer: Buffer; contentType: string }>();
@@ -6,6 +43,7 @@ const audioCache = new Map<string, { buffer: Buffer; contentType: string }>();
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
+    logCall(`Incoming GET for audio: text="${searchParams.get("text")?.slice(0, 40)}" lang=${searchParams.get("lang")}`);
     const text = searchParams.get("text") || "Namaste, this is Sarah from RevClaim AI.";
     const rawLang = searchParams.get("lang") || "Hindi";
     const voice = searchParams.get("voice") || "Shivani";
@@ -21,10 +59,11 @@ export async function GET(req: NextRequest) {
     const cacheKey = `${voice}_${language}_${text.trim()}`;
     if (audioCache.has(cacheKey)) {
       const cached = audioCache.get(cacheKey)!;
-      return new NextResponse(new Uint8Array(cached.buffer), {
+      const wavBuf = addWavHeader(cached.buffer);
+      return new NextResponse(new Uint8Array(wavBuf), {
         headers: {
           "Content-Type": cached.contentType,
-          "Content-Length": cached.buffer.length.toString(),
+          "Content-Length": wavBuf.length.toString(),
           "Cache-Control": "public, max-age=86400, immutable",
         },
       });
@@ -56,7 +95,8 @@ export async function GET(req: NextRequest) {
     }
 
     const arrayBuf = await res.arrayBuffer();
-    const buffer = Buffer.from(arrayBuf);
+    const rawBuffer = Buffer.from(arrayBuf);
+    const buffer = addWavHeader(rawBuffer, 24000, 1, 16);
     const contentType = "audio/wav";
 
     // Cache the synthesized audio buffer
@@ -71,6 +111,7 @@ export async function GET(req: NextRequest) {
     });
   } catch (error: any) {
     console.error("[Gnani Audio Route Error]:", error);
-    return new NextResponse("Internal Audio Error", { status: 500 });
+    logCall("Gnani Audio Route Error: " + (error?.stack || error?.message || String(error)));
+    return new NextResponse("Internal Audio Error: " + (error?.message || String(error)), { status: 500 });
   }
 }

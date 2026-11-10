@@ -19,39 +19,64 @@ function escapeXml(unsafe: string): string {
 
 function handleVoice(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const clientName = searchParams.get("clientName") || "there";
-  const invoiceNumber = searchParams.get("invoiceNumber") || "INV-1042";
-  const amount = searchParams.get("amount") || "5000";
+  const clientName = searchParams.get("clientName") || "Nishant Maurya";
+  const invoiceNumber = searchParams.get("invoiceNumber") || "INV-2026-JEWEL-1042";
+  const amount = searchParams.get("amount") || "10000";
   const phone = searchParams.get("phone") || "+918840301998";
+  const deliverable = searchParams.get("deliverable") || "jewellery website development";
+  const reqLang = searchParams.get("lang") || "Hindi";
 
   const baseUrl =
     process.env.NEXT_PUBLIC_APP_URL && !process.env.NEXT_PUBLIC_APP_URL.includes("localhost")
       ? process.env.NEXT_PUBLIC_APP_URL
       : "https://rev-claim-ai.vercel.app";
 
-  const rawRespondUrl = `${baseUrl}/api/twilio/voice/respond?clientName=${encodeURIComponent(clientName)}&invoiceNumber=${encodeURIComponent(invoiceNumber)}&amount=${encodeURIComponent(amount)}&phone=${encodeURIComponent(phone)}`;
+  const rawRespondUrl = `${baseUrl}/api/twilio/voice/respond?clientName=${encodeURIComponent(clientName)}&invoiceNumber=${encodeURIComponent(invoiceNumber)}&amount=${encodeURIComponent(amount)}&phone=${encodeURIComponent(phone)}&turn=1`;
   const escapedRespondUrl = escapeXml(rawRespondUrl);
-  const escapedName = escapeXml(clientName);
-  const escapedInvoice = escapeXml(invoiceNumber);
-  const formattedAmount = Number(amount) ? Number(amount).toLocaleString("en-IN") : amount;
-  const escapedAmount = escapeXml(formattedAmount);
 
-  // Ultra-natural, buttery smooth English opening with Amazon Polly Joanna-Neural
+  const firstName = clientName.trim().split(" ")[0] || "Nishant";
+
+  // Natural Indic greeting spoken by Sarah (Gnani.ai Timbre v3.0 Shivani Voice)
+  let greetingText = "";
+  let audioLang = "Hindi";
+
+  if (reqLang.toLowerCase().includes("mar") || reqLang === "mr") {
+    greetingText = `Namaskar ${firstName} ji! Me Sarah bolat ahe RevClaim accounts desk varun. Aaplya jewellery website invoice chya 10,000 rupaye balance baddal bolayche hote. Aawaz yetoy ka maza?`;
+    audioLang = "Marathi";
+  } else if (reqLang.toLowerCase().includes("guj") || reqLang === "gu") {
+    greetingText = `Namaste ${firstName} bhai! Hu Sarah bolu chu RevClaim accounts desk mathi. Tamari jewellery website na 10,000 rupiya baaki che. Shu tame mane sambhli sako cho?`;
+    audioLang = "Gujarati";
+  } else if (reqLang.toLowerCase().includes("eng") || reqLang === "en") {
+    greetingText = `Hello ${firstName}! This is Sarah from RevClaim AI accounts desk regarding your jewellery website invoice for 10,000 rupees balance. Can you hear me clearly?`;
+    audioLang = "English";
+  } else {
+    // Default: Natural conversational Hinglish/Hindi
+    greetingText = `Namaste ${firstName} ji! Main Sarah bol rahi hoon RevClaim AI accounts desk se aapke jewellery website development invoice ke silsile mein. Baki amount 10,000 rupaye pending hai. Kya aap mujhe sun pa rahe hain?`;
+    audioLang = "Hindi";
+  }
+
+  const audioUrl = `${baseUrl}/api/gnani/audio?text=${encodeURIComponent(greetingText)}&lang=${encodeURIComponent(audioLang)}&voice=Shivani`;
+  const escapedAudioUrl = escapeXml(audioUrl);
+
+  const repeatText = `Ji ${firstName}, kya aap sun pa rahe hain? Please bataiye kya abhi settle kar sakte hain?`;
+  const repeatAudioUrl = `${baseUrl}/api/gnani/audio?text=${encodeURIComponent(repeatText)}&lang=Hindi&voice=Shivani`;
+  const escapedRepeatAudioUrl = escapeXml(repeatAudioUrl);
+
+  const fallbackText = `Theek hai Nishant ji, maine direct payment link aapke WhatsApp aur email par share kar diya hai. Dhanyavaad!`;
+  const fallbackAudioUrl = `${baseUrl}/api/gnani/audio?text=${encodeURIComponent(fallbackText)}&lang=Hindi&voice=Shivani`;
+  const escapedFallbackAudioUrl = escapeXml(fallbackAudioUrl);
+
+  // Twilio TwiML streaming real Gnani.ai Shivani audio with interactive speech gather
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Gather input="dtmf speech" action="${escapedRespondUrl}" method="POST" speechTimeout="auto" timeout="6" language="en-IN">
-    <Say voice="Polly.Joanna-Neural" language="en-US">
-      Hi ${escapedName}! This is Sarah from RevClaim AI accounts desk regarding invoice ${escapedInvoice} for ${escapedAmount} rupees. Can you hear me clearly?
-    </Say>
+  <Gather input="dtmf speech" action="${escapedRespondUrl}" method="POST" speechTimeout="auto" timeout="6" language="hi-IN">
+    <Play>${escapedAudioUrl}</Play>
   </Gather>
-  <Gather input="dtmf speech" action="${escapedRespondUrl}" method="POST" speechTimeout="auto" timeout="5" language="en-IN">
-    <Say voice="Polly.Joanna-Neural" language="en-US">
-      Hi ${escapedName}, are you still there? Please let me know if you can hear me.
-    </Say>
+  <Gather input="dtmf speech" action="${escapedRespondUrl}" method="POST" speechTimeout="auto" timeout="5" language="hi-IN">
+    <Play>${escapedRepeatAudioUrl}</Play>
   </Gather>
-  <Say voice="Polly.Joanna-Neural" language="en-US">
-    No worries! I've dispatched your direct Razorpay settlement link straight to your WhatsApp and email. Have a wonderful day!
-  </Say>
+  <Play>${escapedFallbackAudioUrl}</Play>
+  <Hangup/>
 </Response>`.trim();
 
   return new NextResponse(xml, {

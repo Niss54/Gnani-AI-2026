@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { sendRecoveryEmail } from "@/lib/resend";
 
 function escapeXml(unsafe: string): string {
   return unsafe
@@ -17,25 +18,107 @@ export async function GET(req: NextRequest) {
   return handleRespond(req);
 }
 
+async function getAiNegotiationTurn(params: {
+  debtorSpeech: string;
+  clientName: string;
+  invoiceNumber: string;
+  amount: string;
+  deliverable: string;
+  turn: number;
+}): Promise<{ reply: string; isSettled: boolean; detectedLang: string }> {
+  const { debtorSpeech, clientName, invoiceNumber, amount, deliverable, turn } = params;
+  const groqKey = process.env.GROQ_API_KEY?.trim();
+
+  const sysPrompt = `You are Sarah from RevClaim AI accounts desk calling ${clientName} for overdue invoice ${invoiceNumber}.
+Context: ${deliverable}. Total was ₹30,000, ₹20,000 already paid, remaining balance is ₹${amount} overdue by 21 days. Contract is signed.
+This is negotiation Turn ${turn} of 5.
+
+CRITICAL RULES:
+1. Multilingual Adaptability: Detect the debtor's spoken language (Hinglish, Hindi, Marathi, Gujarati, or English). Reply in that EXACT SAME language and conversational mix.
+2. High-EQ Negotiation Strategy:
+   - If debtor gives an excuse, cash crunch, or asks for delay (Turn 1-2):
+     Empathize warmly, but explain that the freelancer has completed the website deliverables. Offer a 50% split (₹5,000 today via WhatsApp link, remaining ₹5,000 in 7 days).
+   - If debtor stalls or argues (Turn 3-4):
+     Politely explain statutory MSMED Act Section 16 compliance (delays attract compound penal interest at 3x RBI rate), so clearing ₹5,000 today protects their business reputation and avoids legal escalation.
+   - If debtor agrees ("theek hai bhej do / main pay kar dunga / link bhej do / ho me karto / hu aapi daish"):
+     Set "isSettled": true. Thank them warmly and confirm the payment link is sent to their WhatsApp.
+3. Keep response concise (under 25-30 words) so it sounds natural on phone.
+Output MUST be strict JSON:
+{"reply": "...", "isSettled": boolean, "detectedLang": "Hindi" | "Marathi" | "Gujarati" | "English" | "Hinglish"}`;
+
+  try {
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${groqKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "qwen/qwen3.8-27b",
+        messages: [
+          { role: "system", content: sysPrompt },
+          { role: "user", content: debtorSpeech },
+        ],
+        response_format: { type: "json_object" },
+        temperature: 0.25,
+      }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      const content = JSON.parse(data.choices[0].message.content);
+      if (content.reply) {
+        return {
+          reply: content.reply,
+          isSettled: Boolean(content.isSettled),
+          detectedLang: content.detectedLang || "Hindi",
+        };
+      }
+    }
+  } catch (err) {
+    console.warn("[Groq Negotiation Turn Error]:", err);
+  }
+
+  // Fallback intelligent heuristics if LLM network hiccups
+  const lower = debtorSpeech.toLowerCase();
+  const isAgreement =
+    lower.includes("theek hai") ||
+    lower.includes("bhej do") ||
+    lower.includes("pay kar") ||
+    lower.includes("karto") ||
+    lower.includes("kar dunga") ||
+    lower.includes("aapi daish") ||
+    lower.includes("okay") ||
+    lower.includes("send link");
+
+  if (isAgreement) {
+    return {
+      reply: `Bahut badhiya Nishant ji! Maine instant settlement link aapke WhatsApp aur email par bhej diya hai. Dhanyavaad!`,
+      isSettled: true,
+      detectedLang: "Hindi",
+    };
+  }
+
+  return {
+    reply: `Samajh sakti hoon Nishant ji. Par freelancer ke deliverables complete hain. Kya aap aaj 5,000 clear kar sakte hain aur baki agle hafte?`,
+    isSettled: false,
+    detectedLang: "Hindi",
+  };
+}
+
 async function handleRespond(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const clientName = searchParams.get("clientName") || "there";
-  const invoiceNumber = searchParams.get("invoiceNumber") || "INV-1042";
-  const amount = searchParams.get("amount") || "5000";
+  const clientName = searchParams.get("clientName") || "Nishant Maurya";
+  const invoiceNumber = searchParams.get("invoiceNumber") || "INV-2026-JEWEL-1042";
+  const amount = searchParams.get("amount") || "10000";
   const phone = searchParams.get("phone") || "+918840301998";
+  const deliverable = searchParams.get("deliverable") || "jewellery website development";
+  const turn = Number(searchParams.get("turn") || "1");
 
   const baseUrl =
     process.env.NEXT_PUBLIC_APP_URL && !process.env.NEXT_PUBLIC_APP_URL.includes("localhost")
       ? process.env.NEXT_PUBLIC_APP_URL
       : "https://rev-claim-ai.vercel.app";
-
-  const rawNextRespondUrl = `${baseUrl}/api/twilio/voice/respond?clientName=${encodeURIComponent(clientName)}&invoiceNumber=${encodeURIComponent(invoiceNumber)}&amount=${encodeURIComponent(amount)}&phone=${encodeURIComponent(phone)}`;
-  const escapedNextRespondUrl = escapeXml(rawNextRespondUrl);
-  const firstName = clientName.trim().split(" ")[0] || "there";
-  const escapedName = escapeXml(firstName);
-  const escapedInvoice = escapeXml(invoiceNumber);
-  const formattedAmount = Number(amount) ? Number(amount).toLocaleString("en-IN") : amount;
-  const escapedAmount = escapeXml(formattedAmount);
 
   let speechResult = "";
 
@@ -58,51 +141,94 @@ async function handleRespond(req: NextRequest) {
     speechResult = searchParams.get("SpeechResult") || searchParams.get("Digits") || "";
   }
 
-  console.log(`[Twilio Conversational AI] Client spoken/dtmf input: "${speechResult}"`);
+  console.log(`[Twilio Voice AI] Turn ${turn} Input from ${clientName}: "${speechResult}"`);
 
-  // If user said nothing or silence timed out
+  const firstName = clientName.trim().split(" ")[0] || "Nishant";
+
+  // Handle Silence / Timeout
   if (!speechResult.trim()) {
+    if (turn >= 4) {
+      const finishText = `Lagta hai connection toot gaya. Maine Razorpay payment link aapke WhatsApp aur email par bhej diya hai. Dhanyavaad!`;
+      const finishAudio = `${baseUrl}/api/gnani/audio?text=${encodeURIComponent(finishText)}&lang=Hindi&voice=Shivani`;
+      const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Play>${escapeXml(finishAudio)}</Play>
+  <Hangup/>
+</Response>`.trim();
+      return new NextResponse(xml, { headers: { "Content-Type": "text/xml; charset=utf-8" } });
+    }
+
+    const promptText = `Nishant ji, main aapki aawaz nahi sun paayi. Kya aap jewellery website invoice ka payment discuss kar sakte hain?`;
+    const promptAudio = `${baseUrl}/api/gnani/audio?text=${encodeURIComponent(promptText)}&lang=Hindi&voice=Shivani`;
+    const nextUrl = `${baseUrl}/api/twilio/voice/respond?clientName=${encodeURIComponent(clientName)}&invoiceNumber=${encodeURIComponent(invoiceNumber)}&amount=${encodeURIComponent(amount)}&phone=${encodeURIComponent(phone)}&turn=${turn + 1}`;
+
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Gather input="dtmf speech" action="${escapedNextRespondUrl}" method="POST" speechTimeout="auto" timeout="5" language="en-IN">
-    <Say voice="Polly.Joanna-Neural" language="en-US">
-      Hi ${escapedName}, I couldn't hear you clearly. Are you ready to settle this invoice today?
-    </Say>
+  <Gather input="dtmf speech" action="${escapeXml(nextUrl)}" method="POST" speechTimeout="auto" timeout="6" language="hi-IN">
+    <Play>${escapeXml(promptAudio)}</Play>
   </Gather>
-  <Say voice="Polly.Joanna-Neural" language="en-US">
-    No problem at all! I have dispatched your direct payment link to your WhatsApp and email. Thank you!
-  </Say>
+</Response>`.trim();
+    return new NextResponse(xml, { headers: { "Content-Type": "text/xml; charset=utf-8" } });
+  }
+
+  // Execute Dynamic LLM Multi-Lingual Negotiation Turn
+  const aiTurn = await getAiNegotiationTurn({
+    debtorSpeech: speechResult,
+    clientName,
+    invoiceNumber,
+    amount,
+    deliverable,
+    turn,
+  });
+
+  console.log(`[Twilio Voice AI] Turn ${turn} AI Response:`, aiTurn);
+
+  // Generate real Gnani.ai Shivani voice URL
+  const audioUrl = `${baseUrl}/api/gnani/audio?text=${encodeURIComponent(aiTurn.reply)}&lang=${encodeURIComponent(aiTurn.detectedLang)}&voice=Shivani`;
+  const escapedAudioUrl = escapeXml(audioUrl);
+
+  // If Debtor Agreed OR max rounds reached: Send WhatsApp/Email payment link and gracefully exit
+  if (aiTurn.isSettled || turn >= 5) {
+    const paymentUrl = `https://rzp.io/i/demo_jewel_${Date.now()}`;
+
+    // Dispatch real email via Resend
+    sendRecoveryEmail({
+      to: "nishantma05@gmail.com",
+      clientName,
+      amount: Number(amount) || 10000,
+      invoiceNumber,
+      paymentLink: paymentUrl,
+      subject: `Invoice #${invoiceNumber} Settlement Commitment (₹${Number(amount).toLocaleString("en-IN")}) — RevClaim AI`,
+    }).catch((e) => console.warn("[Resend Email Notice]:", e?.message));
+
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Play>${escapedAudioUrl}</Play>
+  <Pause length="1"/>
   <Hangup/>
 </Response>`.trim();
 
     return new NextResponse(xml, {
-      headers: { "Content-Type": "text/xml; charset=utf-8" },
+      headers: {
+        "Content-Type": "text/xml; charset=utf-8",
+        "Cache-Control": "no-store, no-cache, must-revalidate",
+      },
     });
   }
 
-  // Determine intent for demo video (split, objection, or agreement)
-  const isHardshipOrSplit = /half|split|part|later|discount|kal|next week|kam|thoda/i.test(speechResult);
+  // If Still Negotiating (Turns 1 to 4): Keep the call alive! Gather next round!
+  const nextRespondUrl = `${baseUrl}/api/twilio/voice/respond?clientName=${encodeURIComponent(clientName)}&invoiceNumber=${encodeURIComponent(invoiceNumber)}&amount=${encodeURIComponent(amount)}&phone=${encodeURIComponent(phone)}&turn=${turn + 1}`;
+  const escapedNextUrl = escapeXml(nextRespondUrl);
 
-  let replyText = "";
-  if (isHardshipOrSplit) {
-    replyText = `I completely understand, ${escapedName}. I've unlocked a flexible 50 percent split settlement option and sent the updated Razorpay link directly to your WhatsApp and email.`;
-  } else {
-    replyText = `That's fantastic, ${escapedName}! I have instantly generated your secure Razorpay checkout link and sent it straight to your WhatsApp and email. You can complete the payment in just one tap.`;
-  }
+  const silencePrompt = `Nishant ji, kya aap mujhe sun pa rahe hain?`;
+  const silenceAudio = `${baseUrl}/api/gnani/audio?text=${encodeURIComponent(silencePrompt)}&lang=Hindi&voice=Shivani`;
 
-  const escapedReply = escapeXml(replyText);
-
-  // Buttery-smooth conclusion for demo video
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say voice="Polly.Joanna-Neural" language="en-US">
-    ${escapedReply}
-  </Say>
-  <Pause length="1"/>
-  <Say voice="Polly.Joanna-Neural" language="en-US">
-    Thank you so much, and have a wonderful day ahead!
-  </Say>
-  <Hangup/>
+  <Gather input="dtmf speech" action="${escapedNextUrl}" method="POST" speechTimeout="auto" timeout="6" language="hi-IN">
+    <Play>${escapedAudioUrl}</Play>
+  </Gather>
+  <Play>${escapeXml(silenceAudio)}</Play>
 </Response>`.trim();
 
   return new NextResponse(xml, {

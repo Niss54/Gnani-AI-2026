@@ -9,27 +9,34 @@ import { sendRecoveryEmail } from "@/lib/resend";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { invoiceId, mode = "live", channel = "auto", phone: customPhone } = body;
+    const { invoiceId, mode = "live", channel = "auto", phone: customPhone, language = "Hindi", deliverable = "Custom E-Commerce Luxury Jewellery Website Development" } = body;
 
     let invoice = invoiceId ? db.getInvoice(invoiceId) : null;
     if (!invoice) {
       // Fallback create temporary test invoice for custom testing
       invoice = {
         id: invoiceId || "inv-custom-live",
-        invoiceNumber: "INV-2026-LIVE",
-        amountDue: body.amount || 5000,
-        amount: body.amount || 5000,
+        invoiceNumber: body.invoiceNumber || "INV-2026-JEWEL-1042",
+        amountDue: body.amount || 10000,
+        amount: body.amount || 10000,
         dueDate: new Date().toISOString(),
         currency: "INR",
-        debtorName: body.clientName || "Valued Debtor",
+        debtorName: body.clientName || "Nishant Maurya",
         debtorPhone: customPhone || "+918840301998",
         status: "OVERDUE",
+        deliverableSummary: deliverable,
+        description: deliverable,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
     } else {
       // Clone so we don't mutate unexpectedly
       invoice = { ...invoice };
+      if (body.deliverable) invoice.deliverableSummary = body.deliverable;
+      if (body.amount) {
+        invoice.amountDue = body.amount;
+        invoice.amount = body.amount;
+      }
     }
 
     if (!invoice) {
@@ -92,6 +99,7 @@ export async function POST(req: NextRequest) {
     const voiceResult = await orchestrateRecoveryCall({
       invoice,
       preferredChannel: channel === "webrtc" ? "webrtc_browser" : "phone",
+      localeHint: language as any,
     });
 
     if (voiceResult.status === "failed" || voiceResult.status === "unconfigured") {

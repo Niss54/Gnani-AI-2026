@@ -8,6 +8,8 @@ export interface TwilioCallParams {
   invoiceNumber: string;
   amount: number;
   clientName: string;
+  deliverable?: string;
+  language?: string;
   callbackUrl?: string;
 }
 
@@ -48,7 +50,9 @@ export async function initiateTwilioOutboundCall(
         ? process.env.NEXT_PUBLIC_APP_URL
         : "https://rev-claim-ai.vercel.app";
 
-    const voiceUrl = `${baseUrl}/api/twilio/voice?clientName=${encodeURIComponent(firstName)}&invoiceNumber=${encodeURIComponent(params.invoiceNumber)}&amount=${encodeURIComponent(params.amount.toString())}&phone=${encodeURIComponent(cleanTo)}`;
+    const deliverable = params.deliverable || "jewellery website development";
+    const lang = params.language || "Hindi";
+    const voiceUrl = `${baseUrl}/api/twilio/voice?clientName=${encodeURIComponent(firstName)}&invoiceNumber=${encodeURIComponent(params.invoiceNumber)}&amount=${encodeURIComponent(params.amount.toString())}&phone=${encodeURIComponent(cleanTo)}&deliverable=${encodeURIComponent(deliverable)}&lang=${encodeURIComponent(lang)}`;
 
     const formData = new URLSearchParams();
     formData.append("To", cleanTo);

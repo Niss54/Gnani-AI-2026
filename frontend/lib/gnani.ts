@@ -103,6 +103,17 @@ export async function synthesizeIndicSpeech(
   // If live key is configured on api.vachana.ai
   if (apiKey && apiKey.startsWith("vach_") && !apiKey.includes("your_")) {
     try {
+      let mappedLang = "Hindi";
+      const l = String(language).toLowerCase();
+      if (l.includes("mar") || l === "mr" || l === "mr-in") mappedLang = "Marathi";
+      else if (l.includes("guj") || l === "gu" || l === "gu-in") mappedLang = "Gujarati";
+      else if (l.includes("eng") || l === "en" || l === "en-in") mappedLang = "English";
+      else if (l.includes("tam") || l === "ta" || l === "ta-in") mappedLang = "Tamil";
+      else if (l.includes("tel") || l === "te" || l === "te-in") mappedLang = "Telugu";
+      else if (l.includes("kan") || l === "kn" || l === "kn-in") mappedLang = "Kannada";
+      else if (l.includes("ben") || l === "bn" || l === "bn-in") mappedLang = "Bengali";
+      else mappedLang = "Hindi";
+
       const res = await fetch(`${GNANI_API_BASE}/api/v1/tts/inference`, {
         method: "POST",
         headers: {
@@ -111,7 +122,7 @@ export async function synthesizeIndicSpeech(
         },
         body: JSON.stringify({
           text: req.text,
-          language: language === "en-IN" || language === "English" ? "English" : "Hindi",
+          language: mappedLang,
           model: model,
           voice: voice,
           speed: req.speed || 1.0,

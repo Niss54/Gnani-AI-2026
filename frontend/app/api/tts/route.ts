@@ -1,5 +1,47 @@
 import { NextRequest, NextResponse } from "next/server";
 
+export async function GET(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const text = searchParams.get("text") || "Namaste, this is Sarah from RevClaim AI.";
+    const language = searchParams.get("language") || searchParams.get("lang") || "Hindi";
+    const languageCode = searchParams.get("languageCode") || "hi";
+    const voiceId = searchParams.get("voiceId") || searchParams.get("voice") || "Shivani";
+
+    const gnaniApiKey = process.env.GNANI_API_KEY?.trim();
+    if (gnaniApiKey && gnaniApiKey.startsWith("vach_")) {
+      const res = await fetch("https://api.vachana.ai/api/v1/tts/inference", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-API-Key-ID": gnaniApiKey,
+        },
+        body: JSON.stringify({
+          text,
+          language,
+          model: "timbre-v3.0",
+          voice: voiceId,
+        }),
+      });
+
+      if (res.ok) {
+        const audioBuffer = await res.arrayBuffer();
+        return new NextResponse(audioBuffer, {
+          status: 200,
+          headers: {
+            "Content-Type": "audio/wav",
+            "Cache-Control": "public, max-age=86400",
+          },
+        });
+      }
+    }
+
+    return new NextResponse("TTS Unavailable", { status: 503 });
+  } catch (e: any) {
+    return new NextResponse(e?.message || "Error", { status: 500 });
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const { text, voiceId, language = "Hindi", languageCode } = await req.json();

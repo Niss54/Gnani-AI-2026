@@ -111,7 +111,10 @@ export function InvoiceTable({
         body: JSON.stringify({
           phone: evalPhone,
           clientName: evalName,
-          amount: 5000,
+          amount: 10000,
+          invoiceNumber: "INV-2026-JEWEL-1042",
+          deliverable: "Custom E-Commerce Luxury Jewellery Website Development",
+          language: language || "hi",
           mode: "live",
           channel: "phone",
         }),

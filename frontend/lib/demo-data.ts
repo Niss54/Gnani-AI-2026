@@ -2,6 +2,38 @@ import { Invoice } from "./types";
 
 export const INITIAL_INVOICES: Invoice[] = [
   {
+    id: "inv-2026-jewel-1042",
+    invoiceNumber: "INV-2026-JEWEL-1042",
+    debtorId: "deb-nishant-jewel",
+    debtor: {
+      id: "deb-nishant-jewel",
+      companyName: "Zoya Luxury Jewels Retail",
+      contactPerson: "Nishant Maurya",
+      phone: "+91 8840301998",
+      email: "nishantma05@gmail.com",
+      riskTier: "MEDIUM",
+      createdAt: "2026-10-01T10:00:00Z"
+    },
+    debtorName: "Nishant Maurya",
+    debtorPhone: "+91 8840301998",
+    debtorEmail: "nishantma05@gmail.com",
+    debtorCompany: "Zoya Luxury Jewels Retail",
+    amountDue: 10000,
+    amount: 10000,
+    currency: "INR",
+    dueDate: "2026-10-20",
+    daysPastDue: 21,
+    daysOverdue: 21,
+    deliverableSummary: "Custom E-Commerce Luxury Jewellery Website Development (Total ₹30,000 | ₹20,000 Paid, ₹10,000 Overdue)",
+    description: "Custom E-Commerce Luxury Jewellery Website Development (Total ₹30,000 | ₹20,000 Paid, ₹10,000 Overdue)",
+    status: "OVERDUE",
+    graphRiskScore: 35,
+    syndicateRiskScore: 35,
+    paymentLinkUrl: "/pay/INV-2026-JEWEL-1042",
+    createdAt: "2026-10-01T10:00:00Z",
+    updatedAt: "2026-11-10T14:00:00Z"
+  },
+  {
     id: "inv-live-nishant",
     invoiceNumber: "INV-2026-NISHANT-LIVE",
     debtorId: "deb-nishant-live",

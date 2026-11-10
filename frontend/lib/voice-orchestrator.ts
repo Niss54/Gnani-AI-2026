@@ -59,8 +59,10 @@ export async function orchestrateRecoveryCall(
       to: targetPhone,
       invoiceId: invoice.id,
       invoiceNumber: invoice.invoiceNumber,
-      amount: invoice.amountDue ?? invoice.amount ?? 5000,
-      clientName: invoice.debtorName || invoice.debtor?.contactPerson || "Client",
+      amount: invoice.amountDue ?? invoice.amount ?? 10000,
+      clientName: invoice.debtorName || invoice.debtor?.contactPerson || "Nishant Maurya",
+      deliverable: invoice.deliverableSummary || invoice.description || "jewellery website development",
+      language: options.localeHint || "Hindi",
     });
 
     if (!twilioCall.success) {

@@ -46,9 +46,10 @@ export async function initiateTwilioOutboundCall(
     const firstName = params.clientName ? params.clientName.trim().split(" ")[0] : "there";
 
     const baseUrl =
-      process.env.TUNNEL_URL && !process.env.TUNNEL_URL.includes("trycloudflare.com")
-        ? process.env.TUNNEL_URL
-        : "https://rev-claim-ai.vercel.app";
+      process.env.TUNNEL_URL ||
+      (process.env.NEXT_PUBLIC_APP_URL && !process.env.NEXT_PUBLIC_APP_URL.includes("localhost")
+        ? process.env.NEXT_PUBLIC_APP_URL
+        : "https://words-sharp-cos-podcasts.trycloudflare.com");
 
     const deliverable = params.deliverable || "jewellery website development";
     const lang = params.language || "Hindi";

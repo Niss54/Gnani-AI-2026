@@ -28,7 +28,7 @@ TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER", "")
 # Live interactive conversational AI telephony webhook
 VOICE_URL = os.getenv(
     "INTERACTIVE_VOICE_URL",
-    "https://rev-claim-ai.vercel.app/api/twilio/voice",
+    "https://words-sharp-cos-podcasts.trycloudflare.com/api/twilio/voice",
 )
 
 

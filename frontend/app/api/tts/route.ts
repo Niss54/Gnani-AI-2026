@@ -19,7 +19,8 @@ export async function POST(req: NextRequest) {
           language.toLowerCase().includes("telugu") ||
           language.toLowerCase().includes("kannada");
 
-        const selectedGnaniVoice = isSouthIndic ? "Kavya" : "Shivani";
+        // Gnani Timbre v3.0 supported voices: Avinash, Shivani, Lakshmi, Kalpana, Shubham, Prakash, Devansh, Yashraj, Chetana, Vasudha, Harshad, Riyaa, Tarika
+        const selectedGnaniVoice = isSouthIndic ? "Lakshmi" : "Shivani";
 
         const gnaniRes = await fetch("https://api.vachana.ai/api/v1/tts/inference", {
           method: "POST",

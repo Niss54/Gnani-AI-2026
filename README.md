@@ -44,7 +44,7 @@ Built for **The Great Indian AI Challenge & Agentic AI Hackathon by Gnani.ai** |
 ---
 
 <p align="center">
-  <img src="./assets/readme/session-dark.png" alt="RevClaim AI Autonomous Indic Voice Stage" width="100%" />
+  <img src="./assets/readme/dashboard.png" alt="RevClaim AI Autonomous Indic Voice Stage" width="100%" />
 </p>
 <p align="center">
   <em>Figure 1: RevClaim AI Autonomous Voice Negotiation Room — Dual-Homed WebRTC &amp; PSTN Cellular telephony with real-time Indic waveform visualization, sub-400ms Gnani Prisma STT, and instant Razorpay settlement card dispatch.</em>
@@ -172,7 +172,7 @@ npm run benchmark:gnani
 
 | 🎙️ 1. Sovereign Voice Negotiation Stage | 📋 2. Invoices & Receivables Cockpit |
 |:---:|:---:|
-| <a href="./assets/readme/session-dark.png"><img src="./assets/readme/session-dark.png" alt="Autonomous Voice Negotiation Stage" width="100%" /></a> | <a href="./assets/readme/invoices-cockpit.png"><img src="./assets/readme/invoices-cockpit.png" alt="Delinquent B2B Invoices Cockpit" width="100%" /></a> |
+| <a href="./assets/readme/dashboard.png"><img src="./assets/readme/dashboard.png" alt="Autonomous Voice Negotiation Stage" width="100%" /></a> | <a href="./assets/readme/invoices-cockpit.png"><img src="./assets/readme/invoices-cockpit.png" alt="Delinquent B2B Invoices Cockpit" width="100%" /></a> |
 | **Autonomous Voice Room (Dark Obsidian)**<br/>Interactive 3D visual avatar with real-time WebRTC audio waveform and instant settlement trigger. | **Invoices Cockpit (Midnight Emerald/Rose)**<br/>Tracks ₹203,500 total at risk, days overdue, Udyam MSME statutory badges, and one-click phone dispatch. |
 
 | ⚙️ 3. Settings & Statutory MSMED Controls | 📊 4. Real-Time Telephony & Call Analytics |

@@ -2,15 +2,25 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {
-    const { text, voiceId, language = "Hindi" } = await req.json();
+    const { text, voiceId, language = "Hindi", languageCode } = await req.json();
     if (!text) {
       return NextResponse.json({ error: "Text is required" }, { status: 400 });
     }
 
-    // 1. Primary Indic Voice: Gnani.ai Vachana API (timbre-v3.0 / Shivani)
+    // 1. Primary Indic Voice: Gnani.ai Vachana API (timbre-v3.0 / Shivani / Kavya)
     const gnaniApiKey = process.env.GNANI_API_KEY?.trim();
     if (gnaniApiKey && gnaniApiKey.startsWith("vach_")) {
       try {
+        const isSouthIndic =
+          languageCode === "ta" ||
+          languageCode === "te" ||
+          languageCode === "kn" ||
+          language.toLowerCase().includes("tamil") ||
+          language.toLowerCase().includes("telugu") ||
+          language.toLowerCase().includes("kannada");
+
+        const selectedGnaniVoice = isSouthIndic ? "Kavya" : "Shivani";
+
         const gnaniRes = await fetch("https://api.vachana.ai/api/v1/tts/inference", {
           method: "POST",
           headers: {
@@ -21,7 +31,7 @@ export async function POST(req: NextRequest) {
             text,
             language: language || "Hindi",
             model: "timbre-v3.0",
-            voice: "Shivani",
+            voice: selectedGnaniVoice,
           }),
         });
 

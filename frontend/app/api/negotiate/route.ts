@@ -18,7 +18,16 @@ function shouldDispatchEmail(text: string): boolean {
     t.includes("send link") ||
     t.includes("share link") ||
     t.includes("लिंक भेज") ||
-    t.includes("link bhej")
+    t.includes("link bhej") ||
+    t.includes("லிங்க்") ||
+    t.includes("அனுப்பு") ||
+    t.includes("link anupunga") ||
+    t.includes("లింక్") ||
+    t.includes("పంపు") ||
+    t.includes("link pampandi") ||
+    t.includes("ಲಿಂಕ್") ||
+    t.includes("ಕಳಿಸಿ") ||
+    t.includes("link kalisi")
   );
 }
 
@@ -37,6 +46,7 @@ export async function POST(req: NextRequest) {
       daysOverdue: Number(body.daysOverdue || 14),
       deliverable: body.deliverable || "Figma UI/UX Design System",
       freelancerName: body.freelancerName || "Nishant Maurya",
+      preferredLanguage: body.preferredLanguage || body.language || "en",
       conversationHistory: Array.isArray(body.conversationHistory) ? body.conversationHistory : [],
       clientLastMessage: body.clientLastMessage || body.message || "Hello",
     };

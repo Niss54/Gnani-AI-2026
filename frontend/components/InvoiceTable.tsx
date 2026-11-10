@@ -33,6 +33,7 @@ import { toast } from "sonner";
 import confetti from "canvas-confetti";
 import { TwilioSetupModal } from "./TwilioSetupModal";
 import { HybridGraphRagModal } from "./HybridGraphRagModal";
+import { useLanguage } from "@/lib/LanguageContext";
 
 interface InvoiceTableProps {
   invoices: Invoice[];
@@ -47,6 +48,7 @@ export function InvoiceTable({
   onDirectCheckout,
   onAddInvoice,
 }: InvoiceTableProps) {
+  const { t, language } = useLanguage();
   const [invoices, setInvoices] = useState<Invoice[]>(initialInvoices);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<"ALL" | "OVERDUE" | "PTP" | "RECOVERED">("ALL");
@@ -322,7 +324,7 @@ export function InvoiceTable({
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200/80 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800/60">
             <span className="size-1.5 rounded-full bg-rose-500 animate-pulse" />
-            Overdue
+            {t("badgeOverdue")}
           </span>
         );
       case "CALLING":
@@ -338,14 +340,14 @@ export function InvoiceTable({
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/80 dark:bg-indigo-950/40 dark:text-indigo-300 dark:border-indigo-800/60">
             <Zap className="size-3 text-indigo-600" />
-            Promise-to-Pay Signed
+            {t("badgePtpAgreed")}
           </span>
         );
       case "RECOVERED":
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800/60">
             <CheckCircle className="size-3 text-emerald-600" />
-            Settled via Razorpay
+            {t("badgeRecovered")}
           </span>
         );
       default:
@@ -365,13 +367,13 @@ export function InvoiceTable({
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-                <span>Pending Receivables Cockpit</span>
+                <span>{t("pendingReceivablesTitle")}</span>
                 <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800">
-                  Live Razorpay + Gnani Indic Telephony
+                  {t("liveRazorpayGnaniTelephony")}
                 </span>
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Select an account to dispatch AI Voice Recovery or execute immediate Razorpay settlement
+                {t("selectAccountSubtitle")}
               </p>
             </div>
 
@@ -385,7 +387,7 @@ export function InvoiceTable({
                 title="Open Sovereign Hybrid Graph RAG Explorer & Corporate Veil Piercing"
               >
                 <Network className="size-3.5 text-indigo-600 dark:text-indigo-400" />
-                <span>Hybrid Graph RAG</span>
+                <span>{t("hybridGraphRag")}</span>
               </button>
 
               {onAddInvoice && (
@@ -394,7 +396,7 @@ export function InvoiceTable({
                   className="clay-btn flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-zinc-700 hover:text-zinc-900 dark:text-zinc-200 dark:hover:text-white"
                 >
                   <Plus className="size-3.5 text-emerald-600 dark:text-emerald-400" />
-                  <span>Add Invoice</span>
+                  <span>{t("addInvoice")}</span>
                 </button>
               )}
             </div>
@@ -407,18 +409,18 @@ export function InvoiceTable({
                 <span className="size-2 rounded-full bg-emerald-500 animate-ping" />
                 <span className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
                   <Sparkles className="size-3.5 text-indigo-600 dark:text-indigo-400" />
-                  Live Outbound Dispatcher (Real Call, Real WhatsApp & Email)
+                  {t("outboundDispatcherTitle")}
                 </span>
               </div>
               <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">
-                Carrier Telephony • Verified Multi-Rail Trunks
+                {t("carrierTelephonyNotice")}
               </span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
               <div>
                 <label htmlFor="eval-phone-input" className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center justify-between mb-1">
-                  <span>Recipient Phone</span>
+                  <span>{t("recipientPhone")}</span>
                   <span className="text-[9px] text-emerald-600 dark:text-emerald-400 font-black">
                     Verified Line: +91 8840301998
                   </span>
@@ -437,7 +439,7 @@ export function InvoiceTable({
 
               <div>
                 <label htmlFor="eval-email-input" className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1">
-                  Recipient Email (Invoice + 24hr Notice)
+                  {t("recipientEmail")}
                 </label>
                 <input
                   id="eval-email-input"
@@ -453,7 +455,7 @@ export function InvoiceTable({
 
               <div>
                 <label htmlFor="eval-name-input" className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1">
-                  Recipient Name / Organization
+                  {t("recipientNameOrg")}
                 </label>
                 <input
                   id="eval-name-input"
@@ -476,7 +478,7 @@ export function InvoiceTable({
                 title="Dial physical phone via Twilio REST API"
               >
                 <PhoneCall className="size-3.5" />
-                <span>{isDialing ? "Dialing PSTN..." : "Dial Real Phone"}</span>
+                <span>{isDialing ? "Dialing PSTN..." : t("dialRealPhone")}</span>
               </button>
 
               <button
@@ -485,7 +487,7 @@ export function InvoiceTable({
                 title="Automated WhatsApp dispatch with live Razorpay checkout link"
               >
                 <MessageCircle className="size-3.5 text-emerald-600 dark:text-emerald-400" />
-                <span>Auto WhatsApp Nudge</span>
+                <span>{t("autoWhatsappNudge")}</span>
               </button>
 
               <button
@@ -495,7 +497,7 @@ export function InvoiceTable({
                 title="Automated email dispatch with 24h deadline"
               >
                 <Mail className="size-3.5 text-indigo-500 dark:text-indigo-400" />
-                <span>{isSendingEmail ? "Dispatching..." : "Auto 24h Legal Notice"}</span>
+                <span>{isSendingEmail ? "Dispatching..." : t("auto24hLegalNotice")}</span>
               </button>
             </div>
           </div>
@@ -542,11 +544,11 @@ export function InvoiceTable({
           <table className="w-full text-left text-sm border-collapse">
             <thead>
               <tr className="border-b border-slate-200/80 bg-slate-50/50 text-[11px] font-bold text-slate-400 uppercase tracking-wider dark:border-white/5 dark:bg-slate-800/20">
-                <th className="px-5 py-3">Invoice Details</th>
-                <th className="px-5 py-3">Debtor Contact</th>
-                <th className="px-5 py-3">Amount</th>
-                <th className="px-5 py-3">Aging / Status</th>
-                <th className="px-5 py-3 text-right">Autonomous Actions</th>
+                <th className="px-5 py-3">{t("colInvoiceId")}</th>
+                <th className="px-5 py-3">{t("colClientOrg")}</th>
+                <th className="px-5 py-3">{t("colAmountDue")}</th>
+                <th className="px-5 py-3">{t("colAging")}</th>
+                <th className="px-5 py-3 text-right">{t("colActions")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-white/5">
@@ -668,7 +670,7 @@ export function InvoiceTable({
                               title="Dispatch autonomous voice recovery agent"
                             >
                               <PhoneCall className="size-3.5 text-sky-500" />
-                              <span>Voice Agent</span>
+                              <span>{t("btnCall")}</span>
                             </button>
 
                             {/* Hybrid Graph RAG Corporate Veil Piercing */}
@@ -691,7 +693,7 @@ export function InvoiceTable({
                               title="Open Razorpay checkout portal"
                             >
                               <ExternalLink className="size-3.5" />
-                              <span>Razorpay Pay</span>
+                              <span>{t("btnPayNow")}</span>
                             </button>
 
                             {/* Direct Bank Wire / Virtual Account (VAN) */}

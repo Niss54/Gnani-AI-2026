@@ -25,6 +25,8 @@ import { toast } from "sonner";
 import { TwilioSetupModal } from "./TwilioSetupModal";
 import { isHindiOrHinglish } from "@/lib/llm";
 import { BHASHINI_LANGUAGES } from "@/lib/bhashini";
+import { useLanguage } from "@/lib/LanguageContext";
+import { getSpeechLocale } from "@/lib/i18n";
 
 interface LiveCallModalProps {
   invoice: Invoice | null;
@@ -172,12 +174,25 @@ export function LiveCallModal({
   const [isTwilioModalOpen, setIsTwilioModalOpen] = useState(false);
 
   // Indic Speech Ingestion: Gnani Prisma Live Mic Objection Listener & Multilingual Switching
+  const {
+    language: globalLang,
+    setLanguage: setGlobalLang,
+    speechLocale: globalSpeechLocale,
+    t,
+  } = useLanguage();
   const [isPrismaListening, setIsPrismaListening] = useState(false);
-  const [micLanguage, setMicLanguage] = useState<string>("en-IN");
-  const [selectedIndicLang, setSelectedIndicLang] = useState<string>("en");
+  const [micLanguage, setMicLanguage] = useState<string>(globalSpeechLocale || "en-IN");
+  const [selectedIndicLang, setSelectedIndicLang] = useState<string>(globalLang || "en");
   const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
   const prismaRecRef = useRef<any>(null);
   const currentAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    if (globalLang) {
+      setSelectedIndicLang(globalLang);
+      setMicLanguage(globalSpeechLocale || getSpeechLocale(globalLang));
+    }
+  }, [globalLang, globalSpeechLocale]);
 
   const speakSarahReply = async (replyText: string, isEnglish: boolean = false) => {
     // 1. Primary Indic Voice: Gnani.ai Timbre v3.0 (Shivani / High-EQ Voice Synthesis)
@@ -460,6 +475,7 @@ export function LiveCallModal({
           daysOverdue,
           deliverable: invoice?.deliverableSummary || "Project Deliverable",
           freelancerName,
+          preferredLanguage: selectedIndicLang,
           clientLastMessage: text,
           conversationHistory: dialogueList.map((d) => ({
             role: d.isAi ? "agent" : "client",
@@ -789,7 +805,8 @@ export function LiveCallModal({
                       type="button"
                       onClick={() => {
                         setSelectedIndicLang(lang.value);
-                        const locale = lang.value === "en" ? "en-IN" : `${lang.value}-IN`;
+                        setGlobalLang(lang.value);
+                        const locale = getSpeechLocale(lang.value);
                         setMicLanguage(locale);
                         setIsLangDropdownOpen(false);
                         toast.info(

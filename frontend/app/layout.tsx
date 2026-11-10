@@ -3,6 +3,7 @@ import { Public_Sans } from 'next/font/google';
 import localFont from 'next/font/local';
 import Script from 'next/script';
 import { ThemeProvider } from '@/components/app/theme-provider';
+import { LanguageProvider } from '@/lib/LanguageContext';
 import { cn } from '@/lib/shadcn/utils';
 import { getAppConfig, getStyles } from '@/lib/utils';
 import '@/styles/globals.css';
@@ -103,7 +104,9 @@ export default async function RootLayout({ children }: RootLayoutProps) {
           enableSystem={true}
           disableTransitionOnChange={false}
         >
-          {children}
+          <LanguageProvider>
+            {children}
+          </LanguageProvider>
         </ThemeProvider>
       </body>
     </html>

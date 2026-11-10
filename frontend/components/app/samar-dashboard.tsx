@@ -5,6 +5,7 @@ import { useTheme } from 'next-themes';
 import Image from 'next/image';
 import { RoomEvent } from 'livekit-client';
 import { BHASHINI_LANGUAGES, MULTILINGUAL_RECOVERY_SUGGESTIONS } from '@/lib/bhashini';
+import { useLanguage } from '@/lib/LanguageContext';
 import {
   Activity,
   AlertCircle,
@@ -327,7 +328,13 @@ export function SamarDashboard() {
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [hasStartedOnce, setHasStartedOnce] = useState(false);
-  const [selectedLang, setSelectedLang] = useState<string>('en');
+  const {
+    language: selectedLang,
+    setLanguage: setSelectedLang,
+    t,
+    speechLocale,
+    currentLanguageInfo,
+  } = useLanguage();
   const [isLangOpen, setIsLangOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(true);
@@ -690,7 +697,8 @@ export function SamarDashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           text,
-          language: selectedLang === 'hi' ? 'Hindi' : 'English',
+          language: currentLanguageInfo?.label?.split(' ')[0] || (selectedLang === 'hi' ? 'Hindi' : 'English'),
+          languageCode: selectedLang,
           voice: 'Shivani',
         }),
       });
@@ -716,7 +724,7 @@ export function SamarDashboard() {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       await new Promise<void>((resolve) => {
         const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = selectedLang === 'hi' ? 'hi-IN' : 'en-US';
+        utterance.lang = speechLocale || (selectedLang === 'hi' ? 'hi-IN' : 'en-US');
         utterance.rate = 1.02;
         utterance.onend = () => resolve();
         utterance.onerror = () => resolve();
@@ -743,11 +751,11 @@ export function SamarDashboard() {
       const rec = new SpeechRecognitionClass();
       rec.continuous = false;
       rec.interimResults = true;
-      rec.lang = selectedLang === 'hi' ? 'hi-IN' : 'en-IN';
+      rec.lang = speechLocale || 'en-IN';
 
       rec.onstart = () => {
         setIsPrismaListening(true);
-        toast.info('🎙️ Gnani Prisma Mic Active: Speak in English or Hindi...');
+        toast.info(`🎙️ Gnani Prisma Mic Active (${speechLocale}): ${t('gnaniVoiceIntakeSubtitle')}`);
       };
       rec.onresult = (event: any) => {
         const transcript = event.results[0][0].transcript;
@@ -792,10 +800,7 @@ export function SamarDashboard() {
     setHasStartedOnce(true);
     setAutonomousPhase('speaking');
 
-    const greetingText =
-      selectedLang === 'hi'
-        ? 'Namaste Nishant ji! Main Sarah bol rahi hoon RevClaim AI accounts desk se. Aapke pending invoices aur Razorpay settlement ke baare me discuss karne ke liye online hoon. Kaise help kar sakti hoon?'
-        : "Hello! This is Sarah from RevClaim AI accounts desk. I'm live on your reconciliation dashboard to assist with invoice payments and flexible Razorpay settlement schedules. How can I help you today?";
+    const greetingText = t('sarahGreeting');
 
     const greetingMsg: ChatMessageItem = {
       id: `msg_sarah_${Date.now()}`,
@@ -971,6 +976,7 @@ export function SamarDashboard() {
           invoiceNumber: 'INV-1042',
           amountDue: 45000,
           currency: 'INR',
+          preferredLanguage: selectedLang,
           conversationHistory: [...localMessages, userMsg].map((m) => ({
             role: m.isUser ? 'user' : 'assistant',
             content: m.message,
@@ -978,10 +984,7 @@ export function SamarDashboard() {
         }),
       });
 
-      let replyText =
-        selectedLang === 'hi'
-          ? 'Maine live Razorpay checkout link aapke verified email (nishantma05@gmail.com) aur WhatsApp par dispatch kar diya hai. Aap niche card se bhi 1-click UPI ya card se settle kar sakte hain.'
-          : 'I have dispatched the secure Razorpay settlement link directly to your email (nishantma05@gmail.com) and WhatsApp. You can also settle instantly using the card below.';
+      let replyText = t('sarahPaymentDispatchedFallback');
 
       if (res.ok) {
         const data = await res.json();
@@ -1165,7 +1168,7 @@ export function SamarDashboard() {
           {/* 1. New Chat Button */}
           <NavItem
             icon={Plus}
-            label="NEW CHAT"
+            label={t('newChat')}
             variant="primary"
             isSidebarOpen={isSidebarOpen}
             onClick={handleNewChat}
@@ -1179,7 +1182,7 @@ export function SamarDashboard() {
             <div className={cn('flex flex-col gap-1', isSidebarOpen && 'w-full')}>
               <NavItem
                 icon={MessageSquare}
-                label="CHATS"
+                label={t('chats')}
                 active={activeNav === 'chats'}
                 isSidebarOpen={isSidebarOpen}
                 onClick={() => {
@@ -1272,7 +1275,7 @@ export function SamarDashboard() {
             {/* 3. Invoices Cockpit */}
             <NavItem
               icon={FileText}
-              label="INVOICES & RECOVERY"
+              label={t('invoicesAndRecovery')}
               active={activeNav === 'invoices'}
               isSidebarOpen={isSidebarOpen}
               onClick={() => setActiveNav('invoices')}
@@ -1282,7 +1285,7 @@ export function SamarDashboard() {
             {/* 4. Dashboard */}
             <NavItem
               icon={Activity}
-              label="DASHBOARD"
+              label={t('dashboard')}
               active={activeNav === 'dashboard'}
               isSidebarOpen={isSidebarOpen}
               onClick={() => setActiveNav('dashboard')}
@@ -1292,7 +1295,7 @@ export function SamarDashboard() {
             {/* 4. Settings */}
             <NavItem
               icon={Settings}
-              label="SETTINGS"
+              label={t('settings')}
               active={activeNav === 'settings'}
               isSidebarOpen={isSidebarOpen}
               onClick={() => setActiveNav('settings')}
@@ -1302,7 +1305,7 @@ export function SamarDashboard() {
             {/* 5. Hybrid Graph RAG Explorer */}
             <NavItem
               icon={Network}
-              label="GRAPH RAG"
+              label={t('graphRag')}
               active={isGraphRagModalOpen}
               isSidebarOpen={isSidebarOpen}
               onClick={() => setIsGraphRagModalOpen(true)}
@@ -1409,16 +1412,16 @@ export function SamarDashboard() {
               <span className="font-mono text-slate-300 dark:text-slate-600">/</span>
 
               {activeNav === 'invoices' && (
-                <span className="font-bold text-slate-900 dark:text-slate-100">Invoices & Recovery</span>
+                <span className="font-bold text-slate-900 dark:text-slate-100">{t('invoicesAndRecovery')}</span>
               )}
 
               {activeNav === 'dashboard' && (
-                <span className="font-bold text-slate-900 dark:text-slate-100">Call Analytics</span>
+                <span className="font-bold text-slate-900 dark:text-slate-100">{t('dashboard')}</span>
               )}
 
               {activeNav === 'new_chat' && (
                 <span className="font-bold text-slate-900 dark:text-slate-100">
-                  New Negotiation
+                  {t('newChat')}
                 </span>
               )}
 
@@ -1431,7 +1434,7 @@ export function SamarDashboard() {
                     }}
                     className="transition-colors hover:text-slate-900 dark:hover:text-white"
                   >
-                    Chats
+                    {t('chats')}
                   </button>
                   {activeSession && (
                     <>
@@ -1445,7 +1448,7 @@ export function SamarDashboard() {
               )}
 
               {activeNav === 'settings' && (
-                <span className="font-bold text-slate-900 dark:text-slate-100">Settings</span>
+                <span className="font-bold text-slate-900 dark:text-slate-100">{t('settings')}</span>
               )}
             </nav>
           </div>
@@ -1459,7 +1462,7 @@ export function SamarDashboard() {
               title="Explore Sovereign Hybrid Graph RAG & Pierced Corporate Veil"
             >
               <Network className="size-3.5 text-indigo-600 dark:text-indigo-400" />
-              <span>Graph RAG</span>
+              <span>{t('graphRag')}</span>
             </button>
 
             {/* Underlined Forget Me Button */}
@@ -1475,7 +1478,7 @@ export function SamarDashboard() {
               ) : (
                 <Trash2 className="size-3.5 stroke-[2.2]" />
               )}
-              <span>Forget Me</span>
+              <span>{t('forgetMe')}</span>
             </button>
 
             {/* Language selector — add entries to LANGUAGES to support more */}
@@ -1688,10 +1691,10 @@ export function SamarDashboard() {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/60 dark:border-slate-800/80 pb-4">
                   <div>
                     <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-                      Delinquent B2B Invoices Cockpit
+                      {t('delinquentCockpitTitle')}
                     </h2>
                     <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-                      Autonomous Indic voice recovery loops with instant settlement links
+                      {t('delinquentCockpitSubtitle')}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
@@ -1703,7 +1706,7 @@ export function SamarDashboard() {
                       className="clay-btn-primary flex items-center gap-2 px-4 py-2 text-xs font-black uppercase shadow-md transition-all hover:scale-105 active:scale-95"
                     >
                       <Phone className="size-3.5 stroke-[2.5]" />
-                      <span>Start Voice Negotiation</span>
+                      <span>{t('startVoiceNegotiation')}</span>
                     </button>
                   </div>
                 </div>
@@ -2161,9 +2164,9 @@ export function SamarDashboard() {
                   <div className="flex flex-wrap items-center gap-1.5">
                     <div className="mr-1 flex items-center gap-1 text-[10px] font-bold text-slate-500">
                       <Sparkles className="size-3 text-sky-500" />
-                      <span>{selectedLang === 'hi' ? 'सुझाव:' : 'SUGGEST:'}</span>
+                      <span>{t('suggestPrefix')}</span>
                     </div>
-                    {QUICK_SUGGESTIONS[selectedLang].map((chip: string, idx: number) => (
+                    {(QUICK_SUGGESTIONS[selectedLang] || QUICK_SUGGESTIONS.en).map((chip: string, idx: number) => (
                       <button
                         key={idx}
                         onClick={() => handleSendMessage(chip)}
@@ -2200,11 +2203,7 @@ export function SamarDashboard() {
                         value={chatInputText}
                         onChange={(e) => setChatInputText(e.target.value)}
                         onKeyDown={handleKeyDown}
-                        placeholder={
-                          selectedLang === 'hi'
-                            ? 'अपना सवाल या पेमेंट ऑफर यहाँ लिखें... (Enter दबाएं)'
-                            : 'Type your payment offer or query... (Press Enter to send)'
-                        }
+                        placeholder={t('chatInputPlaceholder')}
                         className="w-full bg-transparent text-xs font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none dark:text-slate-100 dark:placeholder:text-slate-500"
                       />
                     </div>

@@ -17,12 +17,14 @@ import { toast } from "sonner";
 import confetti from "canvas-confetti";
 import { Invoice } from "@/lib/types";
 import { parseVoiceToInvoice, VoiceParsedInvoice } from "@/lib/voice-intake";
+import { useLanguage } from "@/lib/LanguageContext";
 
 interface GnaniVoiceIntakeProps {
   onInvoiceCreated?: (invoice: Invoice) => void;
 }
 
 export function GnaniVoiceIntake({ onInvoiceCreated }: GnaniVoiceIntakeProps) {
+  const { t, speechLocale, language } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState("");
@@ -65,7 +67,7 @@ export function GnaniVoiceIntake({ onInvoiceCreated }: GnaniVoiceIntakeProps) {
           const rec = new SpeechRecognitionClass();
           rec.continuous = true;
           rec.interimResults = true;
-          rec.lang = "en-IN"; // Handles Indian English and Code-mixed Hinglish
+          rec.lang = speechLocale || "en-IN"; // Adapts dynamically to selected Indic language (hi-IN, ta-IN, te-IN, kn-IN, etc.)
 
           rec.onstart = () => {
             setIsListening(true);
@@ -179,14 +181,14 @@ export function GnaniVoiceIntake({ onInvoiceCreated }: GnaniVoiceIntakeProps) {
           <div className="flex flex-col text-left">
             <div className="flex items-center gap-2">
               <span className="text-xs font-black text-slate-900 dark:text-white tracking-tight">
-                🎙️ Gnani Prisma Voice Intake
+                🎙️ {t("gnaniVoiceIntakeTitle")}
               </span>
               <span className="text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-cyan-50 text-cyan-700 dark:bg-cyan-950/80 dark:text-cyan-300 border border-cyan-200/80 dark:border-cyan-800">
-                Sub-400ms Indic STT
+                {t("sub400msIndicStt")}
               </span>
             </div>
             <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium hidden sm:inline">
-              Speak to add invoice • Regional accents & Hindi/English auto-extracted
+              {t("gnaniVoiceIntakeSubtitle")}
             </span>
           </div>
         </button>

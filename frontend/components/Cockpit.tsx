@@ -4,6 +4,7 @@ import React, { useEffect, useRef } from "react";
 import { CheckCircle2, TrendingUp, PhoneCall, ShieldCheck, ArrowUpRight, Sparkles } from "lucide-react";
 import { CockpitStats, Invoice } from "@/lib/types";
 import { GnaniVoiceIntake } from "./GnaniVoiceIntake";
+import { useLanguage } from "@/lib/LanguageContext";
 import gsap from "gsap";
 
 interface CockpitProps {
@@ -12,6 +13,7 @@ interface CockpitProps {
 }
 
 export function Cockpit({ stats, onInvoiceCreated }: CockpitProps) {
+  const { t } = useLanguage();
   const atRiskRef = useRef<HTMLSpanElement>(null);
   const recoveredRef = useRef<HTMLSpanElement>(null);
   const rateRef = useRef<HTMLSpanElement>(null);
@@ -64,7 +66,7 @@ export function Cockpit({ stats, onInvoiceCreated }: CockpitProps) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             <span className="text-[11px] font-bold tracking-wider uppercase text-slate-500 dark:text-slate-400">
-              Total At Risk
+              {t("totalAtRisk")}
             </span>
           </div>
           <div className="size-9 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center transition-transform group-hover:scale-110 shadow-sm border border-amber-500/20 font-black">
@@ -78,7 +80,7 @@ export function Cockpit({ stats, onInvoiceCreated }: CockpitProps) {
           </div>
           <div className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-lg w-fit border border-amber-200/60 dark:border-amber-900/50">
             <span className="size-1.5 rounded-full bg-amber-500 animate-pulse" />
-            <span>{stats.overdueCount ?? 3} overdue accounts pending</span>
+            <span>{stats.overdueCount ?? 3} {t("overdueAccountsPending")}</span>
           </div>
         </div>
 
@@ -91,7 +93,7 @@ export function Cockpit({ stats, onInvoiceCreated }: CockpitProps) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             <span className="text-[11px] font-bold tracking-wider uppercase text-slate-500 dark:text-slate-400">
-              Cash Recovered
+              {t("cashRecovered")}
             </span>
             <Sparkles className="size-3 text-emerald-500" />
           </div>
@@ -106,7 +108,7 @@ export function Cockpit({ stats, onInvoiceCreated }: CockpitProps) {
           </div>
           <div className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-lg w-fit border border-emerald-200/60 dark:border-emerald-900/50">
             <ArrowUpRight className="size-3.5" />
-            <span>Via Razorpay instant settle</span>
+            <span>{t("viaRazorpayInstantSettle")}</span>
           </div>
         </div>
 
@@ -118,7 +120,7 @@ export function Cockpit({ stats, onInvoiceCreated }: CockpitProps) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             <span className="text-[11px] font-bold tracking-wider uppercase text-slate-500 dark:text-slate-400">
-              Recovery Velocity
+              {t("recoveryVelocity")}
             </span>
           </div>
           <div className="size-9 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center transition-transform group-hover:scale-110 shadow-sm border border-indigo-500/20">
@@ -138,7 +140,7 @@ export function Cockpit({ stats, onInvoiceCreated }: CockpitProps) {
             />
           </div>
           <div className="mt-1 flex items-center justify-between text-[10px] font-semibold text-slate-500 dark:text-slate-400">
-            <span>Vs. Email avg 18%</span>
+            <span>{t("vsEmailAvg")}</span>
             <span className="text-indigo-600 dark:text-indigo-400 font-bold">+60% lift</span>
           </div>
         </div>
@@ -151,7 +153,7 @@ export function Cockpit({ stats, onInvoiceCreated }: CockpitProps) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             <span className="text-[11px] font-bold tracking-wider uppercase text-slate-500 dark:text-slate-400">
-              Active Agents
+              {t("activeVoiceAgents")}
             </span>
           </div>
           <div className="size-9 rounded-xl bg-violet-500/10 text-violet-600 dark:text-violet-400 flex items-center justify-center transition-transform group-hover:scale-110 shadow-sm border border-violet-500/20">
@@ -166,7 +168,7 @@ export function Cockpit({ stats, onInvoiceCreated }: CockpitProps) {
           </div>
           <div className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-violet-700 dark:text-violet-300 bg-violet-50 dark:bg-violet-950/40 px-2 py-0.5 rounded-lg w-fit border border-violet-200/60 dark:border-violet-900/50">
             <ShieldCheck className="size-3.5 text-violet-600 dark:text-violet-400" />
-            <span>PTP State Machine Guarded</span>
+            <span>{t("stateMachineGuarded")}</span>
           </div>
         </div>
 

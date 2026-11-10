@@ -47,12 +47,14 @@ CRITICAL RULES:
 1. Multilingual Adaptability: Detect the debtor's spoken language (Hinglish, Hindi, Marathi, Gujarati, or English). Reply in that EXACT SAME language and conversational mix.
 2. High-EQ Negotiation Strategy:
    - If debtor gives an excuse, cash crunch, or asks for delay (Turn 1-2):
-     Empathize warmly, but explain that the freelancer has completed the website deliverables. Offer a 50% split (₹5,000 today via WhatsApp link, remaining ₹5,000 in 7 days).
+     Empathize warmly, but explain that the freelancer has completed the website deliverables. Offer a 50% split (₹5,000 today via instant link, remaining ₹5,000 in 7 days).
    - If debtor stalls or argues (Turn 3-4):
      Politely explain statutory MSMED Act Section 16 compliance (delays attract compound penal interest at 3x RBI rate), so clearing ₹5,000 today protects their business reputation and avoids legal escalation.
-   - If debtor agrees ("theek hai bhej do / main pay kar dunga / link bhej do / ho me karto / hu aapi daish"):
-     Set "isSettled": true. Thank them warmly and confirm the payment link is sent to their WhatsApp.
-3. Keep response concise (under 25-30 words) so it sounds natural on phone.
+   - If debtor agrees ("theek hai / pay kar dunga / link bhej do / ho me karto / hu aapi daish / chalega"):
+     Do NOT hang up yet! Explicitly ask them: "Theek hai Nishant ji, main payment link aapke WhatsApp par bhejun ya Email par?" and set "isSettled": false.
+   - If debtor specifies the channel ("WhatsApp / Email / dono pe / message kar do"):
+     Set "isSettled": true. Thank them warmly and confirm: "Theek hai Nishant ji, payment link maine share kar diya hai. Aapka din shubh ho!"
+3. Keep response concise (under 20-25 words) so it sounds natural and responsive on phone.
 Output MUST be strict JSON:
 {"reply": "...", "isSettled": boolean, "detectedLang": "Hindi" | "Marathi" | "Gujarati" | "English" | "Hinglish"}`;
 
@@ -91,6 +93,15 @@ Output MUST be strict JSON:
 
   // Fallback intelligent heuristics if LLM network hiccups
   const lower = debtorSpeech.toLowerCase();
+  const mentionsChannel = lower.includes("whatsapp") || lower.includes("email") || lower.includes("mail") || lower.includes("dono");
+  if (mentionsChannel) {
+    return {
+      reply: `Bahut badhiya Nishant ji! Maine payment link turant share kar diya hai. Dhanyavaad, aur aapka din shubh ho!`,
+      isSettled: true,
+      detectedLang: "Hindi",
+    };
+  }
+
   const isAgreement =
     lower.includes("theek hai") ||
     lower.includes("bhej do") ||
@@ -99,12 +110,13 @@ Output MUST be strict JSON:
     lower.includes("kar dunga") ||
     lower.includes("aapi daish") ||
     lower.includes("okay") ||
-    lower.includes("send link");
+    lower.includes("send link") ||
+    lower.includes("haan");
 
   if (isAgreement) {
     return {
-      reply: `Bahut badhiya Nishant ji! Maine instant settlement link aapke WhatsApp aur email par bhej diya hai. Dhanyavaad!`,
-      isSettled: true,
+      reply: `Theek hai Nishant ji! Main settlement link aapke WhatsApp par bhejun ya Email par?`,
+      isSettled: false,
       detectedLang: "Hindi",
     };
   }
@@ -162,25 +174,24 @@ async function handleRespond(req: NextRequest) {
   // Handle Silence / Timeout
   if (!speechResult.trim()) {
     if (turn >= 4) {
-      const finishText = `Lagta hai connection toot gaya. Maine Razorpay payment link aapke WhatsApp aur email par bhej diya hai. Dhanyavaad!`;
-      const finishAudio = `${baseUrl}/api/gnani/audio?text=${encodeURIComponent(finishText)}&lang=Hindi&voice=Shivani`;
+      const finishText = `Lagta hai connection toot gaya. Maine payment link aapke WhatsApp aur email par bhej diya hai. Dhanyavaad!`;
       const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Play>${escapeXml(finishAudio)}</Play>
+  <Say voice="Polly.Aditi" language="hi-IN">${escapeXml(finishText)}</Say>
   <Hangup/>
 </Response>`.trim();
       return new NextResponse(xml, { headers: { "Content-Type": "text/xml; charset=utf-8" } });
     }
 
     const promptText = `Nishant ji, main aapki aawaz nahi sun paayi. Kya aap jewellery website invoice ka payment discuss kar sakte hain?`;
-    const promptAudio = `${baseUrl}/api/gnani/audio?text=${encodeURIComponent(promptText)}&lang=Hindi&voice=Shivani`;
     const nextUrl = `${baseUrl}/api/twilio/voice/respond?clientName=${encodeURIComponent(clientName)}&invoiceNumber=${encodeURIComponent(invoiceNumber)}&amount=${encodeURIComponent(amount)}&phone=${encodeURIComponent(phone)}&turn=${turn + 1}`;
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Gather input="dtmf speech" action="${escapeXml(nextUrl)}" method="POST" speechTimeout="auto" timeout="6" language="hi-IN">
-    <Play>${escapeXml(promptAudio)}</Play>
+  <Gather input="dtmf speech" action="${escapeXml(nextUrl)}" method="POST" speechTimeout="auto" timeout="8" language="hi-IN" hints="haan, theek hai, link bhej do, pay kar dunga, agle hafte, paise, payment, jewellery, split, discount, kal, baad mein, ho me karto, aapi daish, email, whatsapp">
+    <Say voice="Polly.Aditi" language="hi-IN">${escapeXml(promptText)}</Say>
   </Gather>
+  <Say voice="Polly.Aditi" language="hi-IN">Nishant ji, kya aap line par hain?</Say>
 </Response>`.trim();
     return new NextResponse(xml, { headers: { "Content-Type": "text/xml; charset=utf-8" } });
   }
@@ -217,7 +228,7 @@ async function handleRespond(req: NextRequest) {
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Play>${escapedAudioUrl}</Play>
+  <Say voice="Polly.Aditi" language="hi-IN">${escapeXml(aiTurn.reply)}</Say>
   <Pause length="1"/>
   <Hangup/>
 </Response>`.trim();
@@ -234,15 +245,12 @@ async function handleRespond(req: NextRequest) {
   const nextRespondUrl = `${baseUrl}/api/twilio/voice/respond?clientName=${encodeURIComponent(clientName)}&invoiceNumber=${encodeURIComponent(invoiceNumber)}&amount=${encodeURIComponent(amount)}&phone=${encodeURIComponent(phone)}&turn=${turn + 1}`;
   const escapedNextUrl = escapeXml(nextRespondUrl);
 
-  const silencePrompt = `Nishant ji, kya aap mujhe sun pa rahe hain?`;
-  const silenceAudio = `${baseUrl}/api/gnani/audio?text=${encodeURIComponent(silencePrompt)}&lang=Hindi&voice=Shivani`;
-
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Gather input="dtmf speech" action="${escapedNextUrl}" method="POST" speechTimeout="auto" timeout="7" language="hi-IN" hints="haan, theek hai, link bhej do, pay kar dunga, agle hafte, paise, payment, jewellery, split, discount, kal, baad mein, ho me karto, aapi daish">
-    <Play>${escapedAudioUrl}</Play>
+  <Gather input="dtmf speech" action="${escapedNextUrl}" method="POST" speechTimeout="auto" timeout="8" language="hi-IN" hints="haan, theek hai, link bhej do, pay kar dunga, agle hafte, paise, payment, jewellery, split, discount, kal, baad mein, ho me karto, aapi daish, email, whatsapp">
+    <Say voice="Polly.Aditi" language="hi-IN">${escapeXml(aiTurn.reply)}</Say>
   </Gather>
-  <Play>${escapeXml(silenceAudio)}</Play>
+  <Say voice="Polly.Aditi" language="hi-IN">Nishant ji, kya aap sun pa rahe hain?</Say>
 </Response>`.trim();
 
   return new NextResponse(xml, {

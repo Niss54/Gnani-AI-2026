@@ -80,16 +80,16 @@ function handleVoice(req: NextRequest) {
   const fallbackAudioUrl = `${baseUrl}/api/gnani/audio?text=${encodeURIComponent(fallbackText)}&lang=Hindi&voice=Shivani`;
   const escapedFallbackAudioUrl = escapeXml(fallbackAudioUrl);
 
-  // Twilio TwiML streaming real Gnani.ai Shivani audio with interactive speech gather
+  // Twilio TwiML using native Indian Voice (Polly.Aditi) for zero-latency telephony
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Gather input="dtmf speech" action="${escapedRespondUrl}" method="POST" speechTimeout="auto" timeout="7" language="hi-IN" hints="haan, theek hai, link bhej do, pay kar dunga, agle hafte, paise, payment, jewellery, split, discount, kal, baad mein, ho me karto, aapi daish">
-    <Play>${escapedAudioUrl}</Play>
+  <Gather input="dtmf speech" action="${escapedRespondUrl}" method="POST" speechTimeout="auto" timeout="8" language="hi-IN" hints="haan, theek hai, link bhej do, pay kar dunga, agle hafte, paise, payment, jewellery, split, discount, kal, baad mein, ho me karto, aapi daish, email, whatsapp">
+    <Say voice="Polly.Aditi" language="hi-IN">${escapeXml(greetingText)}</Say>
   </Gather>
-  <Gather input="dtmf speech" action="${escapedRespondUrl}" method="POST" speechTimeout="auto" timeout="5" language="hi-IN" hints="haan, theek hai, link bhej do, pay kar dunga">
-    <Play>${escapedRepeatAudioUrl}</Play>
+  <Gather input="dtmf speech" action="${escapedRespondUrl}" method="POST" speechTimeout="auto" timeout="6" language="hi-IN" hints="haan, theek hai, link bhej do, pay kar dunga, email, whatsapp">
+    <Say voice="Polly.Aditi" language="hi-IN">${escapeXml(repeatText)}</Say>
   </Gather>
-  <Play>${escapedFallbackAudioUrl}</Play>
+  <Say voice="Polly.Aditi" language="hi-IN">${escapeXml(fallbackText)}</Say>
   <Hangup/>
 </Response>`.trim();
 

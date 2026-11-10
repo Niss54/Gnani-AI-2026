@@ -245,10 +245,11 @@ async function handleRespond(req: NextRequest) {
   const host = req.headers.get("x-forwarded-host") || req.headers.get("host");
   const proto = req.headers.get("x-forwarded-proto") || "https";
   const baseUrl =
-    process.env.TUNNEL_URL ||
-    (host && !host.includes("localhost")
-      ? `${proto}://${host}`
-      : "https://thumbnail-depend-moments-postage.trycloudflare.com");
+    process.env.TUNNEL_URL && !process.env.TUNNEL_URL.includes("trycloudflare.com")
+      ? process.env.TUNNEL_URL
+      : (host && !host.includes("localhost")
+        ? `${proto}://${host}`
+        : "https://rev-claim-ai.vercel.app");
 
   let speechResult = "";
 

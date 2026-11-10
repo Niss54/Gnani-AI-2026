@@ -47,3 +47,4 @@ next-env.d.ts
 *.log
 *.exe
 twilio_calls.log
+desktop.ini

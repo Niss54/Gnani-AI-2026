@@ -364,6 +364,6 @@ Open [http://localhost:3000](http://localhost:3000) to access the **RevClaim AI 
 
 Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for complete terms.
 
-### 👥 Engineering & Hackathon Team (Pookie Baddies):
+### 👥 Engineering :
 * **Nishant Maurya** — *Lead Architect & Full-Stack AI Engineer* ([GitHub](https://github.com/Niss54) · [X / Twitter (@NMaurya26722)](https://x.com/NMaurya26722))
 * **Built for:** The Great Indian AI Challenge & Agentic AI Hackathon by Gnani.ai, India 🇮🇳

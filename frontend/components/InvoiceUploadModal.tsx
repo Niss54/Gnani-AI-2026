@@ -275,15 +275,15 @@ export function InvoiceUploadModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
       <div className="clay-card w-full max-w-lg overflow-hidden shadow-2xl border border-slate-200/80 dark:border-white/10">
         {/* Header */}
-        <div className="p-5 border-b border-slate-200/80 dark:border-white/10 flex items-center justify-between bg-slate-50/80 dark:bg-[#18181c]">
+        <div className="p-5 border-b border-slate-200/80 dark:border-white/10 flex items-center justify-between bg-slate-50/80 dark:bg-[#0d1424]">
           <div className="flex items-center gap-2.5">
-            <div className="size-9 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-200 dark:bg-indigo-950/60 dark:text-indigo-400 dark:border-indigo-800">
+            <div className="size-9 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center border border-sky-200 dark:bg-sky-950/60 dark:text-sky-400 dark:border-sky-800">
               <FileText className="size-4.5" />
             </div>
             <div>
               <h3 className="font-black text-slate-900 dark:text-white text-sm flex items-center gap-2">
                 <span>Add Overdue Receivable</span>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-950/70 dark:text-indigo-300">
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-100 text-sky-700 dark:bg-sky-950/70 dark:text-sky-300">
                   Multimodal OCR + Vision
                 </span>
               </h3>
@@ -318,18 +318,18 @@ export function InvoiceUploadModal({
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={isOcrScanning}
-              className="flex flex-col items-center justify-center p-3.5 rounded-2xl border border-dashed border-indigo-300 dark:border-indigo-700/60 bg-indigo-50/50 dark:bg-indigo-950/20 hover:bg-indigo-50 transition group text-center"
+              className="flex flex-col items-center justify-center p-3.5 rounded-2xl border border-dashed border-sky-300 dark:border-sky-700/60 bg-sky-50/50 dark:bg-sky-950/20 hover:bg-sky-50 transition group text-center"
             >
               {isOcrScanning ? (
                 <>
-                  <Loader2 className="size-5 text-indigo-600 animate-spin mb-1" />
-                  <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300">
+                  <Loader2 className="size-5 text-sky-600 animate-spin mb-1" />
+                  <span className="text-xs font-bold text-sky-700 dark:text-sky-300">
                     Scanning OCR...
                   </span>
                 </>
               ) : (
                 <>
-                  <UploadCloud className="size-5 text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition mb-1" />
+                  <UploadCloud className="size-5 text-sky-600 dark:text-sky-400 group-hover:scale-110 transition mb-1" />
                   <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">
                     Upload PDF / Photo
                   </span>
@@ -347,7 +347,7 @@ export function InvoiceUploadModal({
               className={`flex flex-col items-center justify-center p-3.5 rounded-2xl border transition group text-center ${
                 isVoiceDictating
                   ? "border-rose-400 bg-rose-50/90 text-rose-600 animate-pulse dark:bg-rose-950/40 dark:border-rose-700"
-                  : "border-indigo-200 dark:border-indigo-800/60 bg-white dark:bg-slate-800/80 hover:bg-indigo-50/40 dark:hover:bg-slate-800"
+                  : "border-sky-200 dark:border-sky-800/60 bg-white dark:bg-slate-800/80 hover:bg-sky-50/40 dark:hover:bg-slate-800"
               }`}
             >
               {isVoiceDictating ? (
@@ -362,7 +362,7 @@ export function InvoiceUploadModal({
                 </>
               ) : (
                 <>
-                  <Mic className="size-5 text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition mb-1" />
+                  <Mic className="size-5 text-sky-600 dark:text-sky-400 group-hover:scale-110 transition mb-1" />
                   <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">
                     Dictate via Voice
                   </span>
@@ -383,7 +383,7 @@ export function InvoiceUploadModal({
                   {uploadedFileName ? `Extracted: ${uploadedFileName}` : "Voice Structured"}
                 </span>
               </div>
-              <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-md">
+              <span className="font-mono font-bold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/60 px-2 py-0.5 rounded-md">
                 {ocrConfidence}% Clarity
               </span>
             </div>
@@ -452,8 +452,8 @@ export function InvoiceUploadModal({
                 }}
                 className={`w-full px-3.5 py-2 text-xs font-medium rounded-xl text-slate-900 focus:outline-none transition dark:text-white ${
                   lowConfidenceFields.includes("phone")
-                    ? "bg-amber-50 border-2 border-amber-400 dark:bg-amber-950/40"
-                    : "bg-slate-50 border border-slate-200 focus:border-indigo-500 focus:bg-white dark:bg-slate-800 dark:border-white/10"
+                    ? "bg-rose-50 border-2 border-rose-400 dark:bg-rose-950/40"
+                    : "bg-slate-50 border border-slate-200 focus:border-sky-500 focus:bg-white dark:bg-slate-800 dark:border-white/10"
                 }`}
               />
             </div>
@@ -470,7 +470,7 @@ export function InvoiceUploadModal({
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3.5 py-2 text-xs font-medium rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-indigo-500 focus:bg-white transition dark:bg-slate-800 dark:border-white/10 dark:text-white"
+              className="w-full px-3.5 py-2 text-xs font-medium rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-sky-500 focus:bg-white transition dark:bg-slate-800 dark:border-white/10 dark:text-white"
             />
           </div>
 
@@ -485,18 +485,18 @@ export function InvoiceUploadModal({
               required
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-3.5 py-2 text-xs font-medium rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-indigo-500 focus:bg-white transition dark:bg-slate-800 dark:border-white/10 dark:text-white"
+              className="w-full px-3.5 py-2 text-xs font-medium rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-sky-500 focus:bg-white transition dark:bg-slate-800 dark:border-white/10 dark:text-white"
             />
           </div>
 
           {/* Autonomous Recovery Automation Settings (Sovereign Omnichannel Rail) */}
-          <div className="p-3.5 rounded-2xl bg-gradient-to-br from-indigo-50/90 to-purple-50/70 border border-indigo-200/80 dark:from-indigo-950/40 dark:to-purple-950/30 dark:border-indigo-900/40 space-y-2.5">
+          <div className="p-3.5 rounded-2xl bg-slate-50/90 dark:bg-[#0b1220] border border-slate-200/80 dark:border-white/10 space-y-2.5">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-black text-indigo-950 dark:text-indigo-200 flex items-center gap-1.5">
-                <Zap className="size-3.5 text-indigo-600 dark:text-indigo-400" />
+              <span className="text-xs font-black text-slate-900 dark:text-white flex items-center gap-1.5">
+                <Zap className="size-3.5 text-sky-500 dark:text-sky-400" />
                 Sovereign Omnichannel Recovery Dispatch
               </span>
-              <span className="text-[10px] font-mono font-bold text-indigo-600 dark:text-indigo-300 bg-white/80 dark:bg-black/30 px-2 py-0.5 rounded-full border border-indigo-100 dark:border-indigo-800">
+              <span className="text-[10px] font-mono font-bold text-sky-600 dark:text-sky-300 bg-white/80 dark:bg-sky-950/40 px-2 py-0.5 rounded-full border border-sky-200 dark:border-sky-800">
                 Zero Manual Drafting
               </span>
             </div>
@@ -506,14 +506,14 @@ export function InvoiceUploadModal({
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              <label htmlFor="upload-auto-whatsapp" className="flex items-center gap-2 p-2 rounded-xl bg-white/80 dark:bg-slate-900/80 border border-indigo-100 dark:border-white/5 cursor-pointer hover:border-indigo-300 transition">
+              <label htmlFor="upload-auto-whatsapp" className="flex items-center gap-2 p-2 rounded-xl bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-white/5 cursor-pointer hover:border-sky-400 transition">
                 <input
                   id="upload-auto-whatsapp"
                   name="autoWhatsApp"
                   type="checkbox"
                   checked={autoWhatsApp}
                   onChange={(e) => setAutoWhatsApp(e.target.checked)}
-                  className="rounded text-indigo-600 focus:ring-indigo-500 size-3.5"
+                  className="rounded text-emerald-600 focus:ring-emerald-500 size-3.5"
                 />
                 <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1">
                   <MessageCircle className="size-3 text-emerald-600" />

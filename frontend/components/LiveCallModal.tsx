@@ -608,17 +608,17 @@ export function LiveCallModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
       <div className="clay-card w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl border border-white/20 dark:border-white/10">
         {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-slate-200/80 dark:border-white/10 flex items-center justify-between bg-slate-50/90 dark:bg-[#18181c]">
+        <div className="p-4 sm:p-5 border-b border-slate-200/80 dark:border-white/10 flex items-center justify-between bg-slate-50/90 dark:bg-[#0d1424]">
           <div className="flex items-center gap-3">
             <div className="relative">
-              <div className="size-11 rounded-2xl overflow-hidden shadow-sm ring-2 ring-indigo-500/20 bg-white dark:bg-zinc-800 p-0.5">
+              <div className="size-11 rounded-2xl overflow-hidden shadow-sm ring-2 ring-sky-500/25 bg-white dark:bg-zinc-800 p-0.5">
                 <img
                   src="/logo2.png"
                   alt="RevClaim AI Agent"
                   className="size-full object-cover rounded-[14px]"
                 />
               </div>
-              <span className="absolute -bottom-0.5 -right-0.5 size-3.5 rounded-full bg-emerald-500 border-2 border-white dark:border-[#18181c] flex items-center justify-center">
+              <span className="absolute -bottom-0.5 -right-0.5 size-3.5 rounded-full bg-emerald-500 border-2 border-white dark:border-[#0d1424] flex items-center justify-center">
                 <span className="size-1.5 rounded-full bg-white animate-pulse" />
               </span>
             </div>
@@ -627,7 +627,7 @@ export function LiveCallModal({
                 <h3 className="font-black text-slate-900 dark:text-white text-sm sm:text-base">
                   Sarah Calling {debtorName}
                 </h3>
-                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300">
                   RevClaim AI
                 </span>
               </div>
@@ -643,13 +643,13 @@ export function LiveCallModal({
                   type="text"
                   value={targetPhone}
                   onChange={(e) => setTargetPhone(e.target.value)}
-                  className="px-2 py-0.5 text-xs font-mono font-bold rounded-lg border border-slate-300 dark:border-white/10 bg-white dark:bg-[#121215] text-slate-900 dark:text-white w-32 shadow-xs"
+                  className="px-2 py-0.5 text-xs font-mono font-bold rounded-lg border border-slate-300 dark:border-white/10 bg-white dark:bg-[#111c30] text-slate-900 dark:text-white w-32 shadow-xs"
                   placeholder="+91 8840301998"
                 />
                 <button
                   onClick={handleDialPstn}
                   disabled={isPstnDialing}
-                  className="px-2.5 py-0.5 text-[11px] font-bold rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-1 shadow-xs active:scale-95 disabled:opacity-50"
+                  className="px-2.5 py-0.5 text-[11px] font-bold rounded-lg bg-sky-600 hover:bg-sky-500 text-white flex items-center gap-1 shadow-xs active:scale-95 disabled:opacity-50"
                   title="Dial phone number via Twilio"
                 >
                   <PhoneCall className="size-3" />
@@ -736,7 +736,7 @@ export function LiveCallModal({
                 className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-xs sm:text-sm font-medium leading-relaxed shadow-sm ${
                   msg.isAi
                     ? "bg-slate-100 text-slate-900 border border-slate-200/80 dark:bg-slate-800 dark:text-white dark:border-white/10"
-                    : "bg-indigo-600 text-white shadow-indigo-500/20"
+                    : "bg-gradient-to-r from-sky-600 to-cyan-500 text-white shadow-sky-500/20"
                 }`}
               >
                 {msg.text}
@@ -745,7 +745,7 @@ export function LiveCallModal({
           ))}
 
           {isAsking && (
-            <div className="flex items-center gap-2 text-xs text-indigo-600 dark:text-indigo-400 font-bold animate-pulse px-2 py-1">
+            <div className="flex items-center gap-2 text-xs text-sky-500 dark:text-sky-400 font-bold animate-pulse px-2 py-1">
               <Loader2 className="size-3.5 animate-spin" />
               <span>Sarah is responding...</span>
             </div>
@@ -838,7 +838,7 @@ export function LiveCallModal({
                 if (e.key === "Enter") handleAskObjection(customInput);
               }}
               placeholder={`Speak in ${micLanguage === "en-IN" ? "English" : "Hindi"} via Gnani Mic or type... (Press Enter)`}
-              className="flex-1 text-xs px-3.5 py-2 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151518] text-slate-800 dark:text-zinc-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="flex-1 text-xs px-3.5 py-2 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#111c30] text-slate-800 dark:text-zinc-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500"
             />
             <button
               onClick={() => handleAskObjection(customInput)}
@@ -852,7 +852,7 @@ export function LiveCallModal({
         </div>
 
         {/* Footer Actions */}
-        <div className="p-3 sm:p-4 border-t border-slate-200/80 dark:border-white/10 flex items-center justify-between gap-3 bg-white dark:bg-[#18181c]">
+        <div className="p-3 sm:p-4 border-t border-slate-200/80 dark:border-white/10 flex items-center justify-between gap-3 bg-white dark:bg-[#0d1424]">
           <div className="flex items-center gap-1.5 text-xs font-bold text-slate-600 dark:text-slate-300">
             <ShieldCheck className="size-4 text-emerald-600" />
             <span className="text-[11px] sm:text-xs">
@@ -864,13 +864,13 @@ export function LiveCallModal({
             <button
               onClick={() => handleSendEmailLink(false)}
               disabled={isSendingEmail}
-              className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition shadow-xs disabled:opacity-60"
+              className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-xl border border-sky-200 dark:border-white/10 bg-sky-50 dark:bg-[#111c30] text-sky-700 dark:text-sky-300 hover:bg-sky-100 dark:hover:bg-[#16243d] transition shadow-xs disabled:opacity-60"
               title="Send payment link email directly to your inbox"
             >
               {isSendingEmail ? (
-                <Loader2 className="size-3.5 animate-spin text-indigo-600 dark:text-indigo-400" />
+                <Loader2 className="size-3.5 animate-spin text-sky-600 dark:text-sky-400" />
               ) : (
-                <Mail className="size-3.5 text-indigo-600 dark:text-indigo-400" />
+                <Mail className="size-3.5 text-sky-600 dark:text-sky-400" />
               )}
               <span>{isSendingEmail ? "Sending..." : "Email Link"}</span>
             </button>

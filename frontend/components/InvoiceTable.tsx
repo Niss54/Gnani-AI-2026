@@ -333,16 +333,16 @@ export function InvoiceTable({
       case "CALLING":
       case "IN_NEGOTIATION":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200/80 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800/60">
-            <Clock className="size-3 animate-spin text-amber-600" />
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-sky-50 text-sky-700 border border-sky-200/80 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-800/60">
+            <Clock className="size-3 animate-spin text-sky-600 dark:text-sky-400" />
             In Negotiation
           </span>
         );
       case "PTP_AGREED":
       case "PTP_COMMITTED":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/80 dark:bg-indigo-950/40 dark:text-indigo-300 dark:border-indigo-800/60">
-            <Zap className="size-3 text-indigo-600" />
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-cyan-50 text-cyan-700 border border-cyan-200/80 dark:bg-cyan-950/40 dark:text-cyan-300 dark:border-cyan-800/60">
+            <Zap className="size-3 text-cyan-600 dark:text-cyan-400" />
             {t("badgePtpAgreed")}
           </span>
         );
@@ -386,10 +386,10 @@ export function InvoiceTable({
                   setSelectedGraphCompany("TechFlow Solutions Pvt Ltd");
                   setIsGraphModalOpen(true);
                 }}
-                className="clay-btn flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-indigo-700 hover:text-indigo-900 dark:text-indigo-300 dark:hover:text-white bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200/90 dark:border-indigo-800/80"
+                className="clay-btn flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-sky-700 hover:text-sky-900 dark:text-sky-300 dark:hover:text-white bg-sky-50/70 dark:bg-[#111c30] border border-sky-200/90 dark:border-white/10"
                 title="Open Sovereign Hybrid Graph RAG Explorer & Corporate Veil Piercing"
               >
-                <Network className="size-3.5 text-indigo-600 dark:text-indigo-400" />
+                <Network className="size-3.5 text-sky-600 dark:text-sky-400" />
                 <span>{t("hybridGraphRag")}</span>
               </button>
 
@@ -406,12 +406,12 @@ export function InvoiceTable({
           </div>
 
           {/* ── Live Evaluation & Real Dispatch Bar (For Judges & Evaluation Tests) ── */}
-          <div className="p-3.5 rounded-2xl bg-gradient-to-r from-indigo-50/80 via-purple-50/60 to-emerald-50/80 dark:from-indigo-950/40 dark:via-purple-950/30 dark:to-emerald-950/40 border border-indigo-200/80 dark:border-indigo-800/60 shadow-sm flex flex-col gap-3">
+          <div className="p-3.5 rounded-2xl bg-slate-50/90 dark:bg-[#0b1220] border border-slate-200/80 dark:border-white/10 shadow-sm flex flex-col gap-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <span className="size-2 rounded-full bg-emerald-500 animate-ping" />
                 <span className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
-                  <Sparkles className="size-3.5 text-indigo-600 dark:text-indigo-400" />
+                  <Sparkles className="size-3.5 text-sky-500 dark:text-sky-400" />
                   {t("outboundDispatcherTitle")}
                 </span>
               </div>
@@ -436,7 +436,7 @@ export function InvoiceTable({
                   value={evalPhone}
                   onChange={(e) => setEvalPhone(e.target.value)}
                   placeholder="+91 8840301998"
-                  className="w-full px-3 py-1.5 text-xs font-mono font-bold rounded-xl bg-white border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-slate-900 dark:border-white/10 dark:text-white"
+                  className="w-full px-3 py-1.5 text-xs font-mono font-bold rounded-xl bg-white border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500 dark:bg-slate-900 dark:border-white/10 dark:text-white"
                 />
               </div>
 
@@ -452,7 +452,7 @@ export function InvoiceTable({
                   value={evalEmail}
                   onChange={(e) => setEvalEmail(e.target.value)}
                   placeholder="nishantma05@gmail.com"
-                  className="w-full px-3 py-1.5 text-xs font-mono font-bold rounded-xl bg-white border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-slate-900 dark:border-white/10 dark:text-white"
+                  className="w-full px-3 py-1.5 text-xs font-mono font-bold rounded-xl bg-white border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500 dark:bg-slate-900 dark:border-white/10 dark:text-white"
                 />
               </div>
 
@@ -468,12 +468,12 @@ export function InvoiceTable({
                   value={evalName}
                   onChange={(e) => setEvalName(e.target.value)}
                   placeholder="Nishant Maurya"
-                  className="w-full px-3 py-1.5 text-xs font-bold rounded-xl bg-white border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-slate-900 dark:border-white/10 dark:text-white"
+                  className="w-full px-3 py-1.5 text-xs font-bold rounded-xl bg-white border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500 dark:bg-slate-900 dark:border-white/10 dark:text-white"
                 />
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center justify-end gap-2 pt-1 border-t border-indigo-100/60 dark:border-white/5">
+            <div className="flex flex-wrap items-center justify-end gap-2 pt-1 border-t border-slate-200/60 dark:border-white/5">
               <button
                 onClick={handleCustomDial}
                 disabled={isDialing}
@@ -486,7 +486,7 @@ export function InvoiceTable({
 
               <button
                 onClick={handleCustomWhatsApp}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-zinc-700 dark:text-zinc-200 bg-white dark:bg-[#202026] hover:bg-zinc-100 dark:hover:bg-[#292932] border border-zinc-200 dark:border-white/10 shadow-xs transition-all active:scale-95"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-zinc-700 dark:text-zinc-200 bg-white dark:bg-[#111c30] hover:bg-zinc-100 dark:hover:bg-[#16243d] border border-zinc-200 dark:border-white/10 shadow-xs transition-all active:scale-95"
                 title="Automated WhatsApp dispatch with live Razorpay checkout link"
               >
                 <MessageCircle className="size-3.5 text-emerald-600 dark:text-emerald-400" />
@@ -496,10 +496,10 @@ export function InvoiceTable({
               <button
                 onClick={handleCustomEmail}
                 disabled={isSendingEmail}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-zinc-700 dark:text-zinc-200 bg-white dark:bg-[#202026] hover:bg-zinc-100 dark:hover:bg-[#292932] border border-zinc-200 dark:border-white/10 shadow-xs transition-all active:scale-95 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-zinc-700 dark:text-zinc-200 bg-white dark:bg-[#111c30] hover:bg-zinc-100 dark:hover:bg-[#16243d] border border-zinc-200 dark:border-white/10 shadow-xs transition-all active:scale-95 disabled:opacity-50"
                 title="Automated email dispatch with 24h deadline"
               >
-                <Mail className="size-3.5 text-indigo-500 dark:text-indigo-400" />
+                <Mail className="size-3.5 text-sky-500 dark:text-sky-400" />
                 <span>{isSendingEmail ? "Dispatching..." : t("auto24hLegalNotice")}</span>
               </button>
             </div>
@@ -507,7 +507,7 @@ export function InvoiceTable({
 
           {/* ── Search & Filter Tabs ── */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-1 bg-zinc-100/90 dark:bg-[#18181c] p-1 rounded-xl self-start border border-zinc-200/60 dark:border-white/5">
+            <div className="flex items-center gap-1 bg-zinc-100/90 dark:bg-[#0b1220] p-1 rounded-xl self-start border border-zinc-200/60 dark:border-white/5">
               {(["ALL", "OVERDUE", "PTP", "RECOVERED"] as const).map((tab) => (
                 <button
                   key={tab}
@@ -659,17 +659,17 @@ export function InvoiceTable({
                             {/* Email Nudge */}
                             <button
                               onClick={() => handleEmailNudge(inv)}
-                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-zinc-700 dark:text-zinc-200 bg-white dark:bg-[#202026] hover:bg-zinc-100 dark:hover:bg-[#292932] border border-zinc-200 dark:border-white/10 shadow-xs transition-all active:scale-95"
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-zinc-700 dark:text-zinc-200 bg-white dark:bg-[#111c30] hover:bg-zinc-100 dark:hover:bg-[#16243d] border border-zinc-200 dark:border-white/10 shadow-xs transition-all active:scale-95"
                               title="Send official invoice email notice"
                             >
-                              <Mail className="size-3.5 text-indigo-500 dark:text-indigo-400" />
+                              <Mail className="size-3.5 text-sky-500 dark:text-sky-400" />
                               <span className="hidden md:inline">Email</span>
                             </button>
 
                             {/* Simulate / Dispatch Voice Agent */}
                             <button
                               onClick={() => onStartRecovery(inv, "simulation")}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-zinc-700 dark:text-zinc-200 bg-white dark:bg-[#202026] hover:bg-zinc-100 dark:hover:bg-[#292932] border border-zinc-200 dark:border-white/10 shadow-xs transition-all active:scale-95"
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-zinc-700 dark:text-zinc-200 bg-white dark:bg-[#111c30] hover:bg-zinc-100 dark:hover:bg-[#16243d] border border-zinc-200 dark:border-white/10 shadow-xs transition-all active:scale-95"
                               title="Dispatch autonomous voice recovery agent"
                             >
                               <PhoneCall className="size-3.5 text-sky-500" />
@@ -682,10 +682,10 @@ export function InvoiceTable({
                                 setSelectedGraphCompany(inv.debtorCompany || inv.debtor?.companyName || "TechFlow Solutions Pvt Ltd");
                                 setIsGraphModalOpen(true);
                               }}
-                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 border border-indigo-200 dark:border-indigo-800 shadow-xs transition-all active:scale-95"
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-[#111c30] hover:bg-sky-100 dark:hover:bg-[#16243d] border border-sky-200 dark:border-white/10 shadow-xs transition-all active:scale-95"
                               title="Inspect debtor corporate network, shared DINs & pierced veil via Hybrid Graph RAG"
                             >
-                              <Network className="size-3.5 text-indigo-600 dark:text-indigo-400" />
+                              <Network className="size-3.5 text-sky-600 dark:text-sky-400" />
                               <span className="hidden xl:inline">Graph RAG</span>
                             </button>
 
@@ -702,20 +702,20 @@ export function InvoiceTable({
                             {/* Direct Bank Wire / Virtual Account (VAN) */}
                             <button
                               onClick={() => setSelectedVanInvoice(inv)}
-                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-zinc-700 dark:text-zinc-200 bg-white dark:bg-[#202026] hover:bg-zinc-100 dark:hover:bg-[#292932] border border-zinc-200 dark:border-white/10 shadow-xs transition-all active:scale-95"
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-zinc-700 dark:text-zinc-200 bg-white dark:bg-[#111c30] hover:bg-zinc-100 dark:hover:bg-[#16243d] border border-zinc-200 dark:border-white/10 shadow-xs transition-all active:scale-95"
                               title="Direct Bank Wire / NEFT Virtual Account Number (Zero-Phishing Rail)"
                             >
-                              <Building2 className="size-3.5 text-blue-500" />
+                              <Building2 className="size-3.5 text-sky-400" />
                               <span className="hidden xl:inline">Bank Wire</span>
                             </button>
 
                             {/* Instant Settle Test action */}
                             <button
                               onClick={() => handleInstantSettle(inv)}
-                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-zinc-700 dark:text-zinc-200 bg-white dark:bg-[#202026] hover:bg-zinc-100 dark:hover:bg-[#292932] border border-zinc-200 dark:border-white/10 shadow-xs transition-all active:scale-95"
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-zinc-700 dark:text-zinc-200 bg-white dark:bg-[#111c30] hover:bg-zinc-100 dark:hover:bg-[#16243d] border border-zinc-200 dark:border-white/10 shadow-xs transition-all active:scale-95"
                               title="Instant settle test simulation with confetti"
                             >
-                              <Sparkles className="size-3.5 text-amber-500" />
+                              <Sparkles className="size-3.5 text-emerald-500" />
                               <span className="hidden lg:inline">Settle</span>
                             </button>
                           </>
@@ -1002,7 +1002,7 @@ export function InvoiceTable({
                   </div>
                   <div className="rounded-lg bg-white p-2 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
                     <span className="text-slate-400 block text-[10px]">RevClaim Fee (Flat $5)</span>
-                    <span className="font-bold text-amber-600">₹{fee.toLocaleString()}</span>
+                    <span className="font-bold text-sky-600 dark:text-sky-400">₹{fee.toLocaleString()}</span>
                   </div>
                   <div className="rounded-lg bg-white p-2 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
                     <span className="text-slate-400 block text-[10px]">Nishant Gets (3s IMPS)</span>

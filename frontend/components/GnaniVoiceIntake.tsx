@@ -194,8 +194,8 @@ export function GnaniVoiceIntake({ onInvoiceCreated }: GnaniVoiceIntakeProps) {
         </button>
 
         <div className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/80 dark:bg-slate-800/80 border border-slate-200/70 dark:border-slate-700/70 text-[11px] font-bold shadow-2xs">
-            <Sparkles className="size-3 text-indigo-500" />
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/80 dark:bg-[#111c30] border border-slate-200/70 dark:border-white/10 text-[11px] font-bold shadow-2xs">
+            <Sparkles className="size-3 text-sky-400" />
             Sovereign Pipeline: Inbound (Gnani Prisma STT) • Outbound (Gnani Timbre TTS)
           </span>
         </div>
@@ -204,7 +204,7 @@ export function GnaniVoiceIntake({ onInvoiceCreated }: GnaniVoiceIntakeProps) {
       {/* ── Interactive Voice Intake Modal ── */}
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="clay-card relative w-full max-w-xl overflow-hidden border border-emerald-200/80 bg-white p-6 shadow-2xl dark:bg-[#18181c] dark:border-white/10">
+          <div className="clay-card relative w-full max-w-xl overflow-hidden border border-emerald-200/80 bg-white p-6 shadow-2xl dark:bg-[#0d1424] dark:border-white/10">
             {/* Close Button */}
             <button
               onClick={() => {
@@ -329,8 +329,8 @@ export function GnaniVoiceIntake({ onInvoiceCreated }: GnaniVoiceIntakeProps) {
                     Structured Extraction ({Math.round(parsedData.confidence * 100)}% Confidence)
                   </span>
                   {parsedData.autoEditDetected && (
-                    <span className="px-2 py-0.5 rounded-md text-[10px] font-black bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-300 flex items-center gap-1">
-                      <Zap className="size-3 text-amber-600" />
+                    <span className="px-2 py-0.5 rounded-md text-[10px] font-black bg-cyan-100 text-cyan-800 dark:bg-cyan-950/80 dark:text-cyan-300 border border-cyan-300 dark:border-cyan-800/60 flex items-center gap-1">
+                      <Zap className="size-3 text-cyan-600 dark:text-cyan-400" />
                       Auto-Edit: {parsedData.supersededAmount ? `₹${parsedData.supersededAmount.toLocaleString()} ➔ ` : ""}₹{parsedData.amount.toLocaleString()}
                     </span>
                   )}

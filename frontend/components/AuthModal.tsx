@@ -72,7 +72,7 @@ export function AuthModal({ isOpen, onClose, onDemoLogin }: AuthModalProps) {
 
         {/* Modal Header */}
         <div className="text-center mb-5">
-          <div className="w-14 h-14 rounded-2xl overflow-hidden mx-auto mb-3 shadow-md ring-2 ring-indigo-500/20 bg-white dark:bg-zinc-800 p-0.5">
+          <div className="w-14 h-14 rounded-2xl overflow-hidden mx-auto mb-3 shadow-md ring-2 ring-sky-500/30 bg-white dark:bg-[#111c30] p-0.5">
             <img
               src="/logo2.png"
               alt="RevClaim AI"
@@ -127,10 +127,10 @@ export function AuthModal({ isOpen, onClose, onDemoLogin }: AuthModalProps) {
           {/* Divider */}
           <div className="relative my-4">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-200 dark:border-zinc-800" />
+              <div className="w-full border-t border-slate-200 dark:border-slate-800" />
             </div>
             <div className="relative flex justify-center text-[10px] uppercase font-bold">
-              <span className="bg-white dark:bg-[#18181c] px-2.5 text-slate-400">
+              <span className="bg-white dark:bg-[#0d1424] px-2.5 text-slate-400">
                 or sign in with oauth
               </span>
             </div>
@@ -140,10 +140,10 @@ export function AuthModal({ isOpen, onClose, onDemoLogin }: AuthModalProps) {
           <button
             onClick={() => handleOAuthSignIn("google")}
             disabled={loadingProvider !== null}
-            className="w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-800 font-bold text-xs border border-slate-200 dark:bg-[#202026] dark:hover:bg-[#292932] dark:text-white dark:border-white/10 transition active:scale-95 disabled:opacity-60 shadow-xs"
+            className="w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-800 font-bold text-xs border border-slate-200 dark:bg-[#111c30] dark:hover:bg-[#16243d] dark:text-white dark:border-white/10 transition active:scale-95 disabled:opacity-60 shadow-xs"
           >
             {loadingProvider === "google" ? (
-              <Loader2 className="w-4 h-4 animate-spin text-indigo-500" />
+              <Loader2 className="w-4 h-4 animate-spin text-sky-500" />
             ) : (
               <svg className="w-4 h-4" viewBox="0 0 24 24">
                 <path

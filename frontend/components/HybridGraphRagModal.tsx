@@ -172,12 +172,12 @@ export function HybridGraphRagModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 md:p-6 bg-slate-900/50 dark:bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-6xl max-h-[92vh] flex flex-col bg-white dark:bg-[#18181c] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-zinc-100 rounded-3xl shadow-2xl overflow-hidden font-sans transition-colors duration-200">
+      <div className="relative w-full max-w-6xl max-h-[92vh] flex flex-col bg-white dark:bg-[#0d1424] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-zinc-100 rounded-3xl shadow-2xl overflow-hidden font-sans transition-colors duration-200">
         
         {/* Top Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-white/10 bg-slate-50/80 dark:bg-[#141417]">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-white/10 bg-slate-50/80 dark:bg-[#090e1a]">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 to-cyan-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-sky-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-sky-500/20">
               <Network className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -185,7 +185,7 @@ export function HybridGraphRagModal({
                 <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
                   Sovereign Hybrid Graph RAG Explorer
                 </h2>
-                <span className="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/30">
+                <span className="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-sky-50 dark:bg-sky-500/10 text-sky-700 dark:text-sky-400 border border-sky-200 dark:border-sky-500/30">
                   BM25 + Semantic + Multi-Hop Graph
                 </span>
               </div>
@@ -215,7 +215,7 @@ export function HybridGraphRagModal({
         </div>
 
         {/* Search Bar & Preset Chips */}
-        <div className="px-6 py-3 bg-slate-50/40 dark:bg-[#121215] border-b border-slate-200 dark:border-white/10 flex flex-col gap-2.5">
+        <div className="px-6 py-3 bg-slate-50/40 dark:bg-[#070b14] border-b border-slate-200 dark:border-white/10 flex flex-col gap-2.5">
           <div className="flex items-center gap-2">
             <div className="relative flex-1">
               <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -225,13 +225,13 @@ export function HybridGraphRagModal({
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSearch(searchQuery)}
                 placeholder="Search Debtor Company, Director DIN, GSTIN, or Statutory Clause..."
-                className="w-full pl-10 pr-4 py-2 text-sm bg-white dark:bg-[#18181c] border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 shadow-xs"
+                className="w-full pl-10 pr-4 py-2 text-sm bg-white dark:bg-[#111c30] border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50 shadow-xs"
               />
             </div>
             <button
               onClick={() => handleSearch(searchQuery)}
               disabled={isLoading}
-              className="px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-all shadow-md shadow-indigo-600/20 flex items-center gap-2"
+              className="px-4 py-2 text-sm font-bold text-white bg-gradient-to-r from-sky-600 to-cyan-500 hover:from-sky-500 hover:to-cyan-400 rounded-xl transition-all shadow-md shadow-sky-500/25 flex items-center gap-2"
             >
               {isLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
               <span>Execute Hybrid RAG</span>
@@ -258,12 +258,12 @@ export function HybridGraphRagModal({
         </div>
 
         {/* Tabs Bar */}
-        <div className="px-6 border-b border-slate-200 dark:border-white/10 bg-slate-50/70 dark:bg-[#141417] flex gap-4 text-xs font-semibold text-slate-500 dark:text-zinc-400">
+        <div className="px-6 border-b border-slate-200 dark:border-white/10 bg-slate-50/70 dark:bg-[#090e1a] flex gap-4 text-xs font-semibold text-slate-500 dark:text-zinc-400">
           <button
             onClick={() => setActiveTab("GRAPH")}
             className={`py-3 flex items-center gap-2 border-b-2 transition-colors ${
               activeTab === "GRAPH"
-                ? "border-indigo-600 text-indigo-700 dark:border-indigo-500 dark:text-indigo-400"
+                ? "border-sky-500 text-sky-700 dark:border-sky-400 dark:text-sky-400 font-bold"
                 : "border-transparent hover:text-slate-900 dark:hover:text-zinc-200"
             }`}
           >
@@ -274,7 +274,7 @@ export function HybridGraphRagModal({
             onClick={() => setActiveTab("HYBRID_RAG")}
             className={`py-3 flex items-center gap-2 border-b-2 transition-colors ${
               activeTab === "HYBRID_RAG"
-                ? "border-indigo-600 text-indigo-700 dark:border-indigo-500 dark:text-indigo-400"
+                ? "border-sky-500 text-sky-700 dark:border-sky-400 dark:text-sky-400 font-bold"
                 : "border-transparent hover:text-slate-900 dark:hover:text-zinc-200"
             }`}
           >
@@ -285,7 +285,7 @@ export function HybridGraphRagModal({
             onClick={() => setActiveTab("VEIL")}
             className={`py-3 flex items-center gap-2 border-b-2 transition-colors ${
               activeTab === "VEIL"
-                ? "border-indigo-600 text-indigo-700 dark:border-indigo-500 dark:text-indigo-400"
+                ? "border-sky-500 text-sky-700 dark:border-sky-400 dark:text-sky-400 font-bold"
                 : "border-transparent hover:text-slate-900 dark:hover:text-zinc-200"
             }`}
           >
@@ -296,7 +296,7 @@ export function HybridGraphRagModal({
             onClick={() => setActiveTab("SCRIPT")}
             className={`py-3 flex items-center gap-2 border-b-2 transition-colors ${
               activeTab === "SCRIPT"
-                ? "border-indigo-600 text-indigo-700 dark:border-indigo-500 dark:text-indigo-400"
+                ? "border-sky-500 text-sky-700 dark:border-sky-400 dark:text-sky-400 font-bold"
                 : "border-transparent hover:text-slate-900 dark:hover:text-zinc-200"
             }`}
           >
@@ -445,9 +445,9 @@ export function HybridGraphRagModal({
             </div>
 
             {/* Side Node Detail Inspector */}
-            <div className="p-5 bg-white dark:bg-[#18181c] border-l border-slate-200 dark:border-white/10 flex flex-col justify-between overflow-y-auto">
+            <div className="p-5 bg-white dark:bg-[#0d1424] border-l border-slate-200 dark:border-white/10 flex flex-col justify-between overflow-y-auto">
               <div>
-                <div className="flex items-center gap-2 text-xs font-semibold text-indigo-600 dark:text-indigo-400 mb-2">
+                <div className="flex items-center gap-2 text-xs font-bold text-sky-600 dark:text-sky-400 mb-2">
                   <Eye className="w-3.5 h-3.5" />
                   <span>Entity Inspector</span>
                 </div>

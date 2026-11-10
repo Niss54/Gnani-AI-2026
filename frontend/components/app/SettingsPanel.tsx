@@ -76,7 +76,7 @@ export function SettingsPanel() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-4 dark:border-slate-800/80">
         <div>
           <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2.5">
-            <span className="flex size-9 items-center justify-center rounded-xl bg-gradient-to-tr from-sky-400 to-indigo-500 text-white shadow-md">
+            <span className="flex size-9 items-center justify-center rounded-xl bg-gradient-to-tr from-sky-500 to-cyan-500 text-white shadow-md">
               <Zap className="size-5" />
             </span>
             Recovery Desk & Business Controls
@@ -215,12 +215,12 @@ export function SettingsPanel() {
           <div className="space-y-4">
             <div className="flex items-center justify-between border-b border-slate-200/60 pb-3 dark:border-slate-800/60">
               <div className="flex items-center gap-2.5">
-                <Sliders className="size-4 text-indigo-500" />
+                <Sliders className="size-4 text-sky-500" />
                 <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 uppercase tracking-wider">
                   Negotiation & Settlement Rules
                 </h3>
               </div>
-              <span className="clay-pill bg-indigo-50 text-indigo-700 dark:bg-indigo-950/80 dark:text-indigo-300 text-[10px] font-bold">
+              <span className="clay-pill bg-sky-50 text-sky-700 dark:bg-sky-950/80 dark:text-sky-300 text-[10px] font-bold">
                 AI Authority Limits
               </span>
             </div>
@@ -235,7 +235,7 @@ export function SettingsPanel() {
                   name="maxDiscount"
                   value={formData.maxDiscount}
                   onChange={(e) => setFormData({ ...formData, maxDiscount: e.target.value })}
-                  className="w-full rounded-xl border border-slate-200 bg-white/90 px-3 py-2 font-semibold text-slate-800 shadow-inner outline-none focus:ring-2 focus:ring-emerald-500 dark:border-white/10 dark:bg-[#121215] dark:text-white"
+                  className="w-full rounded-xl border border-slate-200 bg-white/90 px-3 py-2 font-semibold text-slate-800 shadow-inner outline-none focus:ring-2 focus:ring-sky-500 dark:border-white/10 dark:bg-[#111c30] dark:text-white"
                 >
                   <option value="10">Up to 10% for Instant Full Clearance (Recommended)</option>
                   <option value="5">Up to 5% Early Settlement Incentive</option>
@@ -253,7 +253,7 @@ export function SettingsPanel() {
                   name="gracePeriodDays"
                   value={formData.gracePeriodDays}
                   onChange={(e) => setFormData({ ...formData, gracePeriodDays: e.target.value })}
-                  className="w-full rounded-xl border border-slate-200 bg-white/90 px-3 py-2 font-semibold text-slate-800 shadow-inner outline-none focus:ring-2 focus:ring-emerald-500 dark:border-white/10 dark:bg-[#121215] dark:text-white"
+                  className="w-full rounded-xl border border-slate-200 bg-white/90 px-3 py-2 font-semibold text-slate-800 shadow-inner outline-none focus:ring-2 focus:ring-sky-500 dark:border-white/10 dark:bg-[#111c30] dark:text-white"
                 >
                   <option value="3">3 Days Post Due Date (Recommended Balance)</option>
                   <option value="0">Immediate (Day 1 Overdue)</option>
@@ -262,12 +262,12 @@ export function SettingsPanel() {
               </div>
 
               {/* Installment Split Toggle */}
-              <label className="flex items-start gap-3 rounded-xl border border-slate-200/80 bg-white/70 p-3 dark:border-white/10 dark:bg-[#151518] cursor-pointer hover:border-indigo-300 transition">
+              <label className="flex items-start gap-3 rounded-xl border border-slate-200/80 bg-white/70 p-3 dark:border-white/10 dark:bg-[#0b1220] cursor-pointer hover:border-sky-400 transition">
                 <input
                   type="checkbox"
                   checked={formData.allowSplitInstallments}
                   onChange={(e) => setFormData({ ...formData, allowSplitInstallments: e.target.checked })}
-                  className="mt-0.5 size-4 rounded text-indigo-600 focus:ring-indigo-500"
+                  className="mt-0.5 size-4 rounded text-sky-600 focus:ring-sky-500"
                 />
                 <div>
                   <span className="font-bold text-slate-900 dark:text-white block">
@@ -280,12 +280,12 @@ export function SettingsPanel() {
               </label>
 
               {/* Dispute Circuit Breaker Toggle */}
-              <label className="flex items-start gap-3 rounded-xl border border-slate-200/80 bg-white/70 p-3 dark:border-white/10 dark:bg-[#151518] cursor-pointer hover:border-indigo-300 transition">
+              <label className="flex items-start gap-3 rounded-xl border border-slate-200/80 bg-white/70 p-3 dark:border-white/10 dark:bg-[#0b1220] cursor-pointer hover:border-sky-400 transition">
                 <input
                   type="checkbox"
                   checked={formData.disputeCircuitBreaker}
                   onChange={(e) => setFormData({ ...formData, disputeCircuitBreaker: e.target.checked })}
-                  className="mt-0.5 size-4 rounded text-indigo-600 focus:ring-indigo-500"
+                  className="mt-0.5 size-4 rounded text-sky-600 focus:ring-sky-500"
                 />
                 <div>
                   <span className="font-bold text-slate-900 dark:text-white block">
@@ -305,12 +305,12 @@ export function SettingsPanel() {
           <div className="space-y-4">
             <div className="flex items-center justify-between border-b border-slate-200/60 pb-3 dark:border-slate-800/60">
               <div className="flex items-center gap-2.5">
-                <PhoneCall className="size-4 text-purple-500" />
+                <PhoneCall className="size-4 text-cyan-500" />
                 <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 uppercase tracking-wider">
                   Voice Telephony & Strategy
                 </h3>
               </div>
-              <span className="clay-pill bg-purple-50 text-purple-700 dark:bg-purple-950/80 dark:text-purple-300 text-[10px] font-bold">
+              <span className="clay-pill bg-cyan-50 text-cyan-700 dark:bg-cyan-950/80 dark:text-cyan-300 text-[10px] font-bold">
                 TRAI / FCC Compliant
               </span>
             </div>
@@ -368,12 +368,12 @@ export function SettingsPanel() {
               </div>
 
               {/* Analog Room Tone Simulation Toggle */}
-              <label className="flex items-start gap-3 rounded-xl border border-slate-200/80 bg-white/70 p-3 dark:border-white/10 dark:bg-[#151518] cursor-pointer hover:border-purple-300 transition">
+              <label className="flex items-start gap-3 rounded-xl border border-slate-200/80 bg-white/70 p-3 dark:border-white/10 dark:bg-[#0b1220] cursor-pointer hover:border-cyan-400 transition">
                 <input
                   type="checkbox"
                   checked={formData.analogAirTone}
                   onChange={(e) => setFormData({ ...formData, analogAirTone: e.target.checked })}
-                  className="mt-0.5 size-4 rounded text-purple-600 focus:ring-purple-500"
+                  className="mt-0.5 size-4 rounded text-cyan-600 focus:ring-cyan-500"
                 />
                 <div>
                   <span className="font-bold text-slate-900 dark:text-white block">
@@ -405,7 +405,7 @@ export function SettingsPanel() {
 
             <div className="space-y-2.5 text-xs">
               {/* Rail 1: Razorpay Payment Gateway */}
-              <div className="rounded-xl border border-emerald-300/80 bg-white/90 p-3 dark:border-emerald-900/50 dark:bg-[#151518] flex items-center justify-between gap-3 shadow-2xs">
+              <div className="rounded-xl border border-emerald-300/80 bg-white/90 p-3 dark:border-emerald-900/50 dark:bg-[#0b1220] flex items-center justify-between gap-3 shadow-2xs">
                 <div className="flex items-center gap-3">
                   <div className="flex size-8 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 shrink-0">
                     <CreditCard className="size-4" />
@@ -434,15 +434,15 @@ export function SettingsPanel() {
               </div>
 
               {/* Rail 2: Omnichannel WhatsApp Automation */}
-              <div className="rounded-xl border border-slate-200/80 bg-white/90 p-3 dark:border-white/10 dark:bg-[#151518] flex items-center justify-between gap-3 shadow-2xs">
+              <div className="rounded-xl border border-slate-200/80 bg-white/90 p-3 dark:border-white/10 dark:bg-[#0b1220] flex items-center justify-between gap-3 shadow-2xs">
                 <div className="flex items-center gap-3">
-                  <div className="flex size-8 items-center justify-center rounded-lg bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 shrink-0">
+                  <div className="flex size-8 items-center justify-center rounded-lg bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300 shrink-0">
                     <Zap className="size-4" />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="font-black text-slate-900 dark:text-white">Omnichannel WhatsApp Rail</span>
-                      <span className="clay-pill bg-indigo-100 text-indigo-800 dark:bg-indigo-950/90 dark:text-indigo-300 text-[9px] font-bold">
+                      <span className="clay-pill bg-sky-100 text-sky-800 dark:bg-sky-950/90 dark:text-sky-300 text-[9px] font-bold">
                         CONNECTED
                       </span>
                     </div>

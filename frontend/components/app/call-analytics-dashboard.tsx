@@ -430,7 +430,7 @@ export function CallAnalyticsDashboard() {
                       <td className="px-3 py-2">
                         <span className="flex items-center gap-1 font-semibold text-slate-600 dark:text-slate-300">
                           {c.channel === 'sip' ? (
-                            <PhoneMissed className="size-3 text-violet-500" />
+                            <PhoneMissed className="size-3 text-sky-400" />
                           ) : (
                             <Wifi className="size-3 text-sky-500" />
                           )}
@@ -454,7 +454,7 @@ export function CallAnalyticsDashboard() {
                       <td className="px-3 py-2 text-slate-500 dark:text-slate-400">
                         {humanReason(c.outcome_reason)}
                         {c.escalation_created === 1 && (
-                          <span className="clay-pill ml-1.5 bg-violet-100 px-1.5 py-0.5 text-[9px] font-black text-violet-800 dark:bg-violet-900/60 dark:text-violet-300">
+                          <span className="clay-pill ml-1.5 bg-rose-100 px-1.5 py-0.5 text-[9px] font-black text-rose-800 dark:bg-rose-900/60 dark:text-rose-300">
                             ESC
                           </span>
                         )}

@@ -113,9 +113,9 @@ const STATE_CONFIG: Record<DashState, StateMeta> = {
   connecting: {
     badgeText: 'CONNECTING',
     statusHint: 'The agent is joining the call; please wait',
-    dotBg: 'bg-amber-400 animate-ping',
-    pillBg: 'bg-amber-100/90 dark:bg-amber-950/70',
-    textColor: 'text-amber-900 dark:text-amber-300',
+    dotBg: 'bg-sky-400 animate-ping',
+    pillBg: 'bg-sky-50/90 text-sky-800 dark:bg-sky-950/70 dark:text-sky-300 border border-sky-200/80 dark:border-sky-800/60',
+    textColor: 'text-sky-800 dark:text-sky-300',
   },
   listening: {
     badgeText: 'LISTENING TO YOU',
@@ -127,9 +127,9 @@ const STATE_CONFIG: Record<DashState, StateMeta> = {
   speaking: {
     badgeText: 'AGENT IS SPEAKING',
     statusHint: 'Agent is speaking',
-    dotBg: 'bg-violet-500 animate-pulse',
-    pillBg: 'bg-violet-100/90 dark:bg-violet-950/70',
-    textColor: 'text-violet-900 dark:text-violet-300',
+    dotBg: 'bg-cyan-400 animate-pulse',
+    pillBg: 'bg-cyan-50/90 text-cyan-800 dark:bg-cyan-950/70 dark:text-cyan-300 border border-cyan-200/80 dark:border-cyan-800/60',
+    textColor: 'text-cyan-800 dark:text-cyan-300',
   },
   ended: {
     badgeText: 'CALL ENDED',
@@ -238,10 +238,12 @@ function NavItem({
   className,
 }: NavItemProps) {
   const isPrimary = variant === 'primary';
-  const activeClass =
-    isPrimary || active
-      ? 'clay-btn-primary text-white'
-      : 'clay-btn text-slate-700 hover:text-slate-950 dark:text-zinc-200 dark:hover:text-white';
+  let activeClass = 'clay-btn text-slate-700 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white';
+  if (isPrimary) {
+    activeClass = 'clay-btn-primary text-white shadow-[0_0_20px_-3px_rgba(14,165,233,0.5)]';
+  } else if (active) {
+    activeClass = 'clay-btn bg-slate-200 text-slate-950 font-black dark:bg-[#16243d] dark:text-white dark:border-sky-500/40 dark:shadow-[0_0_15px_-3px_rgba(14,165,233,0.25)]';
+  }
 
   if (isSidebarOpen) {
     return (
@@ -1050,7 +1052,7 @@ export function SamarDashboard() {
 
   return (
     <LenisProvider>
-      <div className="flex h-screen w-full gap-3 overflow-hidden bg-gradient-to-br from-[#E8EEF5] via-[#EDF2F7] to-[#DFE7F0] p-3 font-sans text-zinc-800 transition-colors duration-200 selection:bg-emerald-400 selection:text-black md:p-4 dark:from-[#111114] dark:via-[#141418] dark:to-[#0d0d10] dark:text-zinc-100">
+      <div className="flex h-screen w-full gap-3 overflow-hidden bg-gradient-to-br from-[#E8EEF5] via-[#EDF2F7] to-[#DFE7F0] p-3 font-sans text-zinc-800 transition-colors duration-200 selection:bg-sky-400 selection:text-black md:p-4 dark:from-[#070A12] dark:via-[#090E1A] dark:to-[#05080F] dark:text-zinc-100">
       {/* ── Left Collapsible Clay Sidebar (Full Height, Connected) ─────────── */}
       <motion.aside
         animate={{ width: isSidebarOpen ? 260 : 72 }}
@@ -1323,7 +1325,7 @@ export function SamarDashboard() {
                 className="flex items-center gap-2 overflow-hidden cursor-pointer group"
                 title={isLoggedIn ? "Account Profile" : "Click to Sign In"}
               >
-                <div className="relative flex size-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-sky-400 to-indigo-600 text-xs font-black text-white shadow-sm group-hover:scale-105 transition-transform overflow-hidden">
+                <div className="relative flex size-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-sky-500 to-cyan-500 text-xs font-black text-white shadow-sm group-hover:scale-105 transition-transform overflow-hidden">
                   {isLoggedIn ? (
                     profileUser.avatarUrl ? (
                       <img src={profileUser.avatarUrl} alt={profileUser.name} className="size-full object-cover" />
@@ -1352,7 +1354,7 @@ export function SamarDashboard() {
                 className="clay-btn p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400"
                 title={isLoggedIn ? "Sign Out" : "Sign In"}
               >
-                {isLoggedIn ? <LogOut className="size-3.5" /> : <LogIn className="size-3.5 text-indigo-500" />}
+                {isLoggedIn ? <LogOut className="size-3.5" /> : <LogIn className="size-3.5 text-sky-500" />}
               </button>
             </div>
           ) : (
@@ -1360,7 +1362,7 @@ export function SamarDashboard() {
               <button
                 type="button"
                 onClick={isLoggedIn ? () => setActiveNav('settings') : handleLoginClick}
-                className="relative flex size-10 items-center justify-center rounded-full bg-gradient-to-tr from-sky-400 to-indigo-600 text-xs font-black text-white shadow-sm hover:scale-105 active:scale-95 overflow-hidden"
+                className="relative flex size-10 items-center justify-center rounded-full bg-gradient-to-tr from-sky-500 to-cyan-500 text-xs font-black text-white shadow-sm hover:scale-105 active:scale-95 overflow-hidden"
                 title={isLoggedIn ? `${profileUser.name} (Click for Settings)` : "Sign In"}
               >
                 {isLoggedIn ? (
@@ -1405,7 +1407,7 @@ export function SamarDashboard() {
                   className="size-6 rounded-full object-cover shadow-xs"
                 />
                 <span className="text-[13px] font-black tracking-tight text-slate-900 dark:text-white">
-                  RevClaim<span className="text-indigo-500 dark:text-indigo-400">.ai</span>
+                  RevClaim<span className="text-sky-500 dark:text-sky-400">.ai</span>
                 </span>
               </button>
 
@@ -1458,10 +1460,10 @@ export function SamarDashboard() {
             {/* Sovereign Hybrid Graph RAG Launch Pill */}
             <button
               onClick={() => setIsGraphRagModalOpen(true)}
-              className="clay-btn hidden sm:flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[11px] font-extrabold text-indigo-700 bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200/90 dark:border-indigo-800/80 dark:text-indigo-300 transition-all hover:scale-105 active:scale-95 shadow-xs"
+              className="clay-btn hidden sm:flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[11px] font-extrabold text-sky-700 bg-sky-50/70 dark:bg-[#111c30] border border-sky-200/80 dark:border-white/10 dark:text-sky-300 transition-all hover:scale-105 active:scale-95 shadow-xs"
               title="Explore Sovereign Hybrid Graph RAG & Pierced Corporate Veil"
             >
-              <Network className="size-3.5 text-indigo-600 dark:text-indigo-400" />
+              <Network className="size-3.5 text-sky-600 dark:text-sky-400" />
               <span>{t('graphRag')}</span>
             </button>
 
@@ -1547,9 +1549,9 @@ export function SamarDashboard() {
               aria-label="Toggle theme"
             >
               {mounted && isDark ? (
-                <Sun className="size-4 stroke-[2.5] text-amber-500" />
+                <Sun className="size-4 stroke-[2.5] text-amber-400" />
               ) : (
-                <Moon className="size-4 stroke-[2.5] text-indigo-600" />
+                <Moon className="size-4 stroke-[2.5] text-slate-700 dark:text-slate-300" />
               )}
             </button>
 
@@ -1581,7 +1583,7 @@ export function SamarDashboard() {
                   title="User Account Menu"
                   aria-label="User Account"
                 >
-                  <div className="relative flex size-6.5 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-sky-400 to-indigo-600 text-[10px] font-black text-white shadow-xs overflow-hidden">
+                  <div className="relative flex size-6.5 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-sky-500 to-cyan-500 text-[10px] font-black text-white shadow-xs overflow-hidden">
                     {profileUser.avatarUrl ? (
                       <img src={profileUser.avatarUrl} alt={profileUser.name} className="size-full object-cover" />
                     ) : (
@@ -1657,11 +1659,11 @@ export function SamarDashboard() {
               initial={{ height: 0, opacity: 0, marginBottom: 0 }}
               animate={{ height: 'auto', opacity: 1, marginBottom: 12 }}
               exit={{ height: 0, opacity: 0, marginBottom: 0 }}
-              className="clay-card overflow-hidden border-amber-200/80 bg-amber-50/95 px-5 py-3"
+              className="clay-card overflow-hidden border-rose-200/80 bg-rose-50/95 dark:bg-[#121c2c] dark:border-rose-500/30 px-5 py-3"
             >
-              <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 text-xs font-bold text-amber-950">
+              <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 text-xs font-bold text-rose-950 dark:text-rose-200">
                 <div className="flex items-center gap-2.5">
-                  <AlertCircle className="size-5 shrink-0 text-amber-600" />
+                  <AlertCircle className="size-5 shrink-0 text-rose-600 dark:text-rose-400" />
                   <span>
                     MICROPHONE BLOCKED: The AI agent cannot hear your voice until microphone permissions
                     are enabled.
@@ -1671,7 +1673,7 @@ export function SamarDashboard() {
                   onClick={() => {
                     navigator.mediaDevices?.getUserMedia({ audio: true }).catch(() => {});
                   }}
-                  className="clay-btn shrink-0 bg-white px-4 py-1 text-xs font-black text-amber-900"
+                  className="clay-btn shrink-0 bg-white dark:bg-[#16233b] px-4 py-1 text-xs font-black text-rose-900 dark:text-rose-200"
                 >
                   RETRY ACCESS
                 </button>
@@ -1786,8 +1788,8 @@ export function SamarDashboard() {
 
                     {/* Connecting / Low-bandwidth Adaptive Pipeline Notice */}
                     {dashState === 'connecting' && (
-                      <div className="clay-pill flex animate-pulse items-center gap-1.5 bg-amber-50 px-3 py-1 text-[11px] font-bold text-amber-900 shadow-sm dark:bg-amber-950/60 dark:text-amber-200">
-                        <Loader2 className="size-3 animate-spin text-amber-600 dark:text-amber-400" />
+                      <div className="clay-pill flex animate-pulse items-center gap-1.5 bg-sky-50 px-3 py-1 text-[11px] font-bold text-sky-900 shadow-sm dark:bg-sky-950/60 dark:text-sky-200 border border-sky-500/20">
+                        <Loader2 className="size-3 animate-spin text-sky-600 dark:text-sky-400" />
                         <span>Connecting voice pipeline (Opus 48kHz)... Please wait</span>
                       </div>
                     )}
@@ -1800,7 +1802,7 @@ export function SamarDashboard() {
                         'clay-pill flex items-center gap-2 px-3 py-1 font-mono text-[11px] font-bold shadow-sm transition-all',
                         isConnected
                           ? 'border border-emerald-300/60 bg-emerald-50/90 text-emerald-950 dark:border-emerald-700/50 dark:bg-emerald-950/60 dark:text-emerald-300'
-                          : 'bg-white/90 text-zinc-700 dark:bg-[#202026] dark:text-zinc-200'
+                          : 'bg-white/90 text-zinc-700 dark:bg-[#111c30] dark:text-zinc-200'
                       )}
                       title={
                         isConnected
@@ -1863,10 +1865,10 @@ export function SamarDashboard() {
                       role="button"
                       tabIndex={0}
                       title="Click to start voice negotiation call"
-                      className="group relative flex flex-1 min-h-[360px] cursor-pointer flex-col items-center justify-center overflow-hidden rounded-3xl bg-[#E8EEF5] transition-all hover:brightness-[1.02] focus:outline-none active:scale-[0.99] dark:border dark:border-white/5 dark:bg-[#141418]"
+                      className="group relative flex flex-1 min-h-[360px] cursor-pointer flex-col items-center justify-center overflow-hidden rounded-3xl bg-[#E8EEF5] transition-all hover:brightness-[1.02] focus:outline-none active:scale-[0.99] dark:border dark:border-white/[0.08] dark:bg-[#070b14] shadow-[inset_0_3px_12px_rgba(0,0,0,0.8)]"
                     >
                       <div className="pointer-events-none absolute inset-0 hidden items-center justify-center dark:flex">
-                        <div className="size-80 rounded-full bg-gradient-to-tr from-cyan-500/20 via-sky-500/15 to-indigo-500/20 blur-3xl" />
+                        <div className="size-80 rounded-full bg-gradient-to-tr from-cyan-500/15 via-sky-500/10 to-transparent blur-3xl" />
                       </div>
                       <spline-viewer
                         url="https://prod.spline.design/4iC321jWjBLbdcUS/scene.splinecode"
@@ -1890,12 +1892,12 @@ export function SamarDashboard() {
                           state={agentState ?? 'listening'}
                           color={
                             dashState === 'speaking'
-                              ? '#7C3AED' // rich violet
+                              ? '#0ea5e9' // electric sky
                               : dashState === 'listening'
-                                ? '#059669' // rich emerald
+                                ? '#10b981' // rich emerald
                                 : dashState === 'connecting'
-                                  ? '#D97706' // amber
-                                  : '#0891B2' // cyan
+                                  ? '#38bdf8' // soft sky
+                                  : '#06b6d4' // cyan
                           }
                           colorShift={0.3}
                           lineWidth={2.5}

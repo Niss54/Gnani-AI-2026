@@ -1,3 +1,4 @@
+import { signedSpeechUrl } from "./voice-media";
 import { createHmac, timingSafeEqual, randomUUID } from "node:crypto";
 import { createVoiceSession, normalizeVoiceLanguage, VoiceAccess, VoiceLanguage, VoiceServiceError } from "./voice-client";
 
@@ -36,7 +37,6 @@ export function publicVoiceBaseUrl(): string {
 
 /** Verify using configured public origin. Never trust a forwarded Host header. */
 export function validateTwilioWebhook(requestUrl: string, signature: string | null, fields: URLSearchParams): boolean {
-  if (process.env.SKIP_TWILIO_VALIDATION === "true") return true;
   const token = process.env.TWILIO_AUTH_TOKEN;
   if (!token || !signature) return false;
   try {
@@ -61,7 +61,7 @@ export function escapeVoiceXml(value: string): string {
   return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
 }
 
-/** High-EQ natural voice audio transport using ElevenLabs ultra-realistic multilingual TTS. */
+/** Gather transport. Acoustic quality requires separate recorded-call evaluation. */
 export function renderGatherReply(input: {
   reply: string;
   language: VoiceLanguage;
@@ -72,9 +72,7 @@ export function renderGatherReply(input: {
 }): string {
   const locale = input.language === "hi-en" ? "hi-IN" : "en-IN";
   const baseUrl = publicVoiceBaseUrl();
-  const ttsUrl = new URL("/api/tts", baseUrl);
-  ttsUrl.searchParams.set("text", input.reply);
-  ttsUrl.searchParams.set("lang", input.language);
+  const ttsUrl = signedSpeechUrl(baseUrl, input.reply, input.language);
   const playAudio = `<Play>${escapeVoiceXml(ttsUrl.toString())}</Play>`;
 
   if (input.endCall) {
@@ -86,17 +84,16 @@ export function renderGatherReply(input: {
   action.searchParams.set("sequence", String(input.sequence + 1));
   action.searchParams.set("stateVersion", String(input.stateVersion));
 
-  const hints = "Nishant, Maurya, Nishant Maurya, Yes, Haan, Ji, Ji haan, Ok, Okay, Kar sakta hoon, Later, Baad mein, Invoice, Payment, Pay, Kal, Tomorrow, WhatsApp, Email, Link, 45000, 45 hazar, Bhej do, Done, Already paid, Dispute, Hello, Kaun, Sun raha hoon, Baat kar sakte hain, Boliye, Not audible, Awaz nahi aa rahi";
+  const hints = "Invoice, Payment, WhatsApp, Email, Already paid, Dispute, Let me finish, Meri baat suniye, Not audible";
 
-  // Crucial: Place <Play> BEFORE <Gather> so audio plays to completion without premature barge-in cutoff
-  return `<?xml version="1.0" encoding="UTF-8"?><Response>${playAudio}<Gather input="speech" action="${escapeVoiceXml(action.toString())}" method="POST" actionOnEmptyResult="true" speechTimeout="auto" timeout="6" speechModel="phone_call" hints="${escapeVoiceXml(hints)}" language="${locale}"></Gather></Response>`;
+  // Listen during playback; allow short hesitations before committing a final turn.
+  return `<?xml version="1.0" encoding="UTF-8"?><Response><Gather input="speech" action="${escapeVoiceXml(action.toString())}" method="POST" actionOnEmptyResult="true" speechTimeout="2" timeout="6" speechModel="phone_call" hints="${escapeVoiceXml(hints)}" language="${locale}">${playAudio}</Gather></Response>`;
 }
 
 export function renderVoiceFailure(language: VoiceLanguage = "en-IN"): string {
   const reply = language === "hi-en" ? "Maaf kijiye, abhi call continue nahi ho pa rahi. Main call end karti hoon." : "Sorry, I cannot continue this call right now. I'll end the call.";
   try {
-    const ttsUrl = new URL("/api/tts", publicVoiceBaseUrl());
-    ttsUrl.searchParams.set("text", reply);
+    const ttsUrl = signedSpeechUrl(publicVoiceBaseUrl(), reply, language);
     return `<?xml version="1.0" encoding="UTF-8"?><Response><Play>${escapeVoiceXml(ttsUrl.toString())}</Play><Hangup/></Response>`;
   } catch {
     const locale = language === "hi-en" ? "hi-IN" : "en-IN";

@@ -13,8 +13,8 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   typescript: {
-    // Ignore TypeScript errors during production build to prevent CI hang
-    ignoreBuildErrors: true,
+    // Production builds must reject type errors.
+    ignoreBuildErrors: false,
   },
   images: {
     remotePatterns: [

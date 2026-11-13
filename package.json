@@ -2,7 +2,7 @@
   "name": "revclaim-ai-monorepo",
   "version": "1.0.0",
   "private": true,
-  "description": "RevClaim AI — Autonomous Indic Voice Agent for Unpaid Invoices & B2B Revenue Recovery",
+  "description": "RevClaim AI \u00e2\u20ac\u201d Autonomous Indic Voice Agent for Unpaid Invoices & B2B Revenue Recovery",
   "workspaces": [
     "frontend"
   ],
@@ -16,9 +16,10 @@
     "benchmark:gnani": "node scripts/benchmark-gnani.js",
     "test:all": "node tests/gnani-benchmark.mjs && node tests/e2e.test.mjs",
     "verify:voice-contract": "node scripts/run-python.js scripts/verify_voice.py --mode contract",
-    "verify:dataset": "node scripts/run-python.js training/validate_data.py --manifest training/manifests/revclaim-v1.json",
+    "verify:dataset": "node scripts/run-python.js training/validate_data.py --manifest training/manifests/revclaim-v1.json --require-human-approved --require-complete",
     "eval:dialogue": "node scripts/run-python.js training/evaluate.py --run artifacts/training/revclaim-sft-candidate-001 --split development --compare corrected-hosted,base",
     "eval:voice-offline": "node scripts/run-python.js scripts/verify_voice.py --mode voice-offline",
-    "verify:release": "node scripts/run-python.js scripts/verify_voice.py --mode release"
+    "verify:release": "node scripts/run-python.js scripts/verify_voice.py --mode release",
+    "test:voice-transport": "node --test tests/voice-transport.test.cjs"
   }
 }

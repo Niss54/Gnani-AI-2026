@@ -27,27 +27,15 @@ def package_model(
     resolved_run = resolve_path(run_dir)
     resolved_run.mkdir(parents=True, exist_ok=True)
 
-    if freeze_candidate:
-        freeze_receipt = {
-            "type": "candidate_freeze_receipt",
-            "run_dir": str(resolved_run),
-            "timestamp": utc_now(),
-            "status": "frozen",
-            "promotion_eligible": True,
-        }
-        receipt_path = resolved_run / "freeze_receipt.json"
-        atomic_json(receipt_path, freeze_receipt)
-        return freeze_receipt
-
+    weights = resolved_run / "adapter_model.safetensors"
     manifest = {
-        "type": "model_package_manifest",
-        "run_dir": str(resolved_run),
-        "timestamp": utc_now(),
-        "reloaded_verified": verify_reload,
-        "promoted": require_promotion_gates,
+        "type": "model_package_manifest", "timestamp": utc_now(), "status": "blocked",
+        "reloaded_verified": False, "promoted": False, "promotion_eligible": False,
+        "adapter_present": weights.is_file(),
+        "blocker": "actual_reload_and_qualification_required" if weights.is_file() else "trained_adapter_missing",
     }
-    manifest_path = resolved_run / "package_manifest.json"
-    atomic_json(manifest_path, manifest)
+    # A CLI flag requests a check; it is not evidence that the check happened.
+    atomic_json(resolved_run / "package_manifest.json", manifest)
     return manifest
 
 
@@ -67,7 +55,7 @@ def main() -> int:
     )
 
     print(json.dumps(result, indent=2))
-    return 0
+    return 0 if result.get("status") == "passed" else 1
 
 
 if __name__ == "__main__":

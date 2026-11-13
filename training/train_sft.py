@@ -35,7 +35,7 @@ def run_training(config_path: str | Path, mode: str = "smoke", max_examples: int
     output_dir.mkdir(parents=True, exist_ok=True)
 
     has_gpu = env["compute"]["cuda_available"]
-    has_ml_stack = all(env["packages"].get(p) for p in ("transformers", "peft", "trl"))
+    has_ml_stack = all(env["packages"].get(p) for p in ("transformers", "peft", "accelerate", "datasets", "bitsandbytes"))
 
     receipt_path = output_dir / "run_receipt.json"
 
@@ -45,7 +45,7 @@ def run_training(config_path: str | Path, mode: str = "smoke", max_examples: int
             "run_id": f"{run_id}-{mode}",
             "mode": mode,
             "status": "blocked",
-            "milestone": "PIPELINE_READY",
+            "milestone": "COMPUTE_BLOCKED",
             "fixture_only": True,
             "timestamp": utc_now(),
             "config_hash": file_hash(config_path),
@@ -53,10 +53,10 @@ def run_training(config_path: str | Path, mode: str = "smoke", max_examples: int
             "base_revision": config["base_revision"],
             "blocker": {
                 "id": "COMPUTE_UNAVAILABLE",
-                "reason": "Compatible GPU (CUDA) and ML libraries (torch, transformers, peft, trl) are required for active model weights training.",
+                "reason": "Compatible GPU (CUDA) and ML libraries (torch, transformers, peft, accelerate, datasets, bitsandbytes) are required for active model weights training.",
                 "observed_hardware": env["compute"],
-                "missing_packages": [p for p in ("transformers", "peft", "trl") if not env["packages"].get(p)],
-                "unblock_requirement": "Provision GPU instance with PyTorch >= 2.4, CUDA >= 12.1, and run pip install -r backend/requirements-voice.txt",
+                "missing_packages": [p for p in ("transformers", "peft", "accelerate", "datasets", "bitsandbytes") if not env["packages"].get(p)],
+                "unblock_requirement": "Provision GPU instance with PyTorch >= 2.4, CUDA >= 12.1, and run pip install -r training/requirements.txt",
                 "exact_resume_command": f"python training/train_sft.py --config {config_path} --mode {mode}" + (f" --max-examples {max_examples}" if max_examples else ""),
             },
             "output_directory": str(output_dir),
@@ -68,14 +68,9 @@ def run_training(config_path: str | Path, mode: str = "smoke", max_examples: int
 
     # If ML environment is present, execute training loop
     try:
-        import torch
-        from transformers import AutoModelForCausalLM, AutoTokenizer, TrainingArguments
-        from peft import LoraConfig, get_peft_model
-        from trl import SFTTrainer
-
-        # Training execution with SFTTrainer
+        from training.training_engine import train_adapter
         start_time = time.monotonic()
-        # Simulated or actual training step depending on compute...
+        measured = train_adapter(config, output_dir, mode, max_examples, resume_checkpoint)
         receipt = {
             "run_id": f"{run_id}-{mode}",
             "mode": mode,
@@ -87,7 +82,7 @@ def run_training(config_path: str | Path, mode: str = "smoke", max_examples: int
             "base_revision": config["base_revision"],
             "output_directory": str(output_dir),
             "elapsed_seconds": round(time.monotonic() - start_time, 2),
-            "adapter_weights_generated": True,
+            **measured,
         }
         atomic_json(receipt_path, receipt)
         return receipt
@@ -116,7 +111,7 @@ def main() -> int:
     receipt = run_training(args.config, mode=args.mode, max_examples=args.max_examples, resume_checkpoint=args.resume)
 
     print(json.dumps(receipt, indent=2))
-    return 0 if receipt.get("status") in {"passed", "blocked"} else 1
+    return 0 if receipt.get("status") == "passed" else 1
 
 
 if __name__ == "__main__":

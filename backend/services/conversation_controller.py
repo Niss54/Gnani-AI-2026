@@ -8,22 +8,35 @@ from __future__ import annotations
 
 import asyncio
 import copy
+import re
 from dataclasses import asdict
 from datetime import date, datetime
 from typing import Callable
 from uuid import uuid4
 from zoneinfo import ZoneInfo
 
-from backend.contracts.voice import (
-    FinalTranscriptEvent, InvoiceContext, LanguageMode, SessionSnapshot,
-    ToolExecutor, ToolRequest, ToolResult, TurnResult, UnavailableToolExecutor,
-    VoiceError, VoiceRepository, require_identifier,
-)
-from backend.services.negotiation_policy import (
-    allowed_channels, assert_context_authorized, classify_control, explicit_date, matches,
-)
-from backend.services.provider_registry import ProviderRegistry
-from backend.services.speech_normalizer import normalize_transcript, parse_explicit_amount, render_for_speech, spoken_money
+try:
+    from backend.contracts.voice import (
+        FinalTranscriptEvent, InvoiceContext, LanguageMode, SessionSnapshot,
+        ToolExecutor, ToolRequest, ToolResult, TurnResult, UnavailableToolExecutor,
+        VoiceError, VoiceRepository, require_identifier,
+    )
+    from backend.services.negotiation_policy import (
+        allowed_channels, assert_context_authorized, classify_control, explicit_date, matches,
+    )
+    from backend.services.provider_registry import ProviderRegistry
+    from backend.services.speech_normalizer import normalize_transcript, parse_explicit_amount, render_for_speech, spoken_money
+except ImportError:
+    from contracts.voice import (
+        FinalTranscriptEvent, InvoiceContext, LanguageMode, SessionSnapshot,
+        ToolExecutor, ToolRequest, ToolResult, TurnResult, UnavailableToolExecutor,
+        VoiceError, VoiceRepository, require_identifier,
+    )
+    from services.negotiation_policy import (
+        allowed_channels, assert_context_authorized, classify_control, explicit_date, matches,
+    )
+    from services.provider_registry import ProviderRegistry
+    from services.speech_normalizer import normalize_transcript, parse_explicit_amount, render_for_speech, spoken_money
 
 
 def india_today() -> date:
@@ -189,11 +202,17 @@ class ConversationController:
             facts = ["business_name"]
             reply = say(f"I'm {context.business_name}'s AI billing assistant. You can verify this with your usual contact before paying.",
                         f"Main {context.business_name} ki AI billing assistant hoon. Payment se pehle apne known contact se verify kar sakte hain.")
+        elif intent == "listen":
+            reply = say("Go ahead, I'm listening.", "Ji, aap apni baat poori kijiye.")
         elif intent == "agenda":
-            reply = say(
-                f"The purpose of this call is to follow up on {context.business_name}'s invoice {context.invoice_number} with a balance of {spoken_money(context.amount_due_minor, context.currency, language)}, and provide you the payment link. Would you like to pay today or by a specific date?",
-                f"Is call ka agenda {context.business_name} ke invoice {context.invoice_number} ke {spoken_money(context.amount_due_minor, context.currency, language)} balance ko follow-up karna aur payment options provide karna hai. Kya aap aaj pay karenge ya koi date batana chahenge?"
-            )
+            if session.identity_verified:
+                facts = ["invoice_number", "amount_due_minor", "currency"]
+                reply = say(f"This is about invoice {context.invoice_number}, with a recorded balance of {spoken_money(context.amount_due_minor, context.currency, language)}. Is there anything you want to clarify?",
+                            f"Yeh invoice {context.invoice_number} ke {spoken_money(context.amount_due_minor, context.currency, language)} recorded balance ke baare mein hai. Aap kya clarify karna chahenge?")
+            else:
+                session.pending_question = "identity"
+                reply = say(f"It's a billing follow-up. Before sharing details, am I speaking with {context.contact_name}?",
+                            f"Billing follow-up hai. Details se pehle, kya aap {context.contact_name} hain?")
         elif intent == "secrets":
             reply = say("Please don't share an OTP, PIN or card details with me.", "OTP, PIN ya card details mujhe mat batayiye.")
         elif intent == "legal_boundary":
@@ -212,16 +231,12 @@ class ConversationController:
                 session.pending_question = "audibility_retry"
                 reply = say("Can you hear me?", "Kya aap mujhe sun pa rahe hain?")
         elif not session.identity_verified:
-            name_parts = [p.lower() for p in context.contact_name.split() if len(p) >= 3]
-            phonetic_name_parts = list(name_parts)
-            if any(n in name_parts for n in ("nishant", "nisha")):
-                phonetic_name_parts.extend(["nishan", "निशांत", "निसान", "विशाल", "निशु"])
-            if any(n in name_parts for n in ("maurya", "morya")):
-                phonetic_name_parts.extend(["morya", "मौर्य", "मोर"])
-            caller_mentioned_name = any(part in text.lower() for part in phonetic_name_parts)
-            is_self_identifying = matches(text, r"स्पीकिंग|speaking|आई एम|i am|this is|दिस इस|बोल रहा|बात कर रहा|main hoon|कैन हियर|can hear")
-
-            if (intent in ("affirm", "available") or caller_mentioned_name or is_self_identifying) and session.pending_question in ("identity", "audibility_retry", None):
+            # Availability and audibility are not identity confirmation.
+            audibility = matches(text, r"hear|sun raha|sun pa|सुन रहा|सुन पा|हियर")
+            name = re.escape(context.contact_name.split()[0])
+            self_identified = matches(text, rf"\b(?:i am|this is|main)\s+{name}\b")
+            confirmation = not audibility and (self_identified or (intent == "affirm" and matches(text, r"^(yes|yeah|yep|haan|han|ji|speaking|हाँ|हां|जी|यस)\b|^(हाँ|हां|जी|यस)")))
+            if confirmation and session.pending_question == "identity":
                 session.identity_verified = True
                 session.state, session.pending_question = "DISCUSSING", "availability"
                 reply = say(
@@ -309,7 +324,7 @@ class ConversationController:
                 session.pending_question, session.state = "ptp_confirmation", "CONFIRMING_PTP"
                 money = spoken_money(amount, context.currency, language)
                 reply = say(f"To confirm: {money} on {planned_date}. Do you agree to that payment commitment?", f"Confirm kar loon: {money}, {planned_date} ko. Kya aap is payment commitment se agree karte hain?")
-        elif intent == "affirm" and session.pending_question in {"ptp_confirmation", "offer_acceptance"} and session.pending_ptp:
+        elif intent == "affirm" and classify_control(text) == "affirm" and session.pending_question in {"ptp_confirmation", "offer_acceptance"} and session.pending_ptp:
             if session.pending_question == "offer_acceptance":
                 session.pending_question, session.state = "ptp_confirmation", "CONFIRMING_PTP"
                 reply = say(f"Please confirm the commitment: {spoken_money(session.pending_ptp['amount_minor'], context.currency, language)} on {session.pending_ptp['date']}.", f"Commitment confirm kar dijiye: {spoken_money(session.pending_ptp['amount_minor'], context.currency, language)}, {session.pending_ptp['date']} ko.")
@@ -325,31 +340,14 @@ class ConversationController:
         elif intent == "deny":
             session.pending_ptp, session.pending_question = None, None
             reply = say("Understood. I won't record a payment commitment.", "Theek hai, main payment commitment record nahi karungi.")
-        elif session.pending_question == "availability":
+        elif session.pending_question == "availability" and intent in {"affirm", "available"}:
             session.pending_question = None
-            facts = ["invoice_number", "amount_due_minor", "currency"]
-            reply = say(f"The recorded balance on invoice {context.invoice_number} is {spoken_money(context.amount_due_minor, context.currency, language)}. How would you like to settle this? I can send the payment link via WhatsApp or email.", f"Invoice {context.invoice_number} ka recorded balance {spoken_money(context.amount_due_minor, context.currency, language)} hai. Aap payment kaise karenge? Main link WhatsApp ya email par bhej sakti hoon.")
+            reply = say("Thank you. Is there a question or concern about the invoice?", "Shukriya. Invoice ko lekar koi sawaal ya dikkat hai?")
         elif intent == "off_topic":
-            reply = say(f"I'm following up on {context.business_name}'s invoice {context.invoice_number} for {spoken_money(context.amount_due_minor, context.currency, language)}. Would you like me to send the payment link on WhatsApp?", f"Main {context.business_name} ke invoice {context.invoice_number} ke {spoken_money(context.amount_due_minor, context.currency, language)} balance ke baare mein call kar rahi hoon. Kya main payment link WhatsApp par bhej doon?")
+            reply = say("I can help with this billing follow-up. What would you like to clarify?", "Main is billing follow-up mein help kar sakti hoon. Aap kya clarify karna chahenge?")
 
         if reply is None:
-            balance_str = spoken_money(context.amount_due_minor, context.currency, language)
-            clarify_count = sum(1 for h in session.history if h["role"] == "agent" and context.invoice_number in h.get("text", ""))
-            if clarify_count <= 1:
-                reply = say(
-                    f"I'm following up regarding invoice {context.invoice_number} for {balance_str}. Would you like me to send the payment link on WhatsApp or email?",
-                    f"Main invoice {context.invoice_number} ke {balance_str} balance ke baare mein follow-up kar rahi hoon. Kya main payment link WhatsApp par bhej doon ya email par?"
-                )
-            elif clarify_count == 2:
-                reply = say(
-                    f"This invoice is for completed services with a balance of {balance_str}. Should I send the link to your WhatsApp, or is there another date you'd prefer to pay?",
-                    f"Yeh invoice completed services ke {balance_str} balance ke liye hai. Kya main WhatsApp par link bhej doon, ya aap koi payment date suggest karenge?"
-                )
-            else:
-                reply = say(
-                    f"I can send the complete invoice details to your WhatsApp so you can review it at your convenience. Would that be okay?",
-                    f"Main saari invoice details aapke WhatsApp par bhej deti hoon taaki aap araam se check kar sakein. Kya main bhej doon?"
-                )
+            reply = say("I didn't fully understand that. Could you explain what you mean?", "Aapki baat poori samajh nahi aayi. Thoda aur bata sakte hain?")
 
         return TurnResult(session.session_id, event.event_id, event.event_id, reply, language,
                           session.state, session.state_version, intent, end, session.outcome,

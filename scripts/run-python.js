@@ -15,4 +15,5 @@ if (process.platform === "win32" && fs.existsSync(winVenv)) {
 
 const args = process.argv.slice(2);
 const result = spawnSync(python, args, { stdio: "inherit", cwd: root });
-process.exit(result.status || 0);
+if (result.error) console.error("Python could not start:", result.error.message);
+process.exit(result.status ?? 1);

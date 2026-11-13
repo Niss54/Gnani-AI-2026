@@ -97,12 +97,6 @@ async def test_send_invoice_does_not_spam(mock_context):
         arguments={"channel": "email", "content": "invoice"},
     )
     res = await executor.execute(req, mock_context)
-    assert res.status == "succeeded"
-    assert res.detail_status == "dispatched"
-
-    # Verify outbox record guarantees no unconsented SMS/Email blast or automatic reminders
-    with executor._connection() as conn:
-        row = conn.execute("SELECT * FROM outbox_messages WHERE id = ?", (res.data["dispatch_id"],)).fetchone()
-        assert row["notify_sms"] == 0
-        assert row["notify_email"] == 0
-        assert row["reminder_enabled"] == 0
+    assert res.status == "failed"
+    assert res.detail_status == "delivery_adapter_unconfigured"
+    assert res.provider_reference is None

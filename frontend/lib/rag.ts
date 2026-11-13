@@ -63,7 +63,7 @@ const STATUTORY_KNOWLEDGE_CHUNKS: Array<{
 /**
  * Executes high-speed token-matched BM25 search over statutory legal chunks
  */
-export function searchStatutoryRag(query: string, topK: int = 2): RagResult[] {
+export function searchStatutoryRag(query: string, topK: number = 2): RagResult[] {
   if (!query || !query.trim()) return [];
 
   const qTokens = query.toLowerCase().split(/\W+/).filter((t) => t.length > 1);

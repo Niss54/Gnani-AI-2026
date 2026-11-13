@@ -1,0 +1,7 @@
+# Candidate GPU environment, not a verified lock. Resolve and capture pip freeze on the training host.
+torch>=2.4,<3
+transformers>=4.46,<5
+peft>=0.13,<1
+accelerate>=1,<2
+datasets>=3,<5
+bitsandbytes>=0.44,<1

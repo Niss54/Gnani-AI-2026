@@ -10,7 +10,10 @@ from __future__ import annotations
 import re
 from datetime import date, timedelta
 
-from backend.contracts.voice import InvoiceContext, VoiceError
+try:
+    from backend.contracts.voice import InvoiceContext, VoiceError
+except ImportError:
+    from contracts.voice import InvoiceContext, VoiceError
 
 
 def matches(text: str, pattern: str) -> bool:
@@ -26,22 +29,30 @@ def classify_control(text: str) -> str | None:
         return "wrong_number"
     if matches(text, r"\b(driving|drive kar|hospital|emergency|accident)\b|गाड़ी चला|अस्पताल|इमरजेंसी") and not matches(text, r"\b(not driving|no emergency)\b"):
         return "safety_close"
-    if matches(text, r"\b(hang up|end (the )?call|stop talking|bye|goodbye|call end|phone rakho|baat nahi karni|mann? nahi|don't want to (talk|discuss))\b|बात नहीं करनी|फोन रख"):
+    if matches(text, r"\b(hang up|end (the )?call|stop talking|bye|goodbye|call end|phone rakho|baat (nahi|nhi) karni|m[an]+ (nahi|nhi)|don't want to (talk|discuss))\b|बात नहीं करनी|फोन रख"):
         return "close"
-    if matches(text, r"\b(talk to|speak (to|with)|connect (me|us)|human|person|freelancer se baat|baat karwa|baat kara)\b|बात करवा|इंसान से"):
-        if matches(text, r"\b(I('|’)ll|I will|khud|main.*kar (lunga|loonga))\b|खुद"):
-            return "direct_contact"
-        return "human_request"
     if (matches(text, r"\b(dispute|invoice (is )?(wrong|incorrect)|wrong (amount|balance)|work (is )?(incomplete|bad)|incomplete work|not happy|bug|bugs|kaam (kharab|incomplete)|invoice galat|don't remember|dont remember|not remember|yaad nahi)\b|इनवॉइस गलत|काम अधूरा|डॉन'टी रिमेंबर|याद नहीं")
             and not matches(text, r"\b(no dispute|not disputing|no (issue|bugs))\b")):
         return "dispute"
-    if matches(text, r"\b(not busy|not in (a )?meeting|free now|can talk|kar sakta hoon|kar sakte hain|baat kar sakte hain|sun raha|boliye|bataiye|bolo|batao)\b|कर सकता हूँ|कर सकता हूं|कर सकते हैं|बात कर सकते हैं|फ्री हूँ|फ्री हूं|सुन रहा|बोलिए|बताइए|बोलो|बताओ"):
+    if matches(text, r"\b(let me (finish|speak|explain)|hear me out|listen to me|pehle meri baat|meri baat sun|ruko|ek minute|one moment)\b|पहले मेरी बात|मेरी बात सुन|रुको"):
+        return "listen"
+    if matches(text, r"\b(maybe|perhaps|cannot commit|can't commit|not a promise|promise nahi|dekhte hain|not sure|take that back|changed my mind|don't record|do not record)\b|पक्का नहीं"):
+        return "tentative"
+    if matches(text, r"\b(are you (a )?(human|robot|bot|ai)|is this (a )?(human|robot|bot|ai))\b"):
+        return "ai_identity"
+    if matches(text, r"\b(main|mein|me|mai)\b.*\b(baat kar lunga|baat kr lunga|khud baat)\b"):
+        return "direct_contact"
+    if matches(text, r"\b(talk to|speak (to|with)|connect (me|us)|a human please|human agent|real person|freelancer se baat|baat karwa+a?|baat krwa+a?|baat kara)\b|बात करवा|इंसान से"):
+        if matches(text, r"\b(I('|’)ll|I will|khud|main.*kar (lunga|loonga))\b|खुद"):
+            return "direct_contact"
+        return "human_request"
+    if matches(text, r"^(?:(?:yes|haan|ji)[, ]+)?(?:not busy|not in a meeting|free now|can talk|kar sakta hoon|kar sakte hain|baat kar sakte hain|boliye|bataiye|bolo|batao)[.! ]*$|^(बोलिए|बताइए|बोलो|बताओ|कर सकता हूं|कर सकता हूँ)[।! ]*$"):
         return "available"
     if matches(text, r"\b(busy|meeting|baad (me|mein|mai)|later|not now|abhi nahi|call (me )?later|talk later|talk to later)\b|बिजी|बाद में|लेटर|अभी नहीं|बाद में कॉल|बाद में बात|इनवॉइस.*लेटर|लेटर.*इनवॉइस|टॉक टू लेटर"):
         return "busy"
     if matches(text, r"\b(do not|don't|dont|mat|nahi)\b.*\b(email|mail|whatsapp|sms)\b|\b(email|mail|whatsapp|sms)\b.*\b(mat|nahi|don't|do not)\b|ईमेल मत|मेल मत"):
         return "channel_refusal"
-    if matches(text, r"\b(already paid|payment (is )?done|paid already|pay kar diya|payment kar diya|kar diya|ho gaya payment)\b|पेमेंट कर दिया|भुगतान कर दिया|कर दिया"):
+    if matches(text, r"\b(already paid|payment (is )?done|paid already|pay kar diya|payment kar diya|ho gaya payment)\b|पेमेंट कर दिया|भुगतान कर दिया"):
         return "already_paid"
     if matches(text, r"\b(ai|robot|bot|human|artificial intelligence)\b|एआई|रोबोट"):
         return "ai_identity"
@@ -73,10 +84,9 @@ def classify_control(text: str) -> str | None:
         return "clarify"
     if matches(text, r"\b(will pay|pay tomorrow|pay on|pay today|pay kar|kar dunga|de dunga|payment.*(today|tomorrow))\b|पे कर|दे दूंगा|भुगतान.*कर"):
         return "payment_proposal"
-    if matches(text, r"^(yes|yeah|yep|yup|haan|han|ha|ji|ji haan|ji han|theek hai|thik hai|okay|ok|sure|correct|speaking|yes speaking|boliye|bataiye|what next|next|main bol raha hoon|bol raha hoon|i can hear you)\b"
-                     r"|^(यस|एस|ओके|श्योर|करेक्ट|हाँ|हां|जी|जी हां|जी हाँ|हाँ जी|हां जी|ठीक है|सही है|बोलिए|बताइए|बोल रहा हूँ|बोल रहा हूं|हाँ बोलिए|जी बोलिए|व्हाट नेक्स्ट|आगे बोलो|नेक्स्ट|आगे बताओ)"
-                     r"|\b(yes speaking|speaking|i am|this is|main hi hoon|main hoon|what next|can hear you|hear you)\b"
-                     r"|(स्पीकिंग|आई एम|दिस इस|कैन हियर यू|सुन पा रहा|सुन रहा|बात कर रहा हूँ|बोल रहा हूँ|बात कर रहा हूं|बोल रहा हूं|यस सर|यस मैम)"):
+    if matches(text, r"^(?:yes[, ]*)?(?:i can hear you|can hear you|sun raha hoon)[.!? ]*$|कैन हियर यू|सुन पा रहा"):
+        return "audible"
+    if matches(text, r"^(yes|yeah|yep|yup|haan|han|ha|ji|theek hai|thik hai|okay|ok|sure|correct|speaking)[.! ,]*$|^(हाँ|हां|जी|जी हाँ|जी हां|ठीक है|यस|ओके)[।! ,]*$|^(?:(?:yes|haan|ji)[, ]+)?(?:this is|i am) [\w ]+(?:[.! ,]*)$"):
         return "affirm"
     if matches(text, r"^(no|nope|nahi|nahin|nhi|galat|wrong)[.! ]*$|^(नो|नहीं|ना|गलत)[.! ]*$|\b(not me|main nahi hoon|wrong person)\b"):
         return "deny"
@@ -98,6 +108,8 @@ def allowed_channels(context: InvoiceContext) -> list[str]:
 
 def explicit_date(text: str, today: date) -> str | None:
     iso_dates = re.findall(r"\b\d{4}-\d{2}-\d{2}\b", text)
+    if len(iso_dates) > 1 or (matches(text, r"\b(today|aaj)\b|आज") and matches(text, r"\btomorrow\b")):
+        return None
     if len(iso_dates) == 1:
         try:
             parsed = date.fromisoformat(iso_dates[0])

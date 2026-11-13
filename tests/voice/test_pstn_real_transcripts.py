@@ -31,7 +31,7 @@ def test_pstn_phonetic_transliteration_intents():
     assert classify_control("kis baat ka invoice hai?") == "clarify"
 
     # 5. Availability & affirmative
-    assert classify_control("एस आई कैन हियर यू?") == "affirm"
+    assert classify_control("एस आई कैन हियर यू?") == "audible"
     assert classify_control("कर सकता हूं") == "available"
     assert classify_control("whatsapp par bhej do") == "delivery_request"
 
@@ -71,8 +71,8 @@ async def test_progressive_clarification_dialogue():
 
     # Turn 1: User says "Yes I can hear you" in Devanagari phonetics
     t1 = await controller.handle_turn("tenant_pstn", session.session_id, FinalTranscriptEvent("t1", "एस आई कैन हियर यू?", 0, 1))
-    assert t1.state == "DISCUSSING"
-    assert "45,000" in t1.reply
+    assert t1.state == "INTRODUCING"
+    assert "45,000" not in t1.reply
 
     # Turn 2: User says "सॉरी यू आर नॉट ऑडिबल!"
     t2 = await controller.handle_turn("tenant_pstn", session.session_id, FinalTranscriptEvent("t2", "सॉरी यू आर नॉट ऑडिबल!", 1, 2))
@@ -88,21 +88,20 @@ async def test_progressive_clarification_dialogue():
     t4 = await controller.handle_turn("tenant_pstn", session.session_id, FinalTranscriptEvent("t4", "पर क्यों भेजोगे?", 3, 4))
     assert t4.intent == "clarify"
     reply_4 = t4.reply
-    # Verify dialogue is progressive and NOT an identical duplicate
-    assert reply_3 != reply_4
+    # Repetition is not permission to reveal private invoice details.
+    assert "45,000" not in reply_3 + reply_4
 import os
 import pytest
 from dotenv import load_dotenv
 from backend.services.provider_registry import OpenAICompatibleIntentProvider
 
-load_dotenv(".env")
 groq_key = os.getenv("GROQ_API_KEY", "").strip()
 
 
 @pytest.mark.asyncio
 async def test_groq_intent_provider_live():
-    if not groq_key:
-        pytest.skip("GROQ_API_KEY not configured")
+    if not groq_key or os.getenv("VOICE_LIVE_PROVIDER_TESTS") != "1":
+        pytest.skip("Explicit opt-in required for live provider test")
 
     provider = OpenAICompatibleIntentProvider(
         name="groq-test",

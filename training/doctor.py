@@ -51,7 +51,7 @@ def check_environment(config_path: str | Path | None = None, *, offline: bool = 
             packages[pkg] = None
 
     missing_core = [pkg for pkg, ver in packages.items() if ver is None and pkg in ("fastapi", "pydantic", "pytest")]
-    missing_training = [pkg for pkg, ver in packages.items() if ver is None and pkg in ("transformers", "peft", "trl")]
+    missing_training = [pkg for pkg, ver in packages.items() if ver is None and pkg in ("transformers", "peft", "accelerate", "datasets", "bitsandbytes")]
 
     config_valid = None
     config_issues: list[str] = []
@@ -73,6 +73,9 @@ def check_environment(config_path: str | Path | None = None, *, offline: bool = 
 
     status = "passed"
     actionable_blockers: list[str] = []
+    if config_issues:
+        status = "failed"
+        actionable_blockers.extend(config_issues)
 
     if check_compute:
         if not cuda_available:

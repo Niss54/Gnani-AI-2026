@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
+import { getVoiceSession } from '@/lib/voice-client';
+import { randomUUID } from 'node:crypto';
 import { AccessToken, type AccessTokenOptions, type VideoGrant } from 'livekit-server-sdk';
-import { RoomConfiguration } from '@livekit/protocol';
+import { RoomConfiguration } from 'livekit-server-sdk';
 
 type ConnectionDetails = {
   serverUrl: string;
@@ -36,10 +38,14 @@ export async function POST(req: Request) {
 
     // Parse room config from request body (if provided).
     const body = await req.json().catch(() => ({}));
+    const auth = req.headers.get('authorization');
+    if (!auth?.startsWith('Bearer ') || typeof body.sessionId !== 'string') {
+      return NextResponse.json({ error: 'An authenticated voice session is required.' }, { status: 401 });
+    }
+    const voiceSession = await getVoiceSession(body.sessionId, { accessToken: auth.slice(7) });
+    if (voiceSession.should_end_call) return NextResponse.json({ error: 'Session is closed.' }, { status: 409 });
     let roomConfig: RoomConfiguration | undefined;
-    if (body?.room_config) {
-      roomConfig = RoomConfiguration.fromJson(body.room_config, { ignoreUnknownFields: true });
-    } else if (AGENT_NAME) {
+    if (AGENT_NAME) {
       // When AGENT_NAME is set, configure explicit agent dispatch so the named
       // agent worker picks up the job when a user joins the room.
       roomConfig = RoomConfiguration.fromJson(
@@ -48,19 +54,9 @@ export async function POST(req: Request) {
       );
     }
 
-    // Generate or retrieve persistent participant identity across calls from the same browser
-    const cookieHeader = req.headers.get('cookie') || '';
-    const cookieMatch = cookieHeader.match(/revclaim_caller_id=([^;]+)/);
-    const existingCookieId = cookieMatch ? cookieMatch[1] : null;
-
-    const participantName = body?.participant_name || body?.name || 'user';
-    const participantIdentity =
-      body?.user_id ||
-      body?.participant_identity ||
-      existingCookieId ||
-      `caller_${Math.floor(1000 + Math.random() * 9000)}`;
-
-    const roomName = `voice_assistant_room_${Math.floor(Math.random() * 10_000)}`;
+    const participantName = 'Voice caller';
+    const participantIdentity = `caller_${randomUUID()}`;
+    const roomName = `voice_${voiceSession.session_id}_${randomUUID()}`;
 
     const participantToken = await createParticipantToken(
       { identity: participantIdentity, name: participantName },

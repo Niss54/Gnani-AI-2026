@@ -14,16 +14,28 @@ from pathlib import Path
 from typing import Any, Generator
 from uuid import uuid4
 
-from backend.contracts.voice import (
-    CreditorMandate,
-    InvoiceContext,
-    LanguageMode,
-    SessionSnapshot,
-    TurnResult,
-    VoiceError,
-    VoiceRepository,
-    require_identifier,
-)
+try:
+    from backend.contracts.voice import (
+        CreditorMandate,
+        InvoiceContext,
+        LanguageMode,
+        SessionSnapshot,
+        TurnResult,
+        VoiceError,
+        VoiceRepository,
+        require_identifier,
+    )
+except ImportError:
+    from contracts.voice import (
+        CreditorMandate,
+        InvoiceContext,
+        LanguageMode,
+        SessionSnapshot,
+        TurnResult,
+        VoiceError,
+        VoiceRepository,
+        require_identifier,
+    )
 
 
 def _utc_now() -> str:
@@ -42,8 +54,12 @@ class SqliteVoiceRepository:
     def _connection(self) -> Generator[sqlite3.Connection, None, None]:
         if self._mem_conn:
             self._mem_conn.row_factory = sqlite3.Row
-            yield self._mem_conn
-            self._mem_conn.commit()
+            try:
+                yield self._mem_conn
+                self._mem_conn.commit()
+            except Exception:
+                self._mem_conn.rollback()
+                raise
             return
 
         conn = sqlite3.connect(self.db_path, timeout=10.0)
@@ -513,11 +529,11 @@ class SqliteVoiceRepository:
         with self._connection() as conn:
             cursor = conn.execute(
                 """UPDATE voice_sessions SET call_sid = ?, updated_at = ?
-                   WHERE session_id = ? AND tenant_id = ?""",
-                (call_sid, _utc_now(), session_id, tenant_id),
+                   WHERE session_id = ? AND tenant_id = ? AND (call_sid IS NULL OR call_sid = ?)""",
+                (call_sid, _utc_now(), session_id, tenant_id, call_sid),
             )
             if cursor.rowcount == 0:
-                raise VoiceError("not_found", "Session not found to bind call")
+                raise VoiceError("conflict", "Session unavailable or already bound to another call")
 
     @staticmethod
     def _row_to_snapshot(row: sqlite3.Row) -> SessionSnapshot:

@@ -15,14 +15,24 @@ root_dir = os.path.dirname(backend_dir)
 load_dotenv(os.path.join(root_dir, ".env"))
 load_dotenv(os.path.join(backend_dir, ".env"), override=True)
 
-from services.supabase_service import supabase_service
-from services.llm_service import llm_service
-from services.deepgram_service import deepgram_service
-from services.mem0_service import mem0_service
-from services.voice_service import voice_service
-from services.bhashini_service import bhashini_service
-from services.rag_service import statutory_rag_engine
-from api.voice_router import router as voice_router
+try:
+    from backend.services.supabase_service import supabase_service
+    from backend.services.llm_service import llm_service
+    from backend.services.deepgram_service import deepgram_service
+    from backend.services.mem0_service import mem0_service
+    from backend.services.voice_service import voice_service
+    from backend.services.bhashini_service import bhashini_service
+    from backend.services.rag_service import statutory_rag_engine
+    from backend.api.voice_router import router as voice_router
+except ImportError:
+    from services.supabase_service import supabase_service
+    from services.llm_service import llm_service
+    from services.deepgram_service import deepgram_service
+    from services.mem0_service import mem0_service
+    from services.voice_service import voice_service
+    from services.bhashini_service import bhashini_service
+    from services.rag_service import statutory_rag_engine
+    from api.voice_router import router as voice_router
 
 app = FastAPI(
     title="RevClaim AI — Python Backend Service",
@@ -33,10 +43,19 @@ app = FastAPI(
 
 app.include_router(voice_router)
 
+@app.middleware("http")
+async def retire_unsafe_legacy_voice_paths(request: Request, call_next):
+    retired = {"/api/call", "/api/notify", "/api/negotiate", "/api/checkout", "/api/webhook/razorpay", "/api/invoices"}
+    if request.url.path.rstrip("/") in retired:
+        from fastapi.responses import JSONResponse
+        return JSONResponse({"error": "Legacy path retired; use the tenant-scoped voice API."}, status_code=410)
+    return await call_next(request)
+
+
 # Enable CORS for Next.js frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[origin.strip() for origin in os.getenv("VOICE_ALLOWED_ORIGINS", "http://localhost:3000").split(",") if origin.strip()],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

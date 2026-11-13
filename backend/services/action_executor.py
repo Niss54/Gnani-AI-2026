@@ -12,19 +12,29 @@ from __future__ import annotations
 import hashlib
 import json
 import sqlite3
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
-from backend.contracts.voice import (
-    InvoiceContext,
-    ToolExecutor,
-    ToolRequest,
-    ToolResult,
-    VoiceError,
-    require_minor_units,
-)
+try:
+    from backend.contracts.voice import (
+        InvoiceContext,
+        ToolExecutor,
+        ToolRequest,
+        ToolResult,
+        VoiceError,
+        require_minor_units,
+    )
+except ImportError:
+    from contracts.voice import (
+        InvoiceContext,
+        ToolExecutor,
+        ToolRequest,
+        ToolResult,
+        VoiceError,
+        require_minor_units,
+    )
 
 
 def _utc_now() -> str:
@@ -32,7 +42,7 @@ def _utc_now() -> str:
 
 
 class DurableActionExecutor:
-    """Production tool executor with idempotency and side-effect guarantees."""
+    """Local durable actions; external actions fail closed until adapters are configured."""
 
     def __init__(self, db_path: str | Path = ":memory:") -> None:
         self.db_path = str(db_path)
@@ -92,6 +102,12 @@ class DurableActionExecutor:
             """)
 
     async def execute(self, request: ToolRequest, context: InvoiceContext) -> ToolResult:
+        if (request.tenant_id, request.invoice_id, request.contact_id, request.context_revision, request.mandate_version) != (context.tenant_id, context.invoice_id, context.contact_id, context.context_revision, context.mandate.version) or not context.mandate.authorized:
+            return ToolResult(request.operation_id, "failed", detail_status="context_not_authorized")
+        with self._connection() as conn:
+            owner = conn.execute("SELECT tenant_id, session_id, invoice_id, tool_name, arguments_json FROM action_receipts WHERE operation_id = ?", (request.operation_id,)).fetchone()
+            if owner and (owner["tenant_id"] != request.tenant_id or owner["session_id"] != request.session_id or owner["invoice_id"] != request.invoice_id or owner["tool_name"] != request.tool or json.loads(owner["arguments_json"]) != request.arguments):
+                return ToolResult(request.operation_id, "failed", detail_status="operation_conflict")
         # Check idempotency first
         existing = self._get_receipt(request.operation_id)
         if existing:
@@ -165,10 +181,19 @@ class DurableActionExecutor:
         plan_date = args.get("date")
         currency = args.get("currency", context.currency)
 
-        if not isinstance(amount_minor, int) or amount_minor <= 0:
+        if isinstance(amount_minor, bool) or not isinstance(amount_minor, int) or amount_minor <= 0:
             return ToolResult(request.operation_id, "failed", detail_status="invalid_amount")
         if not plan_date or not isinstance(plan_date, str):
             return ToolResult(request.operation_id, "failed", detail_status="invalid_date")
+        try:
+            if date.fromisoformat(plan_date).isoformat() != plan_date:
+                raise ValueError("noncanonical_date")
+        except ValueError:
+            return ToolResult(request.operation_id, "failed", detail_status="invalid_date")
+        if currency != context.currency:
+            return ToolResult(request.operation_id, "failed", detail_status="currency_mismatch")
+        if context.mandate.latest_due_date and plan_date > context.mandate.latest_due_date:
+            return ToolResult(request.operation_id, "failed", detail_status="date_not_authorized")
 
         # Invariant: PTP amount must not exceed balance
         if amount_minor > context.amount_due_minor:
@@ -195,9 +220,9 @@ class DurableActionExecutor:
                     created_at TEXT NOT NULL
                 );"""
             )
-            ptp_id = f"ptp_{uuid4().hex[:12]}"
+            ptp_id = f"ptp_{hashlib.sha256(request.operation_id.encode()).hexdigest()[:24]}"
             conn.execute(
-                """INSERT INTO ptp_records (id, tenant_id, invoice_id, session_id, amount_minor, currency, scheduled_date, created_at)
+                """INSERT OR IGNORE INTO ptp_records (id, tenant_id, invoice_id, session_id, amount_minor, currency, scheduled_date, created_at)
                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
                 (ptp_id, request.tenant_id, request.invoice_id, request.session_id, amount_minor, currency, plan_date, _utc_now()),
             )
@@ -261,9 +286,9 @@ class DurableActionExecutor:
                     created_at TEXT NOT NULL
                 );"""
             )
-            disp_id = f"disp_{uuid4().hex[:12]}"
+            disp_id = f"disp_{hashlib.sha256(request.operation_id.encode()).hexdigest()[:24]}"
             conn.execute(
-                """INSERT INTO disputes (id, tenant_id, invoice_id, session_id, reason, created_at)
+                """INSERT OR IGNORE INTO disputes (id, tenant_id, invoice_id, session_id, reason, created_at)
                    VALUES (?, ?, ?, ?, ?, ?)""",
                 (disp_id, request.tenant_id, request.invoice_id, request.session_id, request.arguments.get("reason", "dispute"), _utc_now()),
             )
@@ -271,90 +296,27 @@ class DurableActionExecutor:
         return ToolResult(request.operation_id, "succeeded", provider_reference=ref, detail_status="paused_dispute")
 
     async def _tool_request_human_handoff(self, request: ToolRequest, context: InvoiceContext) -> ToolResult:
-        target_id = request.arguments.get("target_id") or context.mandate.human_target_id
-        if not target_id:
-            return ToolResult(request.operation_id, "failed", detail_status="human_unavailable")
-
-        # In testing/sandbox, simulated target is available
-        ref = f"handoff_{hashlib.sha256(f'{target_id}:{request.session_id}'.encode()).hexdigest()[:16]}"
-        return ToolResult(
-            operation_id=request.operation_id,
-            status="succeeded",
-            provider_reference=ref,
-            detail_status="human_accepted",
-            data={"target_id": target_id},
-        )
+        # A configured target is not evidence that a person answered or accepted.
+        return ToolResult(request.operation_id, "failed", detail_status="handoff_adapter_unconfigured")
 
     async def _tool_send_invoice_or_link(self, request: ToolRequest, context: InvoiceContext) -> ToolResult:
         channel = request.arguments.get("channel")
         if channel not in context.mandate.allowed_channels or channel not in context.verified_channels:
             return ToolResult(request.operation_id, "failed", detail_status="channel_not_authorized")
-
-        # Create-only guarantee: strictly avoid unsolicited blast / automatic reminders
-        # payload structure: notify.sms = False, notify.email = False, reminder_enable = False
-        dispatch_id = f"disp_{uuid4().hex[:12]}"
-        provider_ref = f"msg_{hashlib.sha256(f'{dispatch_id}:{channel}'.encode()).hexdigest()[:16]}"
-
-        with self._connection() as conn:
-            conn.execute(
-                """CREATE TABLE IF NOT EXISTS outbox_messages (
-                    id TEXT PRIMARY KEY,
-                    tenant_id TEXT NOT NULL,
-                    invoice_id TEXT NOT NULL,
-                    channel TEXT NOT NULL,
-                    content TEXT NOT NULL,
-                    provider_reference TEXT NOT NULL,
-                    status TEXT NOT NULL,
-                    notify_sms INTEGER DEFAULT 0,
-                    notify_email INTEGER DEFAULT 0,
-                    reminder_enabled INTEGER DEFAULT 0,
-                    created_at TEXT NOT NULL
-                );"""
-            )
-            conn.execute(
-                """INSERT INTO outbox_messages (
-                    id, tenant_id, invoice_id, channel, content, provider_reference, status,
-                    notify_sms, notify_email, reminder_enabled, created_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, 0, 0, 0, ?)""",
-                (
-                    dispatch_id,
-                    request.tenant_id,
-                    request.invoice_id,
-                    channel,
-                    request.arguments.get("content", "invoice"),
-                    provider_ref,
-                    "accepted",
-                    _utc_now(),
-                ),
-            )
-
-        return ToolResult(
-            operation_id=request.operation_id,
-            status="succeeded",
-            provider_reference=provider_ref,
-            detail_status="dispatched",
-            data={"channel": channel, "dispatch_id": dispatch_id},
-        )
+        return ToolResult(request.operation_id, "failed", detail_status="delivery_adapter_unconfigured")
 
     async def _tool_record_channel_preference(self, request: ToolRequest, context: InvoiceContext) -> ToolResult:
         channel = request.arguments.get("channel")
+        if channel not in {"email", "sms", "whatsapp", "phone"}:
+            return ToolResult(request.operation_id, "failed", detail_status="invalid_channel")
         allowed = bool(request.arguments.get("allowed", False))
-        ref = f"pref_{uuid4().hex[:12]}"
-        return ToolResult(
-            operation_id=request.operation_id,
-            status="succeeded",
-            provider_reference=ref,
-            detail_status="recorded",
-            data={"channel": channel, "allowed": allowed},
-        )
+        with self._connection() as conn:
+            conn.execute("CREATE TABLE IF NOT EXISTS contact_channel_preferences (tenant_id TEXT, contact_id TEXT, channel TEXT, allowed INTEGER NOT NULL, PRIMARY KEY(tenant_id, contact_id, channel))")
+            conn.execute("INSERT INTO contact_channel_preferences VALUES (?, ?, ?, ?) ON CONFLICT(tenant_id, contact_id, channel) DO UPDATE SET allowed=excluded.allowed", (request.tenant_id, request.contact_id, channel, int(allowed)))
+        return ToolResult(request.operation_id, "succeeded", provider_reference=request.operation_id, detail_status="recorded", data={"channel": channel, "allowed": allowed})
 
     async def _tool_request_payment_review(self, request: ToolRequest, context: InvoiceContext) -> ToolResult:
-        claim = request.arguments.get("client_claim", "already_paid")
-        ref = f"review_{uuid4().hex[:12]}"
-        return ToolResult(
-            operation_id=request.operation_id,
-            status="succeeded",
-            provider_reference=ref,
-            detail_status="review_pending",
-            data={"claim": claim},
-        )
+        with self._connection() as conn:
+            conn.execute("CREATE TABLE IF NOT EXISTS payment_reviews (id TEXT PRIMARY KEY, tenant_id TEXT, invoice_id TEXT, client_claim TEXT, status TEXT)")
+            conn.execute("INSERT OR IGNORE INTO payment_reviews VALUES (?, ?, ?, ?, 'pending')", (request.operation_id, request.tenant_id, request.invoice_id, request.arguments.get("client_claim", "already_paid")))
+        return ToolResult(request.operation_id, "succeeded", provider_reference=request.operation_id, detail_status="review_pending")

@@ -66,7 +66,8 @@ async function requestVoice(path: string, access: VoiceAccess, body?: unknown): 
   if (access.accessToken) {
     headers.Authorization = `Bearer ${access.accessToken}`;
   } else {
-    const key = process.env.VOICE_INTERNAL_API_KEY || "revclaim-voice-internal-secret-2026";
+    const key = process.env.VOICE_INTERNAL_API_KEY;
+    if (!key) throw new VoiceServiceError("Internal voice authentication is not configured.");
     headers["X-Voice-Internal-Key"] = key;
     if (access.tenantId) headers["X-Voice-Tenant-Id"] = access.tenantId;
   }

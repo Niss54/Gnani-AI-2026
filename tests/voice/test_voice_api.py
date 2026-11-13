@@ -3,13 +3,18 @@
 import pytest
 from uuid import uuid4
 from starlette.testclient import TestClient
-from backend.main import app
+from fastapi import FastAPI
 from backend.contracts.voice import CreditorMandate, InvoiceContext
-from backend.api.voice_router import voice_repository
+from backend.api import voice_router
+from backend.services.voice_repository import SqliteVoiceRepository
+from backend.services.action_executor import DurableActionExecutor
+from backend.services.conversation_controller import ConversationController
 
+app = FastAPI()
+app.include_router(voice_router.router)
 client = TestClient(app)
 
-INTERNAL_KEY = "revclaim-voice-internal-secret-2026"
+INTERNAL_KEY = "isolated-test-key"
 HEADERS = {
     "X-Voice-Internal-Key": INTERNAL_KEY,
     "X-Voice-Tenant-Id": "tenant_api_test",
@@ -17,7 +22,12 @@ HEADERS = {
 
 
 @pytest.fixture(autouse=True)
-def setup_invoice():
+def setup_invoice(tmp_path, monkeypatch):
+    monkeypatch.setenv("VOICE_INTERNAL_API_KEY", INTERNAL_KEY)
+    voice_repository = SqliteVoiceRepository(tmp_path / "voice.db")
+    executor = DurableActionExecutor(tmp_path / "voice.db")
+    monkeypatch.setattr(voice_router, "voice_repository", voice_repository)
+    monkeypatch.setattr(voice_router, "conversation_controller", ConversationController(voice_repository, executor))
     ctx = InvoiceContext(
         tenant_id="tenant_api_test",
         invoice_id="inv_api_1",

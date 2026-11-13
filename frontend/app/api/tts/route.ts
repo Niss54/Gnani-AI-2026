@@ -1,52 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createHash } from "node:crypto";
-import { promises as fs } from "node:fs";
-import path from "node:path";
+import { verifySpeechUrl } from "@/lib/voice-media";
 
 export const runtime = "nodejs";
 
-const memoryCache = new Map<string, { buffer: Buffer; contentType: string }>();
-const CACHE_DIR = path.join(process.cwd(), ".cache", "tts");
-
-async function ensureCacheDir() {
-  try {
-    await fs.mkdir(CACHE_DIR, { recursive: true });
-  } catch {}
-}
-
+// Bounded process-local cache only; invoice speech must not persist to shared disk.
+const memoryCache = new Map<string, { buffer: Buffer; contentType: string; expires: number }>();
 function getCacheKey(text: string, voiceId: string): string {
-  return createHash("md5").update(`${voiceId}:${text.trim()}`).digest("hex");
+  return createHash("sha256").update(`${voiceId}:${text.trim()}`).digest("hex");
 }
-
-async function getCachedAudio(key: string): Promise<{ buffer: Buffer; contentType: string } | null> {
-  const mem = memoryCache.get(key);
-  if (mem) return mem;
-  try {
-    const mp3Path = path.join(CACHE_DIR, `${key}.mp3`);
-    const data = await fs.readFile(mp3Path);
-    const entry = { buffer: data, contentType: "audio/mpeg" };
-    memoryCache.set(key, entry);
-    return entry;
-  } catch {
-    try {
-      const wavPath = path.join(CACHE_DIR, `${key}.wav`);
-      const data = await fs.readFile(wavPath);
-      const entry = { buffer: data, contentType: "audio/wav" };
-      memoryCache.set(key, entry);
-      return entry;
-    } catch {
-      return null;
-    }
-  }
+async function getCachedAudio(key: string) {
+  const entry = memoryCache.get(key);
+  if (entry && entry.expires > Date.now()) return entry;
+  memoryCache.delete(key);
+  return null;
 }
-
-async function saveCachedAudio(key: string, buffer: Buffer, contentType: string): Promise<void> {
-  memoryCache.set(key, { buffer, contentType });
-  try {
-    await ensureCacheDir();
-    const ext = contentType.includes("mpeg") ? "mp3" : "wav";
-    await fs.writeFile(path.join(CACHE_DIR, `${key}.${ext}`), buffer);
-  } catch {}
+async function saveCachedAudio(key: string, buffer: Buffer, contentType: string) {
+  if (memoryCache.size >= 32) memoryCache.delete(memoryCache.keys().next().value!);
+  memoryCache.set(key, { buffer, contentType, expires: Date.now() + 120_000 });
 }
 
 function pcmToWav(pcmData: Buffer, sampleRate = 16000, numChannels = 1, bitsPerSample = 16): Buffer {
@@ -73,12 +44,12 @@ function pcmToWav(pcmData: Buffer, sampleRate = 16000, numChannels = 1, bitsPerS
   return Buffer.concat([header, pcmData]);
 }
 
-async function synthesizeSpeech(text: string, voiceId?: string): Promise<{ buffer: Buffer; contentType: string } | null> {
+async function synthesizeSpeech(text: string, voiceId?: string, language = "en-IN"): Promise<{ buffer: Buffer; contentType: string } | null> {
   const cleanText = text.trim();
   if (!cleanText) return null;
 
   const targetVoice = voiceId || "EXAVITQu4vr4xnSDxMaL"; // Sarah: High-EQ, natural, confident
-  const cacheKey = getCacheKey(cleanText, targetVoice);
+  const cacheKey = getCacheKey(cleanText, `${targetVoice}:${language}`);
   const cached = await getCachedAudio(cacheKey);
   if (cached) return cached;
 
@@ -88,6 +59,7 @@ async function synthesizeSpeech(text: string, voiceId?: string): Promise<{ buffe
     try {
       const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${targetVoice}?output_format=mp3_44100_128`, {
         method: "POST",
+        signal: AbortSignal.timeout(8_000),
         headers: {
           "Content-Type": "application/json",
           "xi-api-key": elevenKey,
@@ -110,7 +82,7 @@ async function synthesizeSpeech(text: string, voiceId?: string): Promise<{ buffe
         await saveCachedAudio(cacheKey, buffer, "audio/mpeg");
         return { buffer, contentType: "audio/mpeg" };
       } else {
-        console.warn("[ElevenLabs TTS Error]:", res.status, await res.text());
+        console.warn("[ElevenLabs TTS Error]:", res.status);
       }
     } catch (err) {
       console.warn("[ElevenLabs TTS Network Error]:", err);
@@ -123,13 +95,14 @@ async function synthesizeSpeech(text: string, voiceId?: string): Promise<{ buffe
     try {
       const res = await fetch("https://api.vachana.ai/api/v1/tts/inference", {
         method: "POST",
+        signal: AbortSignal.timeout(8_000),
         headers: {
           "Content-Type": "application/json",
           "X-API-Key-ID": gnaniKey,
         },
         body: JSON.stringify({
           text: cleanText,
-          language: "Hindi",
+          language: language === "hi-en" ? "Hindi" : "English",
           model: "timbre-v3.0",
           voice: "Shivani",
         }),
@@ -152,20 +125,22 @@ async function synthesizeSpeech(text: string, voiceId?: string): Promise<{ buffe
 
 export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
+    const url = new URL(req.url);
+    if (!verifySpeechUrl(url)) return new NextResponse("Unauthorized media request", { status: 401 });
+    const { searchParams } = url;
     const text = searchParams.get("text") || "Namaste, this is Sarah from RevClaim AI.";
-    const voiceId = searchParams.get("voiceId") || searchParams.get("voice") || undefined;
+    const voiceId = process.env.VOICE_TTS_VOICE_ID || undefined;
 
-    const result = await synthesizeSpeech(text, voiceId);
+    const result = await synthesizeSpeech(text, voiceId, searchParams.get("lang") || "en-IN");
     if (!result) {
       return new NextResponse("TTS Unavailable", { status: 503 });
     }
 
-    return new NextResponse(result.buffer, {
+    return new NextResponse(new Uint8Array(result.buffer), {
       status: 200,
       headers: {
         "Content-Type": result.contentType,
-        "Cache-Control": "public, max-age=86400, s-maxage=86400",
+        "Cache-Control": "private, no-store",
         "Content-Length": String(result.buffer.length),
       },
     });
@@ -174,28 +149,6 @@ export async function GET(req: NextRequest) {
   }
 }
 
-export async function POST(req: NextRequest) {
-  try {
-    const body = await req.json();
-    const text = body.text?.trim();
-    if (!text) {
-      return NextResponse.json({ error: "Text is required" }, { status: 400 });
-    }
-
-    const result = await synthesizeSpeech(text, body.voiceId);
-    if (!result) {
-      return NextResponse.json({ error: "TTS synthesis engine unavailable" }, { status: 503 });
-    }
-
-    return new NextResponse(result.buffer, {
-      status: 200,
-      headers: {
-        "Content-Type": result.contentType,
-        "Cache-Control": "public, max-age=86400, s-maxage=86400",
-        "Content-Length": String(result.buffer.length),
-      },
-    });
-  } catch (error: any) {
-    return NextResponse.json({ error: error?.message || "TTS synthesis failed" }, { status: 500 });
-  }
+export async function POST() {
+  return NextResponse.json({ error: "Use a signed session speech URL." }, { status: 401 });
 }

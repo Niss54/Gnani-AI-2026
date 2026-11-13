@@ -6,7 +6,10 @@ import re
 import unicodedata
 from decimal import Decimal
 
-from backend.contracts.voice import LanguageMode, VoiceError, require_minor_units
+try:
+    from backend.contracts.voice import LanguageMode, VoiceError, require_minor_units
+except ImportError:
+    from contracts.voice import LanguageMode, VoiceError, require_minor_units
 
 
 def normalize_transcript(text: str) -> str:

@@ -26,17 +26,19 @@ TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID", "").strip()
 TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN", "").strip()
 TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER", "").strip()
 
-PUBLIC_TUNNEL_URL = os.getenv("VOICE_PUBLIC_BASE_URL") or os.getenv("TUNNEL_URL") or "https://november-puzzles-advise-vector.trycloudflare.com"
+PUBLIC_TUNNEL_URL = os.getenv("VOICE_PUBLIC_BASE_URL") or os.getenv("TUNNEL_URL") or ""
 BACKEND_URL = os.getenv("BACKEND_URL") or "http://127.0.0.1:8000"
 
 
 def dial_debtor(
-    phone: str = "+918840301998",
-    invoice_ref: str = "INV-2026-NISHANT-LIVE",
+    phone: str,
+    invoice_ref: str,
     amount: str = "45000",
     language_mode: str = "hi-en",
 ) -> dict:
     """Create authoritative session and trigger outbound phone call to debtor."""
+    if not PUBLIC_TUNNEL_URL.startswith("https://") or not os.getenv("VOICE_INTERNAL_API_KEY") or not os.getenv("VOICE_INTERNAL_TENANT_ID"):
+        return {"status": "unconfigured", "error": "Explicit voice URL, key and tenant are required"}
     if not (TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN and TWILIO_PHONE_NUMBER):
         print("[!] Notice: Twilio credentials not configured in environment.")
         return {"status": "unconfigured"}
@@ -53,8 +55,8 @@ def dial_debtor(
             session_resp = client.post(
                 f"{BACKEND_URL}/v1/voice/sessions",
                 headers={
-                    "X-Voice-Internal-Key": "revclaim-voice-internal-secret-2026",
-                    "X-Voice-Tenant-Id": "default_tenant",
+                    "X-Voice-Internal-Key": os.environ["VOICE_INTERNAL_API_KEY"],
+                    "X-Voice-Tenant-Id": os.environ["VOICE_INTERNAL_TENANT_ID"],
                 },
                 json={
                     "invoice_id": invoice_ref,
@@ -113,7 +115,6 @@ def dial_debtor(
 
 
 if __name__ == "__main__":
-    target = sys.argv[1] if len(sys.argv) > 1 else "+918840301998"
-    ref = sys.argv[2] if len(sys.argv) > 2 else "INV-2026-NISHANT-LIVE"
-    amt = sys.argv[3] if len(sys.argv) > 3 else "45000"
-    dial_debtor(target, ref, amt)
+    if len(sys.argv) < 3:
+        raise SystemExit("Explicit authorized test number and existing invoice ID are required.")
+    dial_debtor(sys.argv[1], sys.argv[2])

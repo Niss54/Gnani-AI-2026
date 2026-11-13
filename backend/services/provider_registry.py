@@ -8,19 +8,23 @@ from __future__ import annotations
 
 import asyncio
 import json
+import re
 import time
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
 from typing import Any, Protocol
 
-from backend.contracts.voice import InvoiceContext, SessionSnapshot
+try:
+    from backend.contracts.voice import InvoiceContext, SessionSnapshot
+except ImportError:
+    from contracts.voice import InvoiceContext, SessionSnapshot
 
 MODEL_INTENTS = frozenset({
     "opt_out", "wrong_number", "safety_close", "close", "human_request", "direct_contact",
     "dispute", "busy", "channel_refusal", "already_paid", "ai_identity", "trust", "proof",
     "secrets", "legal_boundary", "discount", "hardship", "tentative", "delivery_request",
-    "payment_proposal", "clarify", "off_topic", "affirm", "deny", "repeat", "greeting", "available", "agenda",
+    "payment_proposal", "clarify", "off_topic", "affirm", "deny", "repeat", "greeting", "available", "agenda", "listen", "audible",
 })
 
 

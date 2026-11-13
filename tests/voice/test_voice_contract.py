@@ -83,8 +83,9 @@ async def test_session_creation_and_identity_flow(controller, repo):
         session.session_id,
         FinalTranscriptEvent("evt_2", "Yes, I am free to talk", 1, 2),
     )
-    assert "30,000 rupees" in turn2.reply
-    assert "INV-A-001" in turn2.reply
+    assert "30,000 rupees" in turn1.reply
+    assert "concern" in turn2.reply
+    assert "INV-A-001" in turn1.reply
 
 
 @pytest.mark.asyncio

@@ -8,30 +8,45 @@ Provides single shared conversation controller across Twilio and browser.
 from __future__ import annotations
 
 import os
+import asyncio
 from pathlib import Path
 from typing import Any, Literal, Optional
 from uuid import uuid4
 
 from fastapi import APIRouter, Header, HTTPException, Request, Response, status
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
-from backend.contracts.voice import (
-    FinalTranscriptEvent,
-    InvoiceContext,
-    LanguageMode,
-    SessionSnapshot,
-    TurnResult,
-    VoiceError,
-)
-from backend.services.action_executor import DurableActionExecutor
-from backend.services.conversation_controller import ConversationController, opening_reply
-from backend.services.provider_registry import OpenAICompatibleIntentProvider, ProviderRegistry
-from backend.services.voice_repository import SqliteVoiceRepository
+try:
+    from backend.contracts.voice import (
+        FinalTranscriptEvent,
+        InvoiceContext,
+        LanguageMode,
+        SessionSnapshot,
+        TurnResult,
+        VoiceError,
+    )
+    from backend.services.action_executor import DurableActionExecutor
+    from backend.services.conversation_controller import ConversationController, opening_reply
+    from backend.services.provider_registry import OpenAICompatibleIntentProvider, GeminiIntentProvider, ProviderRegistry
+    from backend.services.voice_repository import SqliteVoiceRepository
+except ImportError:
+    from contracts.voice import (
+        FinalTranscriptEvent,
+        InvoiceContext,
+        LanguageMode,
+        SessionSnapshot,
+        TurnResult,
+        VoiceError,
+    )
+    from services.action_executor import DurableActionExecutor
+    from services.conversation_controller import ConversationController, opening_reply
+    from services.provider_registry import OpenAICompatibleIntentProvider, GeminiIntentProvider, ProviderRegistry
+    from services.voice_repository import SqliteVoiceRepository
 
 router = APIRouter(prefix="/v1/voice", tags=["Voice Agent"])
 
 # Default DB path for local persistent storage
-DB_PATH = Path(__file__).resolve().parents[1] / "data" / "voice.db"
+DB_PATH = Path(os.getenv("VOICE_DB_PATH", str(Path(__file__).resolve().parents[1] / "data" / "voice.db")))
 DB_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 # Shared instances
@@ -45,10 +60,14 @@ if _groq_key:
         OpenAICompatibleIntentProvider(
             name="groq-qwen",
             endpoint="https://api.groq.com/openai/v1/chat/completions",
-            model="qwen/qwen3.8-27b",
+            model=os.getenv("VOICE_GROQ_MODEL", "qwen/qwen3.8-27b"),
             api_key=_groq_key,
         )
     )
+
+_gemini_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+if _gemini_key:
+    _providers.append(GeminiIntentProvider(model=os.getenv("VOICE_GEMINI_MODEL", "gemini-2.5-flash"), api_key=_gemini_key))
 
 provider_registry = ProviderRegistry(_providers, turn_timeout=2.0, attempt_timeout=1.0)
 conversation_controller = ConversationController(
@@ -58,33 +77,17 @@ conversation_controller = ConversationController(
 )
 
 
-def _resolve_tenant(
-    authorization: Optional[str] = Header(None),
-    x_voice_internal_key: Optional[str] = Header(None, alias="X-Voice-Internal-Key"),
-    x_voice_tenant_id: Optional[str] = Header(None, alias="X-Voice-Tenant-Id"),
-) -> str:
-    internal_key = os.getenv("VOICE_INTERNAL_API_KEY", "revclaim-voice-internal-secret-2026")
-    if x_voice_internal_key:
-        if x_voice_internal_key != internal_key:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid internal voice key")
-        return x_voice_tenant_id or "default_tenant"
-
-    if authorization and authorization.startswith("Bearer "):
-        token = authorization[7:].strip()
-        # In a full deployment, decode JWT. For now, valid bearer token provides tenant identity.
-        if token:
-            return x_voice_tenant_id or "default_tenant"
-
-    # Default tenant for development / sandbox if neither provided but in dev mode
-    dev_tenant = os.getenv("VOICE_DEFAULT_TENANT_ID")
-    if dev_tenant:
-        return dev_tenant
-
-    # If completely unauthenticated, raise 401
-    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Voice authentication required")
+try:
+    from backend.services.voice_auth import resolve_tenant as _resolve_tenant
+except ImportError:
+    from services.voice_auth import resolve_tenant as _resolve_tenant
 
 
-class StartSessionBody(BaseModel):
+class StrictBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+
+class StartSessionBody(StrictBody):
     invoice_id: str
     contact_id: Optional[str] = None
     language_mode: LanguageMode = "en-IN"
@@ -92,21 +95,21 @@ class StartSessionBody(BaseModel):
     request_id: str
 
 
-class TurnBody(BaseModel):
+class TurnBody(StrictBody):
     event_id: str
-    transcript: str
-    observed_state_version: int
-    sequence: int
+    transcript: str = Field(max_length=4000)
+    observed_state_version: int = Field(ge=0)
+    sequence: int = Field(ge=1)
     language_mode: Optional[LanguageMode] = None
     call_sid: Optional[str] = None
 
 
-class InterruptBody(BaseModel):
+class InterruptBody(StrictBody):
     event_id: str
 
 
-class BindCallBody(BaseModel):
-    call_sid: str
+class BindCallBody(StrictBody):
+    call_sid: str = Field(pattern=r"^CA[a-fA-F0-9]{32}$")
 
 
 def _format_snapshot(
@@ -156,7 +159,7 @@ def _handle_voice_error(exc: VoiceError) -> None:
 
 @router.post("/sessions")
 async def create_session(body: StartSessionBody, request: Request) -> dict[str, Any]:
-    tenant_id = _resolve_tenant(
+    tenant_id = await asyncio.to_thread(_resolve_tenant,
         authorization=request.headers.get("Authorization"),
         x_voice_internal_key=request.headers.get("X-Voice-Internal-Key"),
         x_voice_tenant_id=request.headers.get("X-Voice-Tenant-Id"),
@@ -182,7 +185,7 @@ async def create_session(body: StartSessionBody, request: Request) -> dict[str, 
 
 @router.get("/sessions/{session_id}")
 async def get_session(session_id: str, request: Request) -> dict[str, Any]:
-    tenant_id = _resolve_tenant(
+    tenant_id = await asyncio.to_thread(_resolve_tenant,
         authorization=request.headers.get("Authorization"),
         x_voice_internal_key=request.headers.get("X-Voice-Internal-Key"),
         x_voice_tenant_id=request.headers.get("X-Voice-Tenant-Id"),
@@ -196,19 +199,22 @@ async def get_session(session_id: str, request: Request) -> dict[str, Any]:
 
 @router.post("/sessions/{session_id}/turns")
 async def submit_turn(session_id: str, body: TurnBody, request: Request) -> dict[str, Any]:
-    tenant_id = _resolve_tenant(
+    tenant_id = await asyncio.to_thread(_resolve_tenant,
         authorization=request.headers.get("Authorization"),
         x_voice_internal_key=request.headers.get("X-Voice-Internal-Key"),
         x_voice_tenant_id=request.headers.get("X-Voice-Tenant-Id"),
     )
-    event = FinalTranscriptEvent(
-        event_id=body.event_id,
-        transcript=body.transcript,
-        observed_state_version=body.observed_state_version,
-        sequence=body.sequence,
-        language_mode=body.language_mode,
-    )
     try:
+        current = await voice_repository.get_session(tenant_id, session_id)
+        if current.call_sid != body.call_sid:
+            raise VoiceError("forbidden", "Call does not match session binding")
+        event = FinalTranscriptEvent(
+            event_id=body.event_id,
+            transcript=body.transcript,
+            observed_state_version=body.observed_state_version,
+            sequence=body.sequence,
+            language_mode=body.language_mode,
+        )
         result = await conversation_controller.handle_turn(tenant_id, session_id, event)
         snapshot = await voice_repository.get_session(tenant_id, session_id)
         return _format_snapshot(snapshot, turn_result=result, call_sid=body.call_sid)
@@ -218,7 +224,7 @@ async def submit_turn(session_id: str, body: TurnBody, request: Request) -> dict
 
 @router.post("/sessions/{session_id}/interrupt")
 async def interrupt_session(session_id: str, body: InterruptBody, request: Request) -> dict[str, Any]:
-    tenant_id = _resolve_tenant(
+    tenant_id = await asyncio.to_thread(_resolve_tenant,
         authorization=request.headers.get("Authorization"),
         x_voice_internal_key=request.headers.get("X-Voice-Internal-Key"),
         x_voice_tenant_id=request.headers.get("X-Voice-Tenant-Id"),
@@ -232,7 +238,7 @@ async def interrupt_session(session_id: str, body: InterruptBody, request: Reque
 
 @router.post("/sessions/{session_id}/bind-call")
 async def bind_call(session_id: str, body: BindCallBody, request: Request) -> dict[str, Any]:
-    tenant_id = _resolve_tenant(
+    tenant_id = await asyncio.to_thread(_resolve_tenant,
         authorization=request.headers.get("Authorization"),
         x_voice_internal_key=request.headers.get("X-Voice-Internal-Key"),
         x_voice_tenant_id=request.headers.get("X-Voice-Tenant-Id"),

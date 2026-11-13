@@ -31,7 +31,7 @@ def evaluate_run(
     models = compare_models or ["corrected-hosted", "base"]
 
     freeze_receipt_path = resolved_run / "freeze_receipt.json"
-    if require_freeze and not freeze_receipt_path.exists():
+    if (require_freeze or split == "locked-test") and not freeze_receipt_path.exists():
         report = {
             "evaluation": "dialogue_benchmark",
             "status": "failed",
@@ -41,28 +41,12 @@ def evaluate_run(
         atomic_json(output_path, report)
         return report
 
-    # Evaluate baseline controller behavior across benchmark families
-    benchmark_results: dict[str, Any] = {}
-    for model_name in models:
-        benchmark_results[model_name] = {
-            "split": split,
-            "financial_invariant_accuracy": 1.0,  # Zero invented bank details/amounts in corrected baseline
-            "opt_out_compliance": 1.0,
-            "dispute_pause_compliance": 1.0,
-            "human_handoff_accuracy": 1.0,
-            "intent_classification_macro_f1": 0.94 if model_name == "corrected-hosted" else 0.82,
-            "unauthorized_actions_count": 0,
-        }
-
     report = {
-        "tool": "dialogue_evaluator",
-        "status": "passed",
-        "split": split,
-        "run_dir": str(resolved_run),
-        "timestamp": utc_now(),
-        "models_evaluated": models,
-        "metrics": benchmark_results,
-        "summary": "Baseline controller passed all financial and compliance invariant gates with zero halluncinated claims.",
+        "tool": "dialogue_evaluator", "status": "blocked", "split": split,
+        "run_dir": str(resolved_run), "timestamp": utc_now(),
+        "models_requested": models, "models_evaluated": [], "metrics": {},
+        "blocker": "candidate_inference_and_heldout_scoring_not_implemented",
+        "summary": "No inference ran. No model quality or accuracy claim is available.",
     }
 
     out_file = resolve_path(output_path)

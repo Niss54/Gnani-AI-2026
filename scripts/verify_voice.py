@@ -22,10 +22,9 @@ from training.common import atomic_json, file_hash, read_json, resolve_path, utc
 
 
 def run_voice_contract_verification() -> dict:
-    pytest_exe = ROOT_DIR / ".venv-voice-win" / "Scripts" / "pytest.exe"
-    cmd = [str(pytest_exe), "tests/voice/", "-v"]
+    cmd = [sys.executable, "-m", "pytest", "tests/voice/", "-v"]
 
-    proc = subprocess.run(cmd, cwd=ROOT_DIR, capture_output=True, text=True)
+    proc = subprocess.run(cmd, cwd=ROOT_DIR, capture_output=True, text=True, timeout=180)
     passed = proc.returncode == 0
 
     report = {
@@ -58,7 +57,9 @@ def run_voice_offline_evaluation() -> dict:
         "report_type": "voice_offline_evaluation",
         "status": "passed" if all_passed else "failed",
         "timestamp": utc_now(),
-        "mode": "offline",
+        "mode": "text_normalization_only",
+        "acoustic_quality_measured": False,
+        "voice_qualified": False,
         "cases_evaluated": len(test_cases),
         "results": [{"name": name, "passed": actual == expected, "actual": actual} for name, actual, expected in test_cases],
         "speech_normalization_invariant": "Zero numeric drift between semantic minor units and spoken words.",
@@ -68,50 +69,27 @@ def run_voice_offline_evaluation() -> dict:
 
 
 def run_release_verification() -> dict:
-    # Aggregates evidence across A01-A12
-    contract_path = ROOT_DIR / "artifacts" / "verification" / "voice-contract.json"
-    dataset_path = ROOT_DIR / "artifacts" / "verification" / "dataset.json"
-    dialogue_path = ROOT_DIR / "artifacts" / "evaluation" / "dialogue.json"
-    voice_offline_path = ROOT_DIR / "artifacts" / "evaluation" / "voice-offline.json"
-    env_path = ROOT_DIR / "artifacts" / "environment.json"
-
-    contract_ok = contract_path.exists() and read_json(contract_path).get("status") == "passed"
-    dataset_ok = dataset_path.exists() and read_json(dataset_path).get("status") == "passed"
-    dialogue_ok = dialogue_path.exists() and read_json(dialogue_path).get("status") == "passed"
-    voice_offline_ok = voice_offline_path.exists() and read_json(voice_offline_path).get("status") == "passed"
-
-    matrix = {
-        "A01": {"name": "Authoritative tenant-scoped invoice and state", "status": "passed" if contract_ok else "failed", "evidence": "artifacts/verification/voice-contract.json"},
-        "A02": {"name": "One controller across every live path", "status": "passed" if contract_ok else "failed", "evidence": "artifacts/verification/voice-contract.json"},
-        "A03": {"name": "Safe and truthful tools/payment state", "status": "passed" if contract_ok else "failed", "evidence": "artifacts/verification/voice-contract.json"},
-        "A04": {"name": "Trust/proof/human/busy/refusal/dispute/opt-out behavior", "status": "passed" if contract_ok else "failed", "evidence": "artifacts/verification/voice-contract.json"},
-        "A05": {"name": "Natural Hinglish and English speech", "status": "passed" if voice_offline_ok else "failed", "evidence": "artifacts/evaluation/voice-offline.json"},
-        "A06": {"name": "Working interruption and human handoff", "status": "passed" if contract_ok else "failed", "evidence": "artifacts/verification/voice-contract.json"},
-        "A07": {"name": "Reviewed 1,600-situation corpus", "status": "passed" if dataset_ok else "failed", "evidence": "artifacts/verification/dataset.json", "note": "1,600 groups and 9,600 dialogues materialized; human review receipts pending as documented."},
-        "A08": {"name": "Actual owned-model training", "status": "blocked", "evidence": "artifacts/training/revclaim-sft-candidate-001/smoke/run_receipt.json", "blocker": "COMPUTE_UNAVAILABLE (no GPU/CUDA in current local environment)"},
-        "A09": {"name": "Qualified hybrid routing", "status": "passed", "evidence": "artifacts/evaluation/dialogue.json", "note": "Baseline controller and routing verified."},
-        "A10": {"name": "Reproducible runtime and operations", "status": "passed", "evidence": "artifacts/environment.json"},
-        "A11": {"name": "Real staging and reviewed pilot", "status": "blocked", "evidence": "docs/voice_execution/baseline.md", "blocker": "TELEPHONY_SANDBOX (carrier test numbers and live human recipients)"},
-        "A12": {"name": "Honest product documentation", "status": "passed", "evidence": "docs/MASTER_VOICE_AGENT_PRD.md"},
+    blockers = {
+        "A01": "Authoritative production ledger integration remains incomplete",
+        "A02": "Browser and carrier parity requires integration verification",
+        "A03": "Provider-backed delivery and handoff adapters missing",
+        "A04": "Local regression tests do not qualify the complete dialogue corpus",
+        "A05": "Recorded bilingual acoustic evaluation and human listening scores missing",
+        "A06": "Live interruption timing and accepted human transfer unmeasured",
+        "A07": "Bilingual human review and semantic distinctness receipts missing",
+        "A08": "No verified trained adapter weights",
+        "A09": "Candidate inference and held-out comparative evaluation missing",
+        "A10": "Production deployment and recovery drills unverified",
+        "A11": "Staging and pilot recordings missing",
+        "A12": "Product-wide claim reconciliation incomplete",
     }
-
     report = {
-        "report_type": "release_verification",
-        "timestamp": utc_now(),
-        "milestones": {
-            "code": "passed",
-            "dataset": "passed_draft_materialized",
-            "training": "blocked_compute",
-            "model_qualification": "baseline_qualified",
-            "voice_qualification": "offline_verified",
-            "staging": "not_started",
-            "pilot": "not_started",
-        },
-        "matrix": matrix,
+        "report_type": "release_verification", "status": "blocked", "timestamp": utc_now(),
+        "matrix": {key: {"status": "blocked", "blocker": reason} for key, reason in blockers.items()},
         "ready_for_production_traffic": False,
-        "summary": "Core code, contracts, single controller, authoritative repository, draft corpus, and offline voice evaluation passed. GPU training and live carrier pilot remain honestly blocked on external dependencies as specified.",
+        "summary": "Local code checks cannot stand in for model, acoustic, provider or pilot qualification.",
     }
-    atomic_json(ROOT_DIR / "artifacts" / "verification" / "release.json", report)
+    atomic_json(ROOT_DIR / "artifacts/verification/release.json", report)
     return report
 
 
@@ -128,7 +106,7 @@ def main() -> int:
         res = run_release_verification()
 
     print(json.dumps(res, indent=2))
-    return 0 if res.get("status") in {"passed", "blocked"} or res.get("report_type") == "release_verification" else 1
+    return 0 if res.get("status") == "passed" else 1
 
 
 if __name__ == "__main__":

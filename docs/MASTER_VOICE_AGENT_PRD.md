@@ -1,5 +1,8 @@
 # RevClaim AI: Master Voice Agent PRD
 
+> Implementation audit update, 2026-11-14: this PRD is **not complete**. Previous passing status and fixed evaluation scores were invalidated. See [current audit and verified limits](voice_execution/AUDIT_2026-11-14.md) and [status ledger](voice_execution/status.json). Local remediation is not trained-model, acoustic or production qualification. Unsafe legacy live routes are unavailable pending authoritative integrations.
+
+
 **Version:** 1.1 | **Prepared and updated:** 13 November 2026, Asia/Kolkata  
 **Status:** Implementation specification. Nothing in this document is a claim that training or remediation has already happened.  
 **Scope:** Reliable invoice follow-up and bounded negotiation in Hinglish and English.  

@@ -1,7 +1,7 @@
 import { Invoice, InvoiceStatus, CallRecord, CockpitStats } from "./types";
 import { INITIAL_INVOICES } from "./demo-data";
 
-// In-memory persistent state (mirroring Supabase tables)
+// Demo-only in-memory store. Never use as an authoritative financial ledger.
 class DataStore {
   private invoices: Map<string, Invoice> = new Map();
   private calls: Map<string, CallRecord> = new Map();
@@ -48,7 +48,7 @@ class DataStore {
     inv.revclaimFeeDeducted = fee;
     inv.recoveredAmount = amount;
     inv.netPayoutToUser = Math.max(0, amount - fee);
-    inv.payoutStatus = "REMITTED";
+    inv.payoutStatus = "PENDING";
     inv.updatedAt = new Date().toISOString();
     return inv;
   }

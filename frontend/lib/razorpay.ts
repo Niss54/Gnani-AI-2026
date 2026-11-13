@@ -95,14 +95,15 @@ export async function createRazorpayPaymentLink(
     amount,
     currency = "INR",
     debtorName = "Client",
-    debtorEmail = "accounts@client.in",
-    debtorPhone = "+919876543210",
+    debtorEmail,
+    debtorPhone,
     description,
-    allowPartial = true,
+    allowPartial = false,
   } = params;
 
   // Amount in Paise (e.g., ₹50,000.00 = 5,000,000 paise)
   const amountInPaise = Math.round(amount * 100);
+  if (!Number.isFinite(amount) || amount <= 0 || !Number.isSafeInteger(amountInPaise)) throw new Error("Invalid payment amount");
   const minPartialInPaise = allowPartial ? Math.round(amount * 50) : amountInPaise; // 50% split
 
   if (isRazorpayConfigured()) {
@@ -117,13 +118,13 @@ export async function createRazorpayPaymentLink(
         customer: {
           name: debtorName,
           email: debtorEmail,
-          contact: debtorPhone.replace(/\s+/g, ""),
+          contact: debtorPhone?.replace(/\s+/g, ""),
         },
         notify: {
-          sms: true,
-          email: true,
+          sms: false,
+          email: false,
         },
-        reminder_enable: true,
+        reminder_enable: false,
         notes: {
           invoiceId: invoiceId,
           invoiceNumber: invoiceNumber,
@@ -163,20 +164,7 @@ export async function createRazorpayPaymentLink(
     }
   }
 
-  // Seamless fallback simulation for testing and offline development
-  const cleanId = (invoiceNumber || invoiceId || "DEMO").replace(/[^a-zA-Z0-9]/g, "").slice(0, 8);
-  const simulatedUrl = `https://rzp.io/i/revc_${cleanId.toLowerCase()}`;
-
-  return {
-    success: true,
-    paymentLinkId: `plink_${cleanId}_simulated`,
-    paymentUrl: simulatedUrl,
-    shortUrl: simulatedUrl,
-    amount: amount,
-    currency: currency,
-    status: "created",
-    provider: "razorpay_simulation",
-  };
+  throw new Error("Payment link creation unavailable; no link was confirmed.");
 }
 
 /**
@@ -187,6 +175,7 @@ export async function createRazorpayOrder(
 ): Promise<RazorpayOrderResponse> {
   const { invoiceId, invoiceNumber, amount, currency = "INR", notes = {} } = params;
   const amountInPaise = Math.round(amount * 100);
+  if (!Number.isFinite(amount) || amount <= 0 || !Number.isSafeInteger(amountInPaise)) throw new Error("Invalid payment amount");
 
   if (isRazorpayConfigured()) {
     try {
@@ -230,15 +219,7 @@ export async function createRazorpayOrder(
     }
   }
 
-  const cleanId = (invoiceNumber || invoiceId || "DEMO").replace(/[^a-zA-Z0-9]/g, "").slice(0, 10);
-  return {
-    success: true,
-    orderId: `order_${cleanId}_simulated`,
-    amount: amountInPaise,
-    currency,
-    status: "created",
-    provider: "razorpay_simulation",
-  };
+  throw new Error("Payment order creation unavailable; no order was confirmed.");
 }
 
 /**
@@ -250,7 +231,7 @@ export function verifyRazorpayPaymentSignature(params: {
   signature: string;
 }): boolean {
   const secret = getRazorpayKeySecret();
-  if (!secret) return true; // Dev bypass if secret not configured
+  if (!secret) return false;
 
   try {
     const text = `${params.orderId}|${params.paymentId}`;
@@ -273,7 +254,7 @@ export function verifyRazorpayWebhookSignature(
   rawBody: string,
   signatureHeader: string | null
 ): { valid: boolean; reason?: string } {
-  const webhookSecret = getRazorpayWebhookSecret() || getRazorpayKeySecret();
+  const webhookSecret = getRazorpayWebhookSecret();
 
   if (webhookSecret && signatureHeader) {
     try {
@@ -293,11 +274,6 @@ export function verifyRazorpayWebhookSignature(
 
   if (signatureHeader && !webhookSecret) {
     return { valid: false, reason: "RAZORPAY_WEBHOOK_SECRET not configured on server" };
-  }
-
-  // Allow permissive local development if no signature header is provided in test mode
-  if (process.env.NODE_ENV !== "production" && !signatureHeader) {
-    return { valid: true, reason: "Dev local simulation bypass" };
   }
 
   return { valid: false, reason: "Missing required x-razorpay-signature header" };

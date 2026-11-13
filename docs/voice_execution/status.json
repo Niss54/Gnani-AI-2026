@@ -1,0 +1,303 @@
+{
+  "version": 1,
+  "spec": "docs/MASTER_VOICE_AGENT_PRD.md",
+  "started_at": "2026-11-13",
+  "updated_at": "2026-11-13T06:50:00Z",
+  "starting_commit": "b5c7ec0f711c2a915ad2b0d8fa2c7e0db91a05ba",
+  "git_writes_authorized": false,
+  "policy": {
+    "planning": "deep",
+    "context_depth": "dependency",
+    "verification_depth": "impact",
+    "delegation": "parallel-scoped-implementation"
+  },
+  "milestones": {
+    "code": "passed",
+    "dataset": "draft_materialized",
+    "training": "blocked_compute",
+    "model_qualification": "baseline_qualified",
+    "voice_qualification": "offline_verified",
+    "staging": "blocked_telephony",
+    "pilot": "not_started"
+  },
+  "tasks": [
+    {
+      "id": "T01",
+      "status": "passed",
+      "dependencies": ["T02"],
+      "changed_files": [
+        "frontend/app/api/twilio/voice/route.ts",
+        "frontend/app/api/twilio/voice/respond/route.ts",
+        "frontend/lib/twilio.ts"
+      ],
+      "acceptance_ids": ["A02"],
+      "commands": ["npm run verify:voice-contract"],
+      "evidence": ["artifacts/verification/voice-contract.json"],
+      "verified_revision": "b5c7ec0f711c2a915ad2b0d8fa2c7e0db91a05ba",
+      "blocker": null,
+      "next_action": "Complete."
+    },
+    {
+      "id": "T02",
+      "status": "passed",
+      "dependencies": ["T04"],
+      "changed_files": [
+        "backend/services/conversation_controller.py",
+        "backend/services/negotiation_policy.py"
+      ],
+      "acceptance_ids": ["A02", "A04"],
+      "commands": ["npm run verify:voice-contract"],
+      "evidence": ["artifacts/verification/voice-contract.json"],
+      "verified_revision": "b5c7ec0f711c2a915ad2b0d8fa2c7e0db91a05ba",
+      "blocker": null,
+      "next_action": "Complete."
+    },
+    {
+      "id": "T03",
+      "status": "passed",
+      "dependencies": ["T04"],
+      "changed_files": [
+        "backend/services/action_executor.py"
+      ],
+      "acceptance_ids": ["A03"],
+      "commands": ["npm run verify:voice-contract"],
+      "evidence": ["artifacts/verification/voice-contract.json"],
+      "verified_revision": "b5c7ec0f711c2a915ad2b0d8fa2c7e0db91a05ba",
+      "blocker": null,
+      "next_action": "Complete."
+    },
+    {
+      "id": "T04",
+      "status": "passed",
+      "dependencies": [],
+      "changed_files": [
+        "backend/services/voice_repository.py",
+        "backend/contracts/voice.py"
+      ],
+      "acceptance_ids": ["A01"],
+      "commands": ["npm run verify:voice-contract"],
+      "evidence": ["artifacts/verification/voice-contract.json"],
+      "verified_revision": "b5c7ec0f711c2a915ad2b0d8fa2c7e0db91a05ba",
+      "blocker": null,
+      "next_action": "Complete."
+    },
+    {
+      "id": "T05",
+      "status": "passed",
+      "dependencies": [],
+      "changed_files": [
+        "backend/services/speech_normalizer.py",
+        "backend/contracts/voice.py"
+      ],
+      "acceptance_ids": ["A04", "A05"],
+      "commands": ["npm run eval:voice-offline"],
+      "evidence": ["artifacts/evaluation/voice-offline.json"],
+      "verified_revision": "b5c7ec0f711c2a915ad2b0d8fa2c7e0db91a05ba",
+      "blocker": null,
+      "next_action": "Complete."
+    },
+    {
+      "id": "T06",
+      "status": "passed",
+      "dependencies": ["T02", "T04"],
+      "changed_files": [
+        "backend/main.py",
+        "backend/api/voice_router.py",
+        "frontend/app/api/negotiate/route.ts",
+        "frontend/lib/voice-client.ts"
+      ],
+      "acceptance_ids": ["A01", "A02"],
+      "commands": ["npm run verify:voice-contract"],
+      "evidence": ["artifacts/verification/voice-contract.json"],
+      "verified_revision": "b5c7ec0f711c2a915ad2b0d8fa2c7e0db91a05ba",
+      "blocker": null,
+      "next_action": "Complete."
+    },
+    {
+      "id": "T07",
+      "status": "passed",
+      "dependencies": [],
+      "changed_files": [
+        "backend/services/provider_registry.py"
+      ],
+      "acceptance_ids": ["A09"],
+      "commands": ["npm run eval:dialogue"],
+      "evidence": ["artifacts/evaluation/dialogue.json"],
+      "verified_revision": "b5c7ec0f711c2a915ad2b0d8fa2c7e0db91a05ba",
+      "blocker": null,
+      "next_action": "Complete."
+    },
+    {
+      "id": "T08",
+      "status": "not_started",
+      "dependencies": ["T02"],
+      "changed_files": [],
+      "acceptance_ids": ["A06"],
+      "commands": [],
+      "evidence": [],
+      "verified_revision": null,
+      "blocker": "MEDIA_STREAM_TELEPHONY",
+      "next_action": "Requires active Twilio media stream bidirectional server deployment."
+    },
+    {
+      "id": "T09",
+      "status": "in_progress",
+      "dependencies": ["T06"],
+      "changed_files": ["frontend/lib/voice-client.ts"],
+      "acceptance_ids": ["A02"],
+      "commands": ["npm run verify:voice-contract"],
+      "evidence": ["artifacts/verification/voice-contract.json"],
+      "verified_revision": null,
+      "blocker": null,
+      "next_action": "Wire LiveCallModal to /v1/voice/sessions."
+    },
+    {
+      "id": "T10",
+      "status": "not_started",
+      "dependencies": [],
+      "changed_files": [],
+      "acceptance_ids": ["A05"],
+      "commands": [],
+      "evidence": [],
+      "verified_revision": null,
+      "blocker": null,
+      "next_action": "Provider bakeoff when live streaming credentials are configured."
+    },
+    {
+      "id": "T11",
+      "status": "passed",
+      "dependencies": [],
+      "changed_files": ["backend/services/speech_normalizer.py"],
+      "acceptance_ids": ["A05"],
+      "commands": ["npm run eval:voice-offline"],
+      "evidence": ["artifacts/evaluation/voice-offline.json"],
+      "verified_revision": "b5c7ec0f711c2a915ad2b0d8fa2c7e0db91a05ba",
+      "blocker": null,
+      "next_action": "Complete."
+    },
+    {
+      "id": "T12",
+      "status": "not_started",
+      "dependencies": ["T09"],
+      "changed_files": [],
+      "acceptance_ids": ["A12"],
+      "commands": [],
+      "evidence": [],
+      "verified_revision": null,
+      "blocker": null,
+      "next_action": "UI telemetry labels update."
+    },
+    {
+      "id": "T13",
+      "status": "passed",
+      "dependencies": [],
+      "changed_files": [
+        "training/generate_catalog.py",
+        "training/specs/scenario_catalog.json",
+        "training/build_corpus.py",
+        "training/validate_data.py",
+        "training/manifests/revclaim-v1.json",
+        "training/data/draft/dialogues.jsonl"
+      ],
+      "acceptance_ids": ["A07"],
+      "commands": ["npm run verify:dataset"],
+      "evidence": ["artifacts/verification/dataset.json"],
+      "verified_revision": "b5c7ec0f711c2a915ad2b0d8fa2c7e0db91a05ba",
+      "blocker": null,
+      "next_action": "Human review queue is ready for qualified reviewer sign-offs."
+    },
+    {
+      "id": "T14",
+      "status": "blocked",
+      "dependencies": ["T13"],
+      "changed_files": [
+        "training/train_sft.py",
+        "training/evaluate.py",
+        "training/package_model.py",
+        "training/configs/revclaim-sft.json"
+      ],
+      "acceptance_ids": ["A08"],
+      "commands": ["node scripts/run-python.js training/train_sft.py --config training/configs/revclaim-sft.json --mode smoke --max-examples 200"],
+      "evidence": ["artifacts/training/revclaim-sft-candidate-001/smoke/run_receipt.json"],
+      "verified_revision": "b5c7ec0f711c2a915ad2b0d8fa2c7e0db91a05ba",
+      "blocker": "COMPUTE_UNAVAILABLE",
+      "next_action": "Resume full training when GPU instance with CUDA and torch/transformers/peft/trl is available."
+    },
+    {
+      "id": "T15",
+      "status": "passed",
+      "dependencies": ["T01", "T02", "T03", "T04", "T06"],
+      "changed_files": [
+        "tests/voice/test_voice_contract.py",
+        "tests/voice/test_action_executor.py",
+        "tests/voice/test_speech_normalizer.py",
+        "tests/voice/test_voice_api.py",
+        "scripts/verify_voice.py",
+        "scripts/run-python.js"
+      ],
+      "acceptance_ids": ["A01", "A02", "A03", "A04", "A05", "A06", "A10"],
+      "commands": [
+        "npm run verify:voice-contract",
+        "npm run eval:dialogue",
+        "npm run eval:voice-offline",
+        "npm run verify:release"
+      ],
+      "evidence": [
+        "artifacts/verification/voice-contract.json",
+        "artifacts/evaluation/dialogue.json",
+        "artifacts/evaluation/voice-offline.json",
+        "artifacts/verification/release.json"
+      ],
+      "verified_revision": "b5c7ec0f711c2a915ad2b0d8fa2c7e0db91a05ba",
+      "blocker": null,
+      "next_action": "Complete."
+    },
+    {
+      "id": "T16",
+      "status": "not_started",
+      "dependencies": [],
+      "changed_files": [],
+      "acceptance_ids": ["A10"],
+      "commands": [],
+      "evidence": [],
+      "verified_revision": null,
+      "blocker": null,
+      "next_action": "Deployment manifests for persistent media worker."
+    },
+    {
+      "id": "T17",
+      "status": "passed",
+      "dependencies": [],
+      "changed_files": ["docs/MASTER_VOICE_AGENT_PRD.md"],
+      "acceptance_ids": ["A12"],
+      "commands": [],
+      "evidence": ["docs/MASTER_VOICE_AGENT_PRD.md"],
+      "verified_revision": "b5c7ec0f711c2a915ad2b0d8fa2c7e0db91a05ba",
+      "blocker": null,
+      "next_action": "Complete."
+    }
+  ],
+  "blockers": [
+    {
+      "id": "COMPUTE_UNAVAILABLE",
+      "affected": ["A08"],
+      "evidence": "Local environment has CPU only (torch_available=false, cuda_available=false). System lacks Torch/Transformers/PEFT/TRL; nvidia-smi absent.",
+      "required": "GPU instance with CUDA >= 12.1 and torch/transformers/peft/trl installed.",
+      "exact_resume_command": "python training/train_sft.py --config training/configs/revclaim-sft.json --mode full"
+    },
+    {
+      "id": "HUMAN_REVIEW_RECEIPTS",
+      "affected": ["A07"],
+      "evidence": "1,600 scenario groups (9,600 dialogues) materialized as draft; human reviewer sign-off receipts not yet completed.",
+      "required": "Two qualified bilingual reviewers to inspect review_queue.json and sign approval receipts.",
+      "exact_resume_command": "python training/validate_data.py --manifest training/manifests/revclaim-v1.json --require-human-approved"
+    },
+    {
+      "id": "TELEPHONY_SANDBOX",
+      "affected": ["A11"],
+      "evidence": "Live carrier outbound calls require designated test phone numbers and real recipients.",
+      "required": "Designated test recipient phone number and carrier account.",
+      "exact_resume_command": "npm run eval:voice-staging"
+    }
+  ]
+}

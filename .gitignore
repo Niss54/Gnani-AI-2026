@@ -48,3 +48,15 @@ next-env.d.ts
 *.exe
 twilio_calls.log
 desktop.ini
+
+# Isolated voice development, private data and model artifacts
+/.venv-voice/
+/.venv-voice-win/
+/artifacts/
+/training/data/
+/training/runs/
+/training/checkpoints/
+/backend/data/voice*.db*
+/.cache/
+/frontend/.cache/
+*.log

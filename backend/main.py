@@ -6,7 +6,11 @@ from pydantic import BaseModel
 from dotenv import load_dotenv
 
 # Load backend environment variables reliably from script directory
+import sys
 backend_dir = os.path.dirname(os.path.abspath(__file__))
+for p in [backend_dir, os.path.dirname(backend_dir)]:
+    if p not in sys.path:
+        sys.path.insert(0, p)
 root_dir = os.path.dirname(backend_dir)
 load_dotenv(os.path.join(root_dir, ".env"))
 load_dotenv(os.path.join(backend_dir, ".env"), override=True)
@@ -18,12 +22,16 @@ from services.mem0_service import mem0_service
 from services.voice_service import voice_service
 from services.bhashini_service import bhashini_service
 from services.rag_service import statutory_rag_engine
+from api.voice_router import router as voice_router
 
 app = FastAPI(
     title="RevClaim AI — Python Backend Service",
     description="Autonomous Voice-Calling Invoice Recovery REST API & Voice Pipeline",
-    version="1.0.0"
+    version="1.0.0",
+
 )
+
+app.include_router(voice_router)
 
 # Enable CORS for Next.js frontend
 app.add_middleware(

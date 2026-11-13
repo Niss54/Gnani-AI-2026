@@ -1,0 +1,34 @@
+{
+  "dataset_version": "revclaim-catalog-v1.0",
+  "policy_version": "negotiation-v1",
+  "purpose": "draft_review_queue",
+  "created_at": "2026-11-13T06:42:30.143853+00:00",
+  "catalog_hash": "69efca8c4047fcaf8a710f0a4e5f3747a417153af4efb4037e713af586114936",
+  "files": [
+    {
+      "path": "training/data/draft/dialogues.jsonl",
+      "sha256": "f6313f445839745a71bce57c0d8b5d05b7c8308ca48e26208e4ad96834fa9854"
+    }
+  ],
+  "expected": {
+    "families": 40,
+    "scenario_groups": 1600,
+    "dialogues": 9600,
+    "groups_per_family": {
+      "train": 28,
+      "development": 6,
+      "locked-test": 6
+    },
+    "dialogues_per_split": {
+      "train": 6720,
+      "development": 1440,
+      "locked-test": 1440
+    }
+  },
+  "actual": {
+    "scenario_groups": 1600,
+    "dialogues": 9600
+  },
+  "production_ready": false,
+  "conflicts": []
+}

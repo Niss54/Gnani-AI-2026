@@ -1,123 +1,65 @@
 import { NextRequest, NextResponse } from "next/server";
-import { generateNegotiationTurn, NegotiationContext } from "@/lib/llm";
-import { sendRecoveryEmail } from "@/lib/resend";
-import { createRazorpayPaymentLink } from "@/lib/razorpay";
+import { createVoiceSession, getVoiceSession, normalizeVoiceLanguage, submitVoiceTurn, VoiceServiceError } from "@/lib/voice-client";
 
-function shouldDispatchEmail(text: string): boolean {
-  if (!text) return false;
-  const t = text.toLowerCase();
-  return (
-    t.includes("email") ||
-    t.includes("mail") ||
-    t.includes("inbox") ||
-    t.includes("ईमेल") ||
-    t.includes("मेल") ||
-    t.includes("कुल्ड यू शेयर") ||
-    t.includes("पेमेंट लिंक") ||
-    t.includes("payment link") ||
-    t.includes("send link") ||
-    t.includes("share link") ||
-    t.includes("लिंक भेज") ||
-    t.includes("link bhej") ||
-    t.includes("லிங்க்") ||
-    t.includes("அனுப்பு") ||
-    t.includes("link anupunga") ||
-    t.includes("లింక్") ||
-    t.includes("పంపు") ||
-    t.includes("link pampandi") ||
-    t.includes("ಲಿಂಕ್") ||
-    t.includes("ಕಳಿಸಿ") ||
-    t.includes("link kalisi")
-  );
+function text(value: unknown): string | undefined {
+  return typeof value === "string" && value.trim() ? value.trim() : undefined;
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const debtorEmail = body.debtorEmail || body.email || "nishantma05@gmail.com";
-
-    const ctx: NegotiationContext = {
-      debtorName: body.debtorName || "Rahul Sharma",
-      debtorCompany: body.debtorCompany || "Acme Creative Studios",
-      debtorEmail,
-      invoiceNumber: body.invoiceNumber || "INV-1042",
-      amountDue: Number(body.amountDue || body.amount || 45000),
-      currency: body.currency || "INR",
-      daysOverdue: Number(body.daysOverdue || 14),
-      deliverable: body.deliverable || "Figma UI/UX Design System",
-      freelancerName: body.freelancerName || "Nishant Maurya",
-      preferredLanguage: body.preferredLanguage || body.language || "en",
-      conversationHistory: Array.isArray(body.conversationHistory) ? body.conversationHistory : [],
-      clientLastMessage: body.clientLastMessage || body.message || "Hello",
-    };
-
-    const startTime = Date.now();
-    const result = await generateNegotiationTurn(ctx);
-    const totalLatency = Date.now() - startTime;
-
-    // Autonomous Email Action: If the client requests the link or email, dispatch real Resend email
-    let emailDispatched = false;
-    let deliveredTo = debtorEmail;
-    let emailMessageId: string | undefined;
-
-    if (shouldDispatchEmail(ctx.clientLastMessage)) {
-      let paymentLink = `https://rzp.io/i/${ctx.invoiceNumber.toLowerCase()}`;
-      try {
-        const rzpRes = await createRazorpayPaymentLink({
-          invoiceId: ctx.invoiceNumber,
-          invoiceNumber: ctx.invoiceNumber,
-          amount: ctx.amountDue,
-          debtorEmail: debtorEmail,
-          debtorName: ctx.debtorName,
-        });
-        if (rzpRes?.paymentUrl) {
-          paymentLink = rzpRes.paymentUrl;
+    const authorization = req.headers.get("authorization");
+    if (!authorization?.startsWith("Bearer ") || !authorization.slice(7).trim()) {
+      return NextResponse.json({ success: false, error: "Sign in to start a voice session." }, { status: 401 });
+    }
+    const access = { accessToken: authorization.slice(7).trim() };
+    const body: unknown = await req.json();
+    if (typeof body !== "object" || body === null || Array.isArray(body)) throw new VoiceServiceError("Invalid request.", 400);
+    const values = body as Record<string, unknown>;
+    const started = Date.now();
+    let result;
+    if (values.operation === "start") {
+      const invoiceId = text(values.invoiceId);
+      const requestId = text(values.requestId);
+      if (!invoiceId || !requestId) throw new VoiceServiceError("Invoice and request ID are required.", 400);
+      result = await createVoiceSession({
+        invoice_id: invoiceId,
+        contact_id: text(values.contactId),
+        language_mode: normalizeVoiceLanguage(text(values.language)),
+        transport: "browser",
+        request_id: requestId,
+      }, access);
+    } else {
+      const sessionId = text(values.sessionId);
+      if (!sessionId) throw new VoiceServiceError("Start a session before sending a message.", 400);
+      if (values.operation === "snapshot") {
+        result = await getVoiceSession(sessionId, access);
+      } else {
+        const transcript = text(values.message) || text(values.clientLastMessage);
+        const eventId = text(values.eventId);
+        if (!transcript || transcript.length > 4000 || !eventId ||
+            !Number.isInteger(values.sequence) || Number(values.sequence) < 1 ||
+            !Number.isInteger(values.observedStateVersion) || Number(values.observedStateVersion) < 0) {
+          throw new VoiceServiceError("Message, event ID and current session version are required.", 400);
         }
-      } catch (rzpErr) {
-        console.warn("[API Negotiate] Razorpay payment link fallback:", rzpErr);
-      }
-
-      try {
-        const resendRes = await sendRecoveryEmail({
-          to: debtorEmail,
-          clientName: ctx.debtorName,
-          amount: ctx.amountDue,
-          invoiceNumber: ctx.invoiceNumber,
-          paymentLink,
-          deliverable: ctx.deliverable,
-          debtorCompany: ctx.debtorCompany,
-          daysOverdue: ctx.daysOverdue,
-          forceSend: true,
-        });
-
-        if (resendRes.success) {
-          emailDispatched = true;
-          deliveredTo = resendRes.recipient;
-          emailMessageId = resendRes.messageId;
-        }
-      } catch (err: any) {
-        console.error("[API Negotiate Email Dispatch Error]:", err?.message);
+        result = await submitVoiceTurn(sessionId, {
+          event_id: eventId,
+          transcript,
+          sequence: Number(values.sequence),
+          observed_state_version: Number(values.observedStateVersion),
+          ...(text(values.language) ? { language_mode: normalizeVoiceLanguage(text(values.language)) } : {}),
+        }, access);
       }
     }
-
     return NextResponse.json({
+      ...result,
       success: true,
-      reply: result.reply,
-      modelUsed: result.modelUsed,
-      latencyMs: result.latencyMs || totalLatency,
-      emailDispatched,
-      deliveredTo,
-      emailMessageId,
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error: any) {
-    console.error("[API Negotiate Error]:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: error?.message || "Failed to generate negotiation turn",
-      },
-      { status: 500 }
-    );
+      sessionId: result.session_id,
+      modelUsed: result.model_used || "shared-controller",
+      latencyMs: Date.now() - started,
+      emailDispatched: false,
+    }, { headers: { "Cache-Control": "no-store" } });
+  } catch (error) {
+    const status = error instanceof VoiceServiceError ? error.status : error instanceof SyntaxError ? 400 : 503;
+    return NextResponse.json({ success: false, error: error instanceof VoiceServiceError ? error.message : "Voice request could not be completed." }, { status });
   }
 }

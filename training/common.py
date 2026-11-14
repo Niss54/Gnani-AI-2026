@@ -159,15 +159,22 @@ def validate_response(plan: Any, *, language: str | None = None, allowed: list[s
     return errors
 
 
+REVIEW_ATTESTATION = "I personally reviewed every submitted decision"
+
+
 def review_valid(record: dict[str, Any]) -> bool:
     review = record.get("review", {})
     if review.get("status") != "human_approved":
         return False
     receipts = review.get("receipts", [])
-    if not receipts:
+    if not isinstance(receipts, list) or not receipts:
         return False
     for receipt in receipts:
         if not isinstance(receipt, dict) or receipt.get("actor_type") != "human" or not receipt.get("reviewer_id"):
+            return False
+        if (receipt.get("attestation") != REVIEW_ATTESTATION or
+                receipt.get("source") != "reviewer_decision_import" or
+                not re.fullmatch(r"[a-f0-9]{64}", str(receipt.get("decision_file_sha256", "")))):
             return False
         if receipt.get("content_hash") != content_hash(record) or receipt.get("policy_version") != record.get("policy_version"):
             return False

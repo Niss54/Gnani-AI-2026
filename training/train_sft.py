@@ -27,12 +27,49 @@ from training.doctor import check_environment
 
 
 def run_training(config_path: str | Path, mode: str = "smoke", max_examples: int | None = None, resume_checkpoint: str | None = None) -> dict[str, Any]:
+    from training.model_policy import validate_model_policy
     config = read_json(config_path)
-    env = check_environment(config_path=config_path, check_compute=False)
-
+    validate_model_policy(config)
+    if mode not in {"smoke", "full"} or max_examples is not None and (mode != "smoke" or max_examples < 1):
+        raise ValueError("invalid_training_mode_or_limit")
     run_id = config.get("run_id", "revclaim-sft-001")
     output_dir = resolve_path(config.get("output_dir", f"artifacts/training/{run_id}")) / mode
     output_dir.mkdir(parents=True, exist_ok=True)
+    # Use a kernel lock that is released automatically if the process dies.
+    with (output_dir / ".training.lock").open("a+b") as lock:
+        try:
+            if os.name == "nt":
+                import msvcrt
+                lock.seek(0)
+                msvcrt.locking(lock.fileno(), msvcrt.LK_NBLCK, 1)
+            else:
+                import fcntl
+                fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except OSError:
+            return {"status": "blocked", "blocker": "training_run_in_progress"}
+        receipt = output_dir / "run_receipt.json"
+        if (output_dir / "adapter_model.safetensors").exists() or (receipt.exists() and read_json(receipt).get("status") == "passed"):
+            return {"status": "blocked", "blocker": "existing_training_output_requires_new_run_directory"}
+        if resume_checkpoint:
+            checkpoint = resolve_path(resume_checkpoint)
+            snapshot = output_dir / "training_inputs.json"
+            if (checkpoint.parent != output_dir or not checkpoint.name.startswith("checkpoint-")
+                    or not (checkpoint / "trainer_state.json").is_file() or not snapshot.is_file()
+                    or read_json(snapshot) != training_inputs(config_path, config, mode, max_examples)):
+                return {"status": "blocked", "blocker": "checkpoint_or_training_inputs_mismatch"}
+        elif any(output_dir.glob("checkpoint-*")):
+            return {"status": "blocked", "blocker": "existing_checkpoint_requires_resume_or_new_run"}
+        return _execute(config_path, config, mode, output_dir, max_examples, resume_checkpoint)
+
+
+def training_inputs(config_path, config, mode, max_examples):
+    return {"config_hash": file_hash(config_path), "dataset_manifest_hash": file_hash(config["dataset_manifest"]),
+            "mode": mode, "max_examples": max_examples}
+
+
+def _execute(config_path, config, mode, output_dir, max_examples, resume_checkpoint):
+    run_id = config["run_id"]
+    env = check_environment(config_path=config_path, check_compute=False)
 
     has_gpu = env["compute"]["cuda_available"]
     has_ml_stack = all(env["packages"].get(p) for p in ("transformers", "peft", "accelerate", "datasets", "bitsandbytes"))
@@ -69,8 +106,13 @@ def run_training(config_path: str | Path, mode: str = "smoke", max_examples: int
     # If ML environment is present, execute training loop
     try:
         from training.training_engine import train_adapter
+        inputs = training_inputs(config_path, config, mode, max_examples)
+        atomic_json(output_dir / "training_inputs.json", inputs)
+        (output_dir / "training_config.json").write_bytes(resolve_path(config_path).read_bytes())
         start_time = time.monotonic()
         measured = train_adapter(config, output_dir, mode, max_examples, resume_checkpoint)
+        if inputs != training_inputs(config_path, config, mode, max_examples):
+            raise ValueError("training_inputs_changed_during_run")
         receipt = {
             "run_id": f"{run_id}-{mode}",
             "mode": mode,

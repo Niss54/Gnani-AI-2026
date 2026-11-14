@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import re
 from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any
@@ -153,6 +154,8 @@ def validate_record(row: dict[str, Any], *, require_human: bool) -> list[str]:
             if not isinstance(message, dict) or message.get("role") not in {"user", "assistant", "tool"} or not isinstance(message.get("content"), str):
                 errors.append(prefix + "invalid_message")
                 continue
+            if message["role"] == "user" and re.search(r"(?:situation|case|record)\s+F\d{2}-\d{3}|\b(?:train|development|locked-test)\s+(?:split|variant|condition)", message["content"], re.I):
+                errors.append(prefix + "placeholder_or_split_marker_in_dialogue")
             observed = message.get("available_at_turn")
             if not isinstance(observed, int) or observed > index or observed < 0:
                 errors.append(prefix + "future_or_unversioned_message")
@@ -207,6 +210,29 @@ def validate_dataset(manifest_path: str | Path, *, require_human: bool = False, 
     for group, splits in groups.items():
         if len(splits) > 1 or len(group_family[group]) > 1:
             issues.append({"scenario_group_id": group, "errors": ["scenario_group_leakage_or_family_mismatch"]})
+    # Group IDs must represent different caller situations. Detect repeated
+    # entire conversations, including copies padded with split-specific greetings.
+    from training.generate_catalog import LEGACY_SPLIT_LEADS
+    duplicate_groups = set()
+    seen_dialogues = {}
+    for row in rows:
+        utterance_sequence = []
+        for turn in row.get("turns", []):
+            for message in turn.get("messages", []):
+                if message.get("role") == "user":
+                    utterance = message["content"].strip().casefold()
+                    for lead in LEGACY_SPLIT_LEADS:
+                        if utterance.startswith(lead):
+                            utterance = utterance[len(lead):]
+                            break
+                    utterance_sequence.append(normalized_utterance(utterance))
+        signature = (row["language"], tuple(utterance_sequence))
+        group = row["scenario_group_id"]
+        previous = seen_dialogues.setdefault(signature, group)
+        if group != previous:
+            duplicate_groups.update([group, previous])
+    if duplicate_groups:
+        issues.append({"errors": ["duplicate_situations_across_groups"], "group_count": len(duplicate_groups)})
     lexical_collisions = []
     for text, origins in utterances.items():
         # Short phrases such as "yes" are not useful duplicate fingerprints.
@@ -258,11 +284,16 @@ def validate_dataset(manifest_path: str | Path, *, require_human: bool = False, 
                   semantic_check="lexical_candidates_only_plus_required_human_attestation_for_complete_corpus")
 
 
+INTENT_VOCABULARY = ['affirm', 'agenda', 'ai_identity', 'already_paid', 'audible', 'available', 'busy', 'channel_refusal', 'clarify', 'close', 'delivery_request', 'deny', 'direct_contact', 'discount', 'dispute', 'greeting', 'hardship', 'human_request', 'language_switch', 'legal_boundary', 'listen', 'name_correction', 'off_topic', 'opt_out', 'payment_proposal', 'payment_status', 'proof', 'repeat', 'safety_close', 'secrets', 'silence', 'tentative', 'trust', 'wrong_number']
+
+
 def training_example(row: dict[str, Any], index: int) -> dict[str, Any]:
     turn = row["turns"][index]
     context = {"state": turn["state"], "facts": turn["facts"], "allowed_actions": turn["allowed_actions"],
                "language": row["language"], "policy_version": row["policy_version"], "turn_id": turn["turn_id"]}
-    system = "You are an AI billing assistant. Use only supplied facts and allowed actions. Return the response-plan JSON schema. Never claim an action succeeded without its tool result.\n" + canonical_json(context)
+    context["allowed_intents"] = INTENT_VOCABULARY
+    context["prompt_version"] = "billing-plan-v3"
+    system = "Select intent from allowed_intents. You are an AI billing assistant. Use only supplied facts and allowed actions. Return only a JSON object with keys turn_id, intent, language, proposed_action, required_fact_refs (list of fact keys), candidate_slots (object), reply_template_id (string or null), free_reply (string or null), tool_request (object or null), needs_clarification (boolean). Set exactly one of reply_template_id or free_reply. Never claim an action succeeded without its tool result.\n" + canonical_json(context)
     messages = [{"role": "system", "content": system}]
     messages.extend({"role": message["role"], "content": message["content"]} for message in turn["messages"])
     return {"example_id": f"{row['example_id']}:{turn['turn_id']}", "scenario_group_id": row["scenario_group_id"],

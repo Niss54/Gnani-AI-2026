@@ -1,0 +1,12 @@
+{
+  "Qwen/Qwen3-4B-Instruct-2507": {
+    "revision": "cdbee75f17c01a7cc42f958dc650907174af0554",
+    "license": "Apache-2.0",
+    "license_url": "https://huggingface.co/Qwen/Qwen3-4B-Instruct-2507/blob/cdbee75f17c01a7cc42f958dc650907174af0554/LICENSE",
+    "metadata_source": "https://huggingface.co/api/models/Qwen/Qwen3-4B-Instruct-2507",
+    "verified_on": "2026-11-14",
+    "model_card": "https://huggingface.co/Qwen/Qwen3-4B-Instruct-2507",
+    "behavior": "instruction-only; no thinking-mode output",
+    "hinglish_qualified": false
+  }
+}

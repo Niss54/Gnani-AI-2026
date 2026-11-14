@@ -1,0 +1,43 @@
+{
+  "mode": "implement",
+  "baseline": "d046571",
+  "policy": {
+    "planning": "deep",
+    "context_depth": "dependency",
+    "verification_depth": "impact",
+    "delegation": "implementation with independent security and evidence review",
+    "reason_codes": [
+      "working-integrations",
+      "dataset-review-remediation",
+      "baseline-measurement",
+      "cloud-training-pipeline",
+      "voice-testing",
+      "controlled-pilot-gatekeeping"
+    ]
+  },
+  "allowed_write_scope": [
+    "training",
+    "backend",
+    "frontend",
+    "scripts",
+    "tests",
+    "docs",
+    "artifacts",
+    "package.json"
+  ],
+  "git_writes_authorized": false,
+  "external_mutations_authorized": false,
+  "acceptance": [
+    "Working integrations: Real invoices, contacts, allowed discounts, payment provider, human-transfer target connected, and disabled routes restored after successful integration tests",
+    "Dataset review: Representative batch review with business answer approvals, bilingual language/meaning verification, clean leak-free corpus generation and review receipts",
+    "Baseline measurement: Current Groq/Gemini system evaluated on unseen scenarios (development/test) measuring accuracy, intent f1, slots, action validity",
+    "Cloud training: Reviewed data smoke run + full fine-tuning with QLoRA, exact loss, weights save, reload and held-out evaluation verified",
+    "Voice testing: Hinglish/English recordings testing pronunciation, pauses, interruptions and missed words; phonetic mapping and pause controls",
+    "Controlled pilot: Authorized test calls, real provider receipts and monitoring pass before production"
+  ],
+  "external_blockers": [
+    "Remote GPU purchase requires external compute deployment",
+    "Live PSTN phone calls to external customers requires explicit client consent and scheduled pilot window"
+  ]
+}
+

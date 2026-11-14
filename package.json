@@ -17,9 +17,11 @@
     "test:all": "node tests/gnani-benchmark.mjs && node tests/e2e.test.mjs",
     "verify:voice-contract": "node scripts/run-python.js scripts/verify_voice.py --mode contract",
     "verify:dataset": "node scripts/run-python.js training/validate_data.py --manifest training/manifests/revclaim-v1.json --require-human-approved --require-complete",
-    "eval:dialogue": "node scripts/run-python.js training/evaluate.py --run artifacts/training/revclaim-sft-candidate-001 --split development --compare corrected-hosted,base",
+    "eval:dialogue": "node scripts/run-python.js training/evaluate.py --run artifacts/training/revclaim-sft-candidate-001/full --split development --compare candidate,base",
     "eval:voice-offline": "node scripts/run-python.js scripts/verify_voice.py --mode voice-offline",
     "verify:release": "node scripts/run-python.js scripts/verify_voice.py --mode release",
-    "test:voice-transport": "node --test tests/voice-transport.test.cjs"
+    "test:voice-transport": "node --test tests/voice-transport.test.cjs",
+    "test:routes": "node --test tests/integration_routes.test.cjs",
+    "verify:pilot": "node scripts/run-python.js scripts/verify_controlled_pilot.py"
   }
 }

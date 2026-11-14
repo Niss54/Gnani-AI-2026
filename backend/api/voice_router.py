@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import os
 import asyncio
+import hashlib
 from pathlib import Path
 from typing import Any, Literal, Optional
 from uuid import uuid4
@@ -19,6 +20,7 @@ from pydantic import BaseModel, Field, ConfigDict
 try:
     from backend.contracts.voice import (
         FinalTranscriptEvent,
+        ToolRequest,
         InvoiceContext,
         LanguageMode,
         SessionSnapshot,
@@ -32,6 +34,7 @@ try:
 except ImportError:
     from contracts.voice import (
         FinalTranscriptEvent,
+        ToolRequest,
         InvoiceContext,
         LanguageMode,
         SessionSnapshot,
@@ -50,7 +53,16 @@ DB_PATH = Path(os.getenv("VOICE_DB_PATH", str(Path(__file__).resolve().parents[1
 DB_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 # Shared instances
-voice_repository = SqliteVoiceRepository(db_path=str(DB_PATH))
+if os.getenv("VOICE_CONTEXT_SOURCE", "sqlite") == "supabase":
+    try:
+        from backend.services.voice_ledger import SupabaseVoiceRepository
+    except ImportError:
+        from services.voice_ledger import SupabaseVoiceRepository
+    voice_repository = SupabaseVoiceRepository(DB_PATH)
+elif os.getenv("VOICE_CONTEXT_SOURCE", "sqlite") == "sqlite":
+    voice_repository = SqliteVoiceRepository(db_path=str(DB_PATH))
+else:
+    raise RuntimeError("Unknown VOICE_CONTEXT_SOURCE")
 action_executor = DurableActionExecutor(db_path=str(DB_PATH))
 
 _providers = []
@@ -67,7 +79,7 @@ if _groq_key:
 
 _gemini_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
 if _gemini_key:
-    _providers.append(GeminiIntentProvider(model=os.getenv("VOICE_GEMINI_MODEL", "gemini-2.5-flash"), api_key=_gemini_key))
+    _providers.append(GeminiIntentProvider(model=os.getenv("VOICE_GEMINI_MODEL", "gemini-flash-lite-latest"), api_key=_gemini_key))
 
 provider_registry = ProviderRegistry(_providers, turn_timeout=2.0, attempt_timeout=1.0)
 conversation_controller = ConversationController(
@@ -165,12 +177,8 @@ async def create_session(body: StartSessionBody, request: Request) -> dict[str, 
         x_voice_tenant_id=request.headers.get("X-Voice-Tenant-Id"),
     )
 
-    contact_id = body.contact_id
-    if not contact_id:
-        with voice_repository._connection() as conn:
-            row = conn.execute("SELECT contact_id FROM invoices WHERE tenant_id = ? AND invoice_id = ?", (tenant_id, body.invoice_id)).fetchone()
-            contact_id = row["contact_id"] if row else f"contact_{body.invoice_id}"
     try:
+        contact_id = body.contact_id or await voice_repository.resolve_contact_id(tenant_id, body.invoice_id)
         snapshot = await conversation_controller.start_session(
             tenant_id=tenant_id,
             invoice_id=body.invoice_id,
@@ -247,5 +255,50 @@ async def bind_call(session_id: str, body: BindCallBody, request: Request) -> di
         await voice_repository.bind_call_sid(tenant_id, session_id, body.call_sid)
         snapshot = await voice_repository.get_session(tenant_id, session_id)
         return _format_snapshot(snapshot, call_sid=body.call_sid)
+    except VoiceError as exc:
+        _handle_voice_error(exc)
+
+class InvoiceActionBody(StrictBody):
+    request_id: str = Field(min_length=1, max_length=200)
+    language_mode: LanguageMode = "en-IN"
+    discount_bps: int = Field(default=0, strict=True, ge=0, le=10000)
+
+
+@router.post("/invoices/{invoice_id}/actions/{action}")
+async def perform_invoice_action(invoice_id: str, action: Literal["call", "checkout", "notify"],
+                                 body: InvoiceActionBody, request: Request, response: Response) -> dict:
+    tenant = await asyncio.to_thread(_resolve_tenant, authorization=request.headers.get("Authorization"))
+    try:
+        contact = await voice_repository.resolve_contact_id(tenant, invoice_id)
+        context = await voice_repository.get_context(tenant, invoice_id, contact)
+        if not context.mandate.authorized or not context.mandate.version or context.mandate.contact_blocked:
+            raise VoiceError("policy_rejected", "Invoice action is not authorized")
+        if context.payment_status not in {"unpaid", "partial"} or context.amount_due_minor <= 0:
+            raise VoiceError("policy_rejected", "Invoice is not collectible")
+        if action != "checkout" and body.discount_bps:
+            raise VoiceError("invalid_input", "Discount only applies to a checkout quote")
+        operation = hashlib.sha256(f"{tenant}:{invoice_id}:{action}:{body.request_id}".encode()).hexdigest()
+        session_id = f"operator:{operation}"
+        if action == "call":
+            session = await conversation_controller.start_session(tenant, invoice_id, contact, body.language_mode, session_id)
+            session_id = session.session_id
+        tool, arguments = {
+            "call": ("start_outbound_call", {}),
+            "checkout": ("create_payment_link", {"discount_bps": body.discount_bps}),
+            "notify": ("send_invoice_or_link", {"channel": "email", "content": "invoice"}),
+        }[action]
+        receipt = await action_executor.execute(ToolRequest(tool, operation, tenant, session_id, invoice_id,
+            contact, 0, 0, context.context_revision, context.mandate.version, arguments), context)
+        if receipt.status == "failed":
+            raise HTTPException(422, receipt.detail_status)
+        if receipt.status == "unknown":
+            raise HTTPException(503, "Provider outcome requires reconciliation")
+        if receipt.status == "pending":
+            response.status_code = 202
+        if action == "call" and receipt.detail_status == "carrier_accepted":
+            await voice_repository.bind_call_sid(tenant, session_id, receipt.provider_reference)
+        return {"success": bool(receipt.provider_reference), "invoiceId": invoice_id,
+                "status": receipt.detail_status, "providerReference": receipt.provider_reference,
+                **({"sessionId": session_id, "callId": session_id} if action == "call" else {}), **receipt.data}
     except VoiceError as exc:
         _handle_voice_error(exc)

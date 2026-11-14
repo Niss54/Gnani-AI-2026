@@ -2,12 +2,12 @@
   "dataset_version": "revclaim-catalog-v1.0",
   "policy_version": "negotiation-v1",
   "purpose": "draft_review_queue",
-  "created_at": "2026-11-13T06:42:30.143853+00:00",
-  "catalog_hash": "69efca8c4047fcaf8a710f0a4e5f3747a417153af4efb4037e713af586114936",
+  "created_at": "2026-11-13T19:43:30.645553+00:00",
+  "catalog_hash": "c2b0ee16fa49ecfc4ba3dc1b6f77e8cf0b54d5ac266595eded6e55ea2a345d83",
   "files": [
     {
       "path": "training/data/draft/dialogues.jsonl",
-      "sha256": "f6313f445839745a71bce57c0d8b5d05b7c8308ca48e26208e4ad96834fa9854"
+      "sha256": "e1663f60d914cba0dc008404ebcd6fb91e476e17bb3eacd1c64fa398c52674e5"
     }
   ],
   "expected": {

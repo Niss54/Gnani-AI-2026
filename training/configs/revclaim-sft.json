@@ -1,11 +1,11 @@
 {
   "run_id": "revclaim-sft-candidate-001",
-  "base_model": "Qwen/Qwen2.5-3B-Instruct",
-  "base_revision": "9a32253816a73c1c73a4b706c9a38fbeee90bf9e",
-  "tokenizer_revision": "9a32253816a73c1c73a4b706c9a38fbeee90bf9e",
-  "dataset_manifest": "training/manifests/revclaim-v1.json",
+  "base_model": "Qwen/Qwen3-4B-Instruct-2507",
+  "base_revision": "cdbee75f17c01a7cc42f958dc650907174af0554",
+  "tokenizer_revision": "cdbee75f17c01a7cc42f958dc650907174af0554",
+  "dataset_manifest": "training/manifests/revclaim-v3-seed.json",
   "policy_version": "negotiation-v1",
-  "dependency_lock": "training/requirements.lock",
+  "dependency_constraints": "training/requirements.txt",
   "seed": 42,
   "sequence_length": 4096,
   "quantization": {
@@ -17,7 +17,15 @@
     "rank": 16,
     "alpha": 32,
     "dropout": 0.05,
-    "target_modules": ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
+    "target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ]
   },
   "optimization": {
     "learning_rate": 0.0001,
@@ -32,8 +40,10 @@
   "compute": {
     "profile": "local",
     "max_gpu_hours": 12.0,
-    "max_spend": 5000.0,
-    "hourly_rate": 250.0,
+    "max_spend": 0,
+    "hourly_rate": 0,
     "currency": "INR"
-  }
+  },
+  "display_name": "RevClaim Negotiator v1",
+  "base_license": "Apache-2.0"
 }

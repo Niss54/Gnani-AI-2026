@@ -95,6 +95,11 @@ class SqliteVoiceRepository:
                     PRIMARY KEY (tenant_id, contact_id)
                 );
 
+                CREATE TABLE IF NOT EXISTS contact_channel_preferences (
+                    tenant_id TEXT NOT NULL, contact_id TEXT NOT NULL, channel TEXT NOT NULL, allowed INTEGER NOT NULL,
+                    PRIMARY KEY (tenant_id, contact_id, channel)
+                );
+
                 CREATE TABLE IF NOT EXISTS invoices (
                     tenant_id TEXT NOT NULL,
                     invoice_id TEXT NOT NULL,
@@ -193,7 +198,8 @@ class SqliteVoiceRepository:
                 """INSERT INTO contacts (tenant_id, contact_id, name, phone, email, is_blocked, created_at)
                    VALUES (?, ?, ?, ?, ?, ?, ?)
                    ON CONFLICT (tenant_id, contact_id) DO UPDATE SET
-                   name = excluded.name, is_blocked = excluded.is_blocked""",
+                   name = excluded.name, phone = excluded.phone, email = excluded.email,
+                   is_blocked = MAX(contacts.is_blocked, excluded.is_blocked)""",
                 (
                     context.tenant_id,
                     context.contact_id,
@@ -224,7 +230,13 @@ class SqliteVoiceRepository:
                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                    ON CONFLICT (tenant_id, invoice_id) DO UPDATE SET
                     amount_due_minor = excluded.amount_due_minor,
-                    payment_status = excluded.payment_status,
+                    payment_status = CASE WHEN invoices.payment_status = 'disputed' THEN 'disputed'
+                                          ELSE excluded.payment_status END,
+                    contact_id = excluded.contact_id, invoice_number = excluded.invoice_number,
+                    business_name = excluded.business_name, contact_name = excluded.contact_name,
+                    currency = excluded.currency, deliverable = excluded.deliverable,
+                    due_date = excluded.due_date, document_ids_json = excluded.document_ids_json,
+                    verified_channels_json = excluded.verified_channels_json,
                     context_revision = excluded.context_revision,
                     mandate_json = excluded.mandate_json,
                     updated_at = excluded.updated_at""",
@@ -249,6 +261,14 @@ class SqliteVoiceRepository:
                 ),
             )
 
+    async def resolve_contact_id(self, tenant_id: str, invoice_id: str) -> str:
+        with self._connection() as conn:
+            row = conn.execute("SELECT contact_id FROM invoices WHERE tenant_id=? AND invoice_id=?",
+                               (tenant_id, invoice_id)).fetchone()
+        if row is None:
+            raise VoiceError("not_found", "Invoice not found for this tenant")
+        return row["contact_id"]
+
     async def get_context(self, tenant_id: str, invoice_id: str, contact_id: str) -> InvoiceContext:
         require_identifier(tenant_id, "tenant_id")
         require_identifier(invoice_id, "invoice_id")
@@ -256,7 +276,9 @@ class SqliteVoiceRepository:
 
         with self._connection() as conn:
             cursor = conn.execute(
-                """SELECT * FROM invoices WHERE tenant_id = ? AND invoice_id = ?""",
+                """SELECT i.*, c.is_blocked, c.phone, c.email FROM invoices i
+                   JOIN contacts c ON c.tenant_id=i.tenant_id AND c.contact_id=i.contact_id
+                   WHERE i.tenant_id = ? AND i.invoice_id = ?""",
                 (tenant_id, invoice_id),
             )
             row = cursor.fetchone()
@@ -267,7 +289,13 @@ class SqliteVoiceRepository:
                 raise VoiceError("forbidden", "Contact ID does not match invoice recipient")
 
             mandate_data = json.loads(row["mandate_json"])
+            mandate_data["contact_blocked"] = bool(row["is_blocked"]) or mandate_data.get("contact_blocked", False)
             mandate = CreditorMandate(**mandate_data)
+            denied = {r[0] for r in conn.execute(
+                "SELECT channel FROM contact_channel_preferences WHERE tenant_id=? AND contact_id=? AND allowed=0",
+                (tenant_id, contact_id))}
+            if "phone" in denied:
+                mandate.contact_blocked = True
 
             return InvoiceContext(
                 tenant_id=row["tenant_id"],
@@ -284,7 +312,8 @@ class SqliteVoiceRepository:
                 due_date=row["due_date"],
                 payment_status=row["payment_status"],
                 document_ids=json.loads(row["document_ids_json"] or "[]"),
-                verified_channels=json.loads(row["verified_channels_json"] or "[]"),
+                verified_channels=[c for c in json.loads(row["verified_channels_json"] or "[]") if c not in denied],
+                contact_email=row["email"], contact_phone=row["phone"],
             )
 
     async def create_session(self, snapshot: SessionSnapshot, request_id: str) -> SessionSnapshot:
@@ -294,6 +323,7 @@ class SqliteVoiceRepository:
 
         now = _utc_now()
         with self._connection() as conn:
+            conn.execute("BEGIN IMMEDIATE")
             cursor = conn.execute(
                 """SELECT session_id, tenant_id, invoice_id, contact_id, language_mode,
                           state, state_version, generation, identity_verified, pending_question,
@@ -304,6 +334,8 @@ class SqliteVoiceRepository:
             )
             existing = cursor.fetchone()
             if existing:
+                if (existing["invoice_id"], existing["contact_id"]) != (snapshot.invoice_id, snapshot.contact_id):
+                    raise VoiceError("conflict", "Request ID already belongs to a different session request")
                 return self._row_to_snapshot(existing)
 
             conn.execute(

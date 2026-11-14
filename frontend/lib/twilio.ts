@@ -69,6 +69,7 @@ export function renderGatherReply(input: {
   sequence: number;
   stateVersion: number;
   endCall: boolean;
+  tenantId?: string;
 }): string {
   const locale = input.language === "hi-en" ? "hi-IN" : "en-IN";
   const baseUrl = publicVoiceBaseUrl();
@@ -81,6 +82,7 @@ export function renderGatherReply(input: {
 
   const action = new URL("/api/twilio/voice/respond", baseUrl);
   action.searchParams.set("sessionId", input.sessionId);
+  if (input.tenantId) action.searchParams.set("tenantId", input.tenantId);
   action.searchParams.set("sequence", String(input.sequence + 1));
   action.searchParams.set("stateVersion", String(input.stateVersion));
 
@@ -139,4 +141,18 @@ export async function initiateTwilioOutboundCall(params: TwilioCallParams): Prom
   } catch (error) {
     return { success: false, status: "failed", provider: "twilio_live", error: error instanceof VoiceServiceError ? error.message : "Call request failed or its outcome is unknown. Check carrier status before retrying." };
   }
+}
+
+// Only a verified carrier callback can act on a server-issued handoff for the bound call.
+export function renderHandoff(receipts: unknown[] | undefined, callSid: string): string | undefined {
+  for (const item of receipts || []) {
+    if (!item || typeof item !== "object") continue;
+    const receipt = item as { status?: string; detail_status?: string; data?: { call_sid?: string; dial_number?: string } };
+    const number = receipt.data?.dial_number;
+    if (receipt.status === "pending" && receipt.detail_status === "connecting" &&
+        receipt.data?.call_sid === callSid && typeof number === "string" && /^\+[1-9]\d{7,14}$/.test(number)) {
+      return `<?xml version="1.0" encoding="UTF-8"?><Response><Dial timeout="20" answerOnBridge="true"><Number>${number}</Number></Dial><Hangup/></Response>`;
+    }
+  }
+  return undefined;
 }

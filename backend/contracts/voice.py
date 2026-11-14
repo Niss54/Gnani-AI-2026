@@ -42,6 +42,10 @@ class CreditorMandate:
     contact_blocked: bool = False
 
     def __post_init__(self) -> None:
+        if any(type(flag) is not bool for flag in (self.authorized, self.allow_installments, self.contact_blocked)):
+            raise VoiceError("invalid_input", "Mandate flags must be boolean")
+        if not isinstance(self.allowed_channels, list):
+            raise VoiceError("invalid_input", "Invalid mandate channels")
         require_minor_units(self.minimum_installment_minor, "minimum_installment_minor")
         if type(self.maximum_discount_bps) is not int or not 0 <= self.maximum_discount_bps <= 10000:
             raise VoiceError("invalid_input", "maximum_discount_bps must be between 0 and 10000")
@@ -66,6 +70,8 @@ class InvoiceContext:
     payment_status: str = "unpaid"
     document_ids: list[str] = field(default_factory=list)
     verified_channels: list[str] = field(default_factory=list)
+    contact_email: str | None = None
+    contact_phone: str | None = None
 
     def __post_init__(self) -> None:
         for name in ("tenant_id", "invoice_id", "contact_id", "invoice_number", "business_name", "context_revision"):

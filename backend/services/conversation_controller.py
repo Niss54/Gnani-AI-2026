@@ -285,13 +285,13 @@ class ConversationController:
                                     "document_ids": context.document_ids if session.pending_question == "proof_channel" else [],
                                     "amount_minor": context.amount_due_minor, "currency": context.currency})
                 session.selected_channel, session.pending_question = channel, None
-                if receipt.status == "succeeded" and receipt.provider_reference:
-                    reply = say(
-                        f"I have sent the invoice and payment link to your {channel}. Would you like to pay today, or do you have any questions regarding the invoice?",
-                        f"Maine aapke {channel} par invoice aur payment link bhej diya hai. Kya aap aaj payment karenge, ya invoice ko lekar koi sawaal hai?"
-                    )
+                if receipt.detail_status == "provider_accepted" and receipt.provider_reference:
+                    reply = say("I've submitted your invoice summary by email. Delivery is still pending.",
+                                "Aapki invoice summary email ke liye submit ho gayi hai. Delivery abhi confirm nahi hui hai.")
+                elif receipt.status == "succeeded" and receipt.detail_status == "delivered" and receipt.provider_reference:
+                    reply = say("The delivery service confirmed delivery.", "Delivery service ne delivery confirm ki hai.")
                 else:
-                    reply = say("I couldn't confirm that the message was sent. I won't claim it arrived.", "Message send hua ya nahi confirm nahi ho pa raha. Main ise delivered nahi kahungi.")
+                    reply = say("I couldn't confirm the message was sent.", "Message bheja gaya hai ya nahi, confirm nahi hua.")
         elif intent == "discount":
             reply = say("I can't approve that discount on this call. You can discuss the request with the business.", "Is call par woh discount approve nahi kar sakti. Business se is request par baat kar sakte hain.")
         elif intent == "hardship":

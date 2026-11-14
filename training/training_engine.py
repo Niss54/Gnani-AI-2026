@@ -8,6 +8,8 @@ from training.data_pipeline import load_manifest_records, training_example, toke
 
 
 def train_adapter(config, output_dir, mode, max_examples=None, resume_checkpoint=None):
+    from training.model_policy import validate_model_policy
+    validate_model_policy(config)
     checked = validate_dataset(config["dataset_manifest"], require_human=True, require_complete=mode == "full")
     if checked["status"] != "passed":
         raise ValueError("human_approved_dataset_required")
@@ -24,6 +26,9 @@ def train_adapter(config, output_dir, mode, max_examples=None, resume_checkpoint
     from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig, Trainer, TrainingArguments, TrainerCallback, set_seed
     from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
 
+    from importlib.metadata import distributions
+    Path(output_dir, "runtime_requirements.txt").write_text("\n".join(sorted(f"{d.metadata['Name']}=={d.version}" for d in distributions())) + "\n", encoding="utf-8")
+    torch.cuda.reset_peak_memory_stats()
     set_seed(config["seed"])
     tokenizer = AutoTokenizer.from_pretrained(config["base_model"], revision=config["tokenizer_revision"], local_files_only=True, trust_remote_code=False)
     if tokenizer.pad_token_id is None:
@@ -39,7 +44,7 @@ def train_adapter(config, output_dir, mode, max_examples=None, resume_checkpoint
         quantization_config=BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_quant_type="nf4", bnb_4bit_compute_dtype=torch.bfloat16 if use_bf16 else torch.float16))
     model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=opt["gradient_checkpointing"])
     lora = config["lora"]
-    model = get_peft_model(model, LoraConfig(r=lora["rank"], lora_alpha=lora["alpha"], lora_dropout=lora["dropout"], target_modules=lora["target_modules"], task_type="CAUSAL_LM"))
+    model = get_peft_model(model, LoraConfig(r=lora["rank"], lora_alpha=lora["alpha"], lora_dropout=lora["dropout"], target_modules=lora["target_modules"], task_type="CAUSAL_LM"), revision=config["base_revision"])
     model.config.use_cache = False
 
     def collate(batch):
@@ -83,4 +88,4 @@ def train_adapter(config, output_dir, mode, max_examples=None, resume_checkpoint
         raise RuntimeError("adapter_weights_missing_after_save")
     return {"completed_steps": trainer.state.global_step, "training_loss": result.training_loss,
             "adapter_sha256": file_hash(weights), "adapter_weights_generated": True,
-            "training_examples": len(examples), "dataset_manifest_hash": file_hash(resolve_path(config["dataset_manifest"]))}
+            "peak_gpu_allocated_bytes": torch.cuda.max_memory_allocated(), "training_examples": len(examples), "dataset_manifest_hash": file_hash(resolve_path(config["dataset_manifest"]))}

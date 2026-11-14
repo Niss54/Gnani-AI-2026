@@ -11,7 +11,11 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import sqlite3
+import re
+import httpx
+from urllib.parse import urlparse, urlencode
 from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -104,14 +108,23 @@ class DurableActionExecutor:
     async def execute(self, request: ToolRequest, context: InvoiceContext) -> ToolResult:
         if (request.tenant_id, request.invoice_id, request.contact_id, request.context_revision, request.mandate_version) != (context.tenant_id, context.invoice_id, context.contact_id, context.context_revision, context.mandate.version) or not context.mandate.authorized:
             return ToolResult(request.operation_id, "failed", detail_status="context_not_authorized")
+        if context.mandate.contact_blocked or context.payment_status == "disputed":
+            return ToolResult(request.operation_id, "failed", detail_status="contact_suppressed")
         with self._connection() as conn:
-            owner = conn.execute("SELECT tenant_id, session_id, invoice_id, tool_name, arguments_json FROM action_receipts WHERE operation_id = ?", (request.operation_id,)).fetchone()
-            if owner and (owner["tenant_id"] != request.tenant_id or owner["session_id"] != request.session_id or owner["invoice_id"] != request.invoice_id or owner["tool_name"] != request.tool or json.loads(owner["arguments_json"]) != request.arguments):
-                return ToolResult(request.operation_id, "failed", detail_status="operation_conflict")
-        # Check idempotency first
-        existing = self._get_receipt(request.operation_id)
-        if existing:
-            return existing
+            conn.execute("BEGIN IMMEDIATE")
+            owner = conn.execute("SELECT * FROM action_receipts WHERE operation_id=?", (request.operation_id,)).fetchone()
+            if owner:
+                if (owner["tenant_id"], owner["session_id"], owner["invoice_id"], owner["tool_name"],
+                    json.loads(owner["arguments_json"])) != (request.tenant_id, request.session_id,
+                                                            request.invoice_id, request.tool, request.arguments):
+                    return ToolResult(request.operation_id, "failed", detail_status="operation_conflict")
+                return ToolResult(request.operation_id, owner["status"], owner["provider_reference"],
+                                  owner["detail_status"], json.loads(owner["result_data_json"]))
+            conn.execute("""INSERT INTO action_receipts
+                (operation_id,tenant_id,session_id,invoice_id,tool_name,status,detail_status,arguments_json,result_data_json,created_at)
+                VALUES (?,?,?,?,?,'pending','processing',?,'{}',?)""",
+                (request.operation_id, request.tenant_id, request.session_id, request.invoice_id, request.tool,
+                 json.dumps(request.arguments), _utc_now()))
 
         handler = getattr(self, f"_tool_{request.tool}", None)
         if not handler:
@@ -125,6 +138,8 @@ class DurableActionExecutor:
 
         try:
             result = await handler(request, context)
+        except (httpx.TransportError, ValueError):
+            result = ToolResult(request.operation_id, "unknown", detail_status="provider_confirmation_missing")
         except Exception as exc:
             result = ToolResult(
                 operation_id=request.operation_id,
@@ -296,14 +311,95 @@ class DurableActionExecutor:
         return ToolResult(request.operation_id, "succeeded", provider_reference=ref, detail_status="paused_dispute")
 
     async def _tool_request_human_handoff(self, request: ToolRequest, context: InvoiceContext) -> ToolResult:
-        # A configured target is not evidence that a person answered or accepted.
-        return ToolResult(request.operation_id, "failed", detail_status="handoff_adapter_unconfigured")
+        target_id = context.mandate.human_target_id
+        if os.getenv("VOICE_HUMAN_TRANSFER_ENABLED") != "1" or not target_id:
+            return ToolResult(request.operation_id, "failed", detail_status="handoff_adapter_unconfigured")
+        targets = json.loads(os.getenv("VOICE_HUMAN_TARGETS", "{}"))
+        number = targets.get(context.tenant_id, {}).get(target_id, "")
+        if target_id != request.arguments.get("target_id") or not re.fullmatch(r"\+[1-9]\d{7,14}", number):
+            return ToolResult(request.operation_id, "failed", detail_status="handoff_target_unverified")
+        with self._connection() as conn:
+            row = conn.execute("SELECT call_sid FROM voice_sessions WHERE session_id=? AND tenant_id=? AND invoice_id=?",
+                               (request.session_id, request.tenant_id, request.invoice_id)).fetchone()
+        if not row or not row["call_sid"]:
+            return ToolResult(request.operation_id, "failed", detail_status="carrier_call_required")
+        return ToolResult(request.operation_id, "pending", detail_status="connecting",
+                          data={"dial_number": number, "call_sid": row["call_sid"]})
 
     async def _tool_send_invoice_or_link(self, request: ToolRequest, context: InvoiceContext) -> ToolResult:
         channel = request.arguments.get("channel")
         if channel not in context.mandate.allowed_channels or channel not in context.verified_channels:
             return ToolResult(request.operation_id, "failed", detail_status="channel_not_authorized")
-        return ToolResult(request.operation_id, "failed", detail_status="delivery_adapter_unconfigured")
+        key, sender = os.getenv("RESEND_API_KEY"), os.getenv("VOICE_EMAIL_FROM")
+        if os.getenv("VOICE_DELIVERY_ENABLED") != "1" or not key or not sender or channel != "email":
+            return ToolResult(request.operation_id, "failed", detail_status="delivery_adapter_unconfigured")
+        if not context.contact_email or not re.fullmatch(r"[^@\s,;<>]+@[^@\s,;<>]+\.[^@\s,;<>]+", context.contact_email):
+            return ToolResult(request.operation_id, "failed", detail_status="recipient_unverified")
+        if request.arguments.get("content") != "invoice":
+            return ToolResult(request.operation_id, "failed", detail_status="supporting_documents_unavailable")
+        total = f"{context.amount_due_minor // 100}.{context.amount_due_minor % 100:02d}"
+        payload = {"from": sender, "to": [context.contact_email], "subject": f"Invoice {context.invoice_number}",
+                   "text": f"{context.business_name}\nInvoice {context.invoice_number}\n"
+                           f"Recorded outstanding balance: {context.currency} {total}\n{context.deliverable}"}
+        async with httpx.AsyncClient(timeout=8) as client:
+            response = await client.post("https://api.resend.com/emails", json=payload,
+                headers={"Authorization": f"Bearer {key}", "Idempotency-Key": hashlib.sha256(request.operation_id.encode()).hexdigest()})
+        if not response.is_success:
+            return self._provider_error(request, response)
+        reference = response.json().get("id")
+        if not isinstance(reference, str) or not reference.strip():
+            return ToolResult(request.operation_id, "unknown", detail_status="provider_confirmation_missing")
+        return ToolResult(request.operation_id, "pending", reference, "provider_accepted",
+                          {"channel": channel, "content": "invoice_summary"})
+
+    @staticmethod
+    def _provider_error(request, response):
+        status = "failed" if 400 <= response.status_code < 500 and response.status_code not in (408, 409, 429) else "unknown"
+        return ToolResult(request.operation_id, status, detail_status="provider_rejected" if status == "failed" else "provider_confirmation_missing")
+
+    async def _tool_create_payment_link(self, request: ToolRequest, context: InvoiceContext) -> ToolResult:
+        key, secret = os.getenv("RAZORPAY_KEY_ID"), os.getenv("RAZORPAY_KEY_SECRET")
+        if not key or not secret:
+            return ToolResult(request.operation_id, "failed", detail_status="payment_provider_unconfigured")
+        discount = request.arguments.get("discount_bps", 0)
+        if type(discount) is not int or not 0 <= discount <= context.mandate.maximum_discount_bps:
+            return ToolResult(request.operation_id, "failed", detail_status="discount_exceeds_mandate")
+        amount = context.amount_due_minor - context.amount_due_minor * discount // 10000
+        if amount <= 0 or context.payment_status not in ("partial", "unpaid"):
+            return ToolResult(request.operation_id, "failed", detail_status="no_payable_balance")
+        reference = hashlib.sha256(request.operation_id.encode()).hexdigest()[:36]
+        payload = {"amount": amount, "currency": context.currency, "reference_id": reference,
+                   "description": f"Invoice {context.invoice_number}", "notify": {"sms": False, "email": False},
+                   "reminder_enable": False, "accept_partial": False}
+        async with httpx.AsyncClient(timeout=8) as client:
+            response = await client.post("https://api.razorpay.com/v1/payment_links", json=payload, auth=(key, secret))
+        if not response.is_success:
+            return self._provider_error(request, response)
+        data = response.json()
+        if (not str(data.get("id", "")).startswith("plink_") or data.get("reference_id") != reference
+                or data.get("amount") != amount or data.get("currency") != context.currency
+                or urlparse(data.get("short_url", "")).scheme != "https"):
+            return ToolResult(request.operation_id, "unknown", detail_status="payment_link_unverified")
+        return ToolResult(request.operation_id, "succeeded", data["id"], "payment_link_created",
+                          {"checkoutUrl": data["short_url"], "amount_minor": amount, "currency": context.currency})
+
+    async def _tool_start_outbound_call(self, request: ToolRequest, context: InvoiceContext) -> ToolResult:
+        account, token = os.getenv("TWILIO_ACCOUNT_SID"), os.getenv("TWILIO_AUTH_TOKEN")
+        origin, sender = os.getenv("VOICE_PUBLIC_BASE_URL", "").rstrip("/"), os.getenv("TWILIO_PHONE_NUMBER", "")
+        if not account or not token or not sender or not re.fullmatch(r"https://[a-zA-Z0-9.-]+(?::[0-9]+)?", origin):
+            return ToolResult(request.operation_id, "failed", detail_status="carrier_unconfigured")
+        if "phone" not in context.verified_channels or not re.fullmatch(r"\+[1-9]\d{7,14}", context.contact_phone or ""):
+            return ToolResult(request.operation_id, "failed", detail_status="recipient_unverified")
+        callback = f"{origin}/api/twilio/voice?" + urlencode({"sessionId": request.session_id, "tenantId": request.tenant_id})
+        async with httpx.AsyncClient(timeout=8) as client:
+            response = await client.post(f"https://api.twilio.com/2010-04-01/Accounts/{account}/Calls.json",
+                data={"From": sender, "To": context.contact_phone, "Url": callback}, auth=(account, token))
+        if not response.is_success:
+            return self._provider_error(request, response)
+        sid = response.json().get("sid", "")
+        if not re.fullmatch(r"CA[a-fA-F0-9]{32}", sid):
+            return ToolResult(request.operation_id, "unknown", detail_status="carrier_confirmation_missing")
+        return ToolResult(request.operation_id, "succeeded", sid, "carrier_accepted", {"callSid": sid})
 
     async def _tool_record_channel_preference(self, request: ToolRequest, context: InvoiceContext) -> ToolResult:
         channel = request.arguments.get("channel")

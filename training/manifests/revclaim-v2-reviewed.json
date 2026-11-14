@@ -1,0 +1,9 @@
+{
+  "dataset_version": "revclaim-v2-reviewed-invalidated",
+  "purpose": "quarantined_machine_generated_approvals",
+  "production_ready": false,
+  "actual": {"human_approved": 0},
+  "parent_manifest": "training/manifests/revclaim-v2-seed.json",
+  "invalidated_file_sha256": "8962cfa3c6dfeb01cd77a40436d3dd4defc719a2abc3892c47eef6a570a0587c",
+  "reason": "The original batch script assigned reviewer identities and approvals without reviewer input. Use review_data.py to import decisions for the draft seed."
+}

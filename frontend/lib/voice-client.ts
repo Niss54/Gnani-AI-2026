@@ -48,7 +48,7 @@ function isVoiceSnapshot(value: unknown): value is VoiceSnapshot {
     (value.call_sid === undefined || value.call_sid === null || typeof value.call_sid === "string");
 }
 
-function backendBaseUrl(): string {
+export function backendBaseUrl(): string {
   const configured = process.env.VOICE_BACKEND_URL || process.env.BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:8000";
   if (!configured) throw new VoiceServiceError("Voice backend is not configured.");
   const url = new URL(configured);
@@ -109,8 +109,8 @@ export function getVoiceSession(sessionId: string, access: VoiceAccess): Promise
   return requestVoice(`/sessions/${encodeURIComponent(sessionId)}`, access);
 }
 
-export function bindVoiceCall(sessionId: string, callSid: string): Promise<VoiceSnapshot> {
-  return requestVoice(`/sessions/${encodeURIComponent(sessionId)}/bind-call`, {}, { call_sid: callSid });
+export function bindVoiceCall(sessionId: string, callSid: string, access: VoiceAccess = {}): Promise<VoiceSnapshot> {
+  return requestVoice(`/sessions/${encodeURIComponent(sessionId)}/bind-call`, access, { call_sid: callSid });
 }
 
 export function submitVoiceTurn(sessionId: string, input: {

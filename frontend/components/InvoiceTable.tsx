@@ -1,5 +1,6 @@
 "use client";
 
+import { requestInvoiceAction } from "@/lib/request-invoice-action";
 import React, { useState, useMemo } from "react";
 import { Invoice } from "@/lib/types";
 import {
@@ -91,234 +92,25 @@ export function InvoiceTable({
     });
   }, [invoices, searchQuery, activeTab]);
 
-  // Live Judge / Tester: Real Outbound PSTN Dialing (Debounced with 15s Cooldown)
-  const handleCustomDial = async () => {
-    if (isDialing) return;
-    const now = Date.now();
-    const elapsed = now - lastDialTimeRef.current;
-    if (elapsed < 15000) {
-      const waitSec = Math.ceil((15000 - elapsed) / 1000);
-      toast.warning(`⏳ Call cooldown active: Please wait ${waitSec}s before dialing again.`);
-      return;
-    }
-
-    lastDialTimeRef.current = now;
-    setIsDialing(true);
-    try {
-      const res = await fetch("/api/call", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          phone: evalPhone,
-          clientName: evalName,
-          amount: 10000,
-          invoiceNumber: "INV-2026-JEWEL-1042",
-          deliverable: "Custom E-Commerce Luxury Jewellery Website Development",
-          language: language || "hi",
-          mode: "live",
-          channel: "phone",
-        }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        toast.success(`📞 Outbound call dispatched to ${evalPhone}! Ringing now... (SID: ${data.callSid || data.call?.callSid})`);
-      } else {
-        toast.error(`Outbound call notice: ${data.error || "Carrier trunk required"}`);
-        setIsTwilioModalOpen(true);
-      }
-    } catch (err: any) {
-      toast.error(`Dialing error: ${err?.message || "Failed to initiate call"}`);
-      setIsTwilioModalOpen(true);
-    } finally {
-      setIsDialing(false);
-    }
-  };
-
-  // Live Judge / Tester: Autonomous WhatsApp Dispatch (Zero Manual Window Popups)
-  const handleCustomWhatsApp = async () => {
-    try {
-      const res = await fetch("/api/notify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          phone: evalPhone,
-          email: evalEmail,
-          clientName: evalName,
-          amount: 5000,
-          invoiceNumber: "INV-2026-NISHANT-LIVE",
-          checkoutUrl: "https://rzp.io/i/demo_pay",
-          channel: "whatsapp",
-        }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        toast.success(`⚡ Autonomously dispatched WhatsApp to ${evalPhone} with live Razorpay checkout link!`);
-      } else {
-        toast.info(`Recovery message queued for ${evalPhone}`);
-      }
-    } catch (err: any) {
-      toast.error(`WhatsApp dispatch notice: ${err.message}`);
-    }
-  };
-
-  // Live Judge / Tester: Autonomous Invoice Email Dispatch (Zero Mailto Drafting)
-  const handleCustomEmail = async () => {
-    setIsSendingEmail(true);
-    try {
-      const res = await fetch("/api/notify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          phone: evalPhone,
-          email: evalEmail,
-          clientName: evalName,
-          amount: 5000,
-          invoiceNumber: "INV-2026-NISHANT-LIVE",
-          checkoutUrl: "https://rzp.io/i/demo_pay",
-          channel: "email",
-        }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        toast.success(`⚡ Autonomously dispatched 24h settlement email to ${evalEmail}!`);
-      } else {
-        toast.info(`24h settlement email queued for ${evalEmail}`);
-      }
-    } catch (err: any) {
-      toast.error(`Email dispatch notice: ${err.message}`);
-    } finally {
-      setIsSendingEmail(false);
-    }
-  };
-
-  const handleWhatsAppNudge = async (inv: Invoice) => {
-    setIsSendingWhatsApp(inv.id);
-    const targetPhone = inv.debtorPhone || inv.debtor?.phone || "+918840301998";
-    const targetName = inv.debtorName || inv.debtor?.contactPerson || "Client";
-    const amount = inv.amount ?? inv.amountDue ?? 5000;
-    
-    // Generate fresh, non-expired Razorpay checkout URL dynamically on the fly
-    let checkoutUrl = `https://rev-claim-ai.vercel.app/pay/${inv.invoiceNumber}`;
-    try {
-      const chkRes = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          invoiceId: inv.id || inv.invoiceNumber,
-          amount,
-          customerEmail: inv.debtorEmail || "nishantma05@gmail.com",
-          customerName: targetName,
-        }),
-      });
-      const chkData = await chkRes.json();
-      if (chkData?.checkoutUrl) {
-        checkoutUrl = chkData.checkoutUrl;
-      }
-    } catch {
-      // Dynamic fallback
-    }
-
-    try {
-      const res = await fetch("/api/notify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          phone: targetPhone,
-          email: inv.debtorEmail || "billing@client.com",
-          clientName: targetName,
-          amount,
-          invoiceNumber: inv.invoiceNumber,
-          checkoutUrl,
-          channel: "whatsapp",
-        }),
-      });
-
-      const data = await res.json();
-      toast.success(`⚡ Autonomously dispatched WhatsApp to ${targetName} (${targetPhone})!`);
-      if (data?.results?.whatsapp?.waLink && typeof window !== "undefined") {
-        window.open(data.results.whatsapp.waLink, "_blank");
-      }
-    } catch {
-      toast.info(`Recovery trigger recorded for ${targetPhone}`);
-    } finally {
-      setIsSendingWhatsApp(null);
-    }
-  };
-
+  const handleCustomDial = () => toast.info("Open a verified invoice to contact its account holder.");
+  const handleCustomWhatsApp = () => toast.info("WhatsApp delivery is unavailable.");
+  const handleCustomEmail = () => toast.info("Use the email action on a verified invoice.");
+  const handleWhatsAppNudge = (_inv: Invoice) => toast.info("WhatsApp delivery is unavailable.");
   const handleEmailNudge = async (inv: Invoice) => {
-    const targetEmail = inv.debtorEmail || inv.debtor?.email || "nishantma05@gmail.com";
-    const targetName = inv.debtorName || inv.debtor?.contactPerson || "Client";
-    const amount = inv.amount ?? inv.amountDue ?? 5000;
-    
-    // Generate fresh, non-expired Razorpay checkout URL dynamically on the fly
-    let checkoutUrl = `https://rev-claim-ai.vercel.app/pay/${inv.invoiceNumber}`;
     try {
-      const chkRes = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          invoiceId: inv.id || inv.invoiceNumber,
-          amount,
-          customerEmail: targetEmail,
-          customerName: targetName,
-        }),
-      });
-      const chkData = await chkRes.json();
-      if (chkData?.checkoutUrl) {
-        checkoutUrl = chkData.checkoutUrl;
-      }
-    } catch {
-      // Dynamic fallback
-    }
-
-    try {
-      await fetch("/api/notify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          phone: inv.debtorPhone || "+918840301998",
-          email: targetEmail,
-          clientName: targetName,
-          amount,
-          invoiceNumber: inv.invoiceNumber,
-          checkoutUrl,
-          channel: "email",
-        }),
-      });
-      toast.success(`⚡ Autonomously dispatched 24h settlement notice to ${targetEmail}!`);
-    } catch {
-      toast.info(`Recovery email queued for ${targetEmail}`);
+      const receipt = await requestInvoiceAction("notify", inv.id);
+      toast.success("Email request status: " + receipt.status);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Email request failed.");
     }
   };
-
-  const handleInstantSettle = (inv: Invoice) => {
-    confetti({
-      particleCount: 90,
-      spread: 75,
-      origin: { y: 0.6 },
-    });
-
-    const amount = inv.amount ?? inv.amountDue ?? 50000;
-    const isINR = (inv.currency || "INR").toUpperCase() === "INR";
-    // Flat $5 Success Fee per recovered invoice ($1 = ₹95 -> ₹475 in INR)
-    const fee = isINR ? 475 : 5;
-    const net = Math.max(0, amount - fee);
-
-    const updatedInv: Invoice = {
-      ...inv,
-      status: "RECOVERED",
-      recoveredAmount: amount,
-      revclaimFeeDeducted: fee,
-      netPayoutToUser: net,
-      payoutStatus: "REMITTED",
-    };
-
-    setInvoices((prev) =>
-      prev.map((i) => (i.id === inv.id ? updatedInv : i))
-    );
-
-    setSelectedReceiptInvoice(updatedInv);
-    toast.success(`🎉 ${inv.invoiceNumber} marked as RECOVERED! Razorpay settlement captured.`);
+  const handleInstantSettle = async (inv: Invoice) => {
+    try {
+      const receipt = await requestInvoiceAction("checkout", inv.id);
+      if (receipt.checkoutUrl) window.open(receipt.checkoutUrl, "_blank", "noopener,noreferrer");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Checkout unavailable.");
+    }
   };
 
   const getStatusBadge = (status: Invoice["status"]) => {
@@ -713,10 +505,10 @@ export function InvoiceTable({
                             <button
                               onClick={() => handleInstantSettle(inv)}
                               className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-zinc-700 dark:text-zinc-200 bg-white dark:bg-[#111c30] hover:bg-zinc-100 dark:hover:bg-[#16243d] border border-zinc-200 dark:border-white/10 shadow-xs transition-all active:scale-95"
-                              title="Instant settle test simulation with confetti"
+                              title="Create an authorized checkout link"
                             >
                               <Sparkles className="size-3.5 text-emerald-500" />
-                              <span className="hidden lg:inline">Settle</span>
+                              <span className="hidden lg:inline">Checkout</span>
                             </button>
                           </>
                         )}

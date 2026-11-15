@@ -1,0 +1,61 @@
+{
+  "run_id": "revclaim-kaggle-seed",
+  "base_model": "Qwen/Qwen3-4B-Instruct-2507",
+  "base_revision": "cdbee75f17c01a7cc42f958dc650907174af0554",
+  "tokenizer_revision": "cdbee75f17c01a7cc42f958dc650907174af0554",
+  "dataset_manifest": "training/data/v3-owner-approved/manifest.json",
+  "policy_version": "negotiation-v1",
+  "dependency_constraints": "training/requirements.txt",
+  "seed": 42,
+  "sequence_length": 4096,
+  "quantization": {
+    "load_in_4bit": true,
+    "type": "nf4",
+    "compute_dtype": "bfloat16"
+  },
+  "lora": {
+    "rank": 16,
+    "alpha": 32,
+    "dropout": 0.05,
+    "target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ]
+  },
+  "optimization": {
+    "learning_rate": 0.0001,
+    "epochs": 2,
+    "micro_batch_size": 1,
+    "gradient_accumulation_steps": 16,
+    "gradient_checkpointing": true,
+    "assistant_only_loss": true
+  },
+  "checkpoint_every_steps": 100,
+  "output_dir": "artifacts/training/revclaim-kaggle-seed",
+  "compute": {
+    "profile": "authorized_remote",
+    "max_gpu_hours": 2,
+    "max_spend": 0,
+    "hourly_rate": 0,
+    "currency": "INR",
+    "authorization_ref": "project-owner-kaggle-free-gpu"
+  },
+  "display_name": "RevClaim Negotiator v1",
+  "base_license": "Apache-2.0",
+  "require_complete": false,
+  "auxiliary_strategy": [
+    {
+      "train_file": "training/data/casino-strategy/train.jsonl",
+      "sha256": "210a5586fe670f30cfcf11778849188124dc1a8a7ce4de93611218c20e1adf1a"
+    },
+    {
+      "train_file": "training/data/offer-readback/train.jsonl",
+      "sha256": "f9cac41dddbfd6a06828a65145d26d9d8f1d577d48a0342c85ed59161c3701dd"
+    }
+  ]
+}

@@ -46,3 +46,9 @@ def test_parse_explicit_amount():
 def test_render_for_speech():
     cleaned = render_for_speech("Hello <Say>test</Say> world \x00\x05 clean")
     assert cleaned == "Hello test world clean"
+
+def test_currency_and_fraction_must_be_unambiguous():
+    for phrase in ("50 percent", "50%", "$500", "2 crore", "4.555", "1,2", "10-20"):
+        assert parse_explicit_amount(phrase, currency="INR") is None
+    assert parse_explicit_amount("Rs 1,25,000", currency="INR") == 12500000
+    assert parse_explicit_amount("500 rupees", currency="USD") is None

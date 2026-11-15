@@ -28,13 +28,26 @@ def spoken_money(minor: int, currency: str, language: LanguageMode) -> str:
     return result
 
 
-def parse_explicit_amount(text: str) -> int | None:
+def parse_explicit_amount(text: str, *, currency: str | None = None) -> int | None:
     """Only parse a single explicit numeric amount. Ambiguity requires clarification."""
     without_dates = re.sub(r"\b\d{4}-\d{2}-\d{2}\b", "", text)
-    candidates = re.findall(r"(?<![\w.-])(\d[\d,]*(?:\.\d{1,2})?)\s*(thousand|hazar|hazaar|k\b|lakh)?", without_dates, re.I)
+    # Reject unsupported units instead of reading 50 percent or 500 euros as rupees.
+    if re.search(r"%|\b(?:percent|per\s*cent|crores?|millions?|billions?|euros?|pounds?|paise|cents?)\b|[€£]", without_dates, re.I):
+        return None
+    if currency == "INR" and re.search(r"\$|\b(?:usd|dollars?)\b", text, re.I):
+        return None
+    if currency == "USD" and re.search(r"₹|\b(?:inr|rupees?|rupaye|rs)\b", text, re.I):
+        return None
+    candidates = list(re.finditer(r"(?<![\w.-])(\d[\d,]*(?:\.\d+)?)\s*(thousand|hazar|hazaar|k|lakh)?(?!\w)", without_dates, re.I))
     if len(candidates) != 1:
         return None
-    number, multiplier = candidates[0]
+    match = candidates[0]
+    number, multiplier = match[1], match[2] or ""
+    # Unparsed digits mean a range, an identifier or another numeric expression.
+    if re.search(r"\d", without_dates[:match.start()] + without_dates[match.end():]):
+        return None
+    if not re.fullmatch(r"(?:\d+|\d{1,3}(?:,\d{3})+|\d{1,2}(?:,\d{2})+,\d{3})(?:\.\d{1,2})?", number):
+        return None
     amount = Decimal(number.replace(",", ""))
     if multiplier.lower() in {"thousand", "hazar", "hazaar", "k"}:
         amount *= 1000

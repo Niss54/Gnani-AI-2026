@@ -7,16 +7,55 @@ from training.common import file_hash, resolve_path
 from training.data_pipeline import load_manifest_records, training_example, tokenize_example, validate_dataset
 
 
+def mix_strategy_examples(domain, config):
+    """Include one annotated strategy exercise per four reviewed billing turns."""
+    import random
+    from training.common import read_jsonl
+
+    sources = config["auxiliary_strategy"]
+    if isinstance(sources, dict):  # Earlier single-source run configurations
+        sources = [sources]
+    rng = random.Random(config["seed"])
+    pools = []
+    paths = set()
+    for source in sources:
+        path = resolve_path(source["train_file"])
+        if path in paths or file_hash(path) != source["sha256"]:
+            raise ValueError("duplicate_or_mismatched_auxiliary_source")
+        paths.add(path)
+        pool = read_jsonl(path)
+        if not pool:
+            raise ValueError("empty_auxiliary_source")
+        rng.shuffle(pool)
+        pools.append(pool)
+    combined = list(domain)
+    budget = len(domain) // 4
+    count = 0
+    while pools and count < budget:
+        for pool in pools:
+            if count >= budget:
+                break
+            combined.append(pool.pop())
+            count += 1
+        pools = [pool for pool in pools if pool]
+    rng.shuffle(combined)
+    return combined, count
+
+
 def train_adapter(config, output_dir, mode, max_examples=None, resume_checkpoint=None):
     from training.model_policy import validate_model_policy
     validate_model_policy(config)
-    checked = validate_dataset(config["dataset_manifest"], require_human=True, require_complete=mode == "full")
+    require_complete = (mode == "full") and bool(config.get("require_complete", True))
+    checked = validate_dataset(config["dataset_manifest"], require_human=True, require_complete=require_complete)
     if checked["status"] != "passed":
         raise ValueError("human_approved_dataset_required")
     _, rows = load_manifest_records(config["dataset_manifest"])
     examples = [training_example(row, i) for row in rows if row["split"] == "train" for i in range(len(row["turns"]))]
     if mode == "smoke":
         examples = examples[:max_examples or 200]
+    auxiliary_count = 0
+    if config.get("auxiliary_strategy"):
+        examples, auxiliary_count = mix_strategy_examples(examples, config)
     if not examples:
         raise ValueError("empty_training_split")
     if mode == "full" and max_examples is not None:
@@ -88,4 +127,4 @@ def train_adapter(config, output_dir, mode, max_examples=None, resume_checkpoint
         raise RuntimeError("adapter_weights_missing_after_save")
     return {"completed_steps": trainer.state.global_step, "training_loss": result.training_loss,
             "adapter_sha256": file_hash(weights), "adapter_weights_generated": True,
-            "peak_gpu_allocated_bytes": torch.cuda.max_memory_allocated(), "training_examples": len(examples), "dataset_manifest_hash": file_hash(resolve_path(config["dataset_manifest"]))}
+            "peak_gpu_allocated_bytes": torch.cuda.max_memory_allocated(), "training_examples": len(examples), "auxiliary_strategy_examples": auxiliary_count, "dataset_manifest_hash": file_hash(resolve_path(config["dataset_manifest"]))}

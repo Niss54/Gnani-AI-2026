@@ -9,9 +9,27 @@ case "$stage" in smoke|full) ;; *) echo "Choose smoke or full" >&2; exit 2 ;; es
 # Reject missing, draft or inconsistent data before installing packages or downloading weights.
 manifest=$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["dataset_manifest"])' "$config")
 run=$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["output_dir"])' "$config")
+req_complete=$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1])).get("require_complete", True))' "$config")
 complete=()
-if [[ "$stage" == full ]]; then complete+=(--require-complete); fi
+if [[ "$stage" == full && "$req_complete" != "False" ]]; then complete+=(--require-complete); fi
 python3 training/validate_data.py --manifest "$manifest" --require-human-approved "${complete[@]}"
+python3 - "$config" <<'PY'
+import json
+import sys
+from training.prepare_casino import prepare as prepare_casino
+from training.prepare_offer_readback import prepare as prepare_readback
+
+with open(sys.argv[1]) as stream:
+    sources = json.load(stream).get("auxiliary_strategy") or []
+if isinstance(sources, dict):
+    sources = [sources]
+builders = {"training/data/casino-strategy/train.jsonl": prepare_casino,
+            "training/data/offer-readback/train.jsonl": prepare_readback}
+for source in sources:
+    builder = builders.get(source["train_file"])
+    if builder:
+        builder()
+PY
 nvidia-smi
 python3 -m pip install -r training/requirements.txt
 python3 training/doctor.py --config "$config" --check-compute

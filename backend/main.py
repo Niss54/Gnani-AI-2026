@@ -41,12 +41,18 @@ app = FastAPI(
 
 )
 
+from backend.api.demo_router import router as demo_router
+
 app.include_router(voice_router)
+app.include_router(demo_router)
 
 @app.middleware("http")
 async def retire_unsafe_legacy_voice_paths(request: Request, call_next):
     retired = {"/api/call", "/api/notify", "/api/negotiate", "/api/checkout", "/api/webhook/razorpay", "/api/invoices"}
-    if request.url.path.rstrip("/") in retired:
+    pathname = request.url.path.rstrip("/")
+    # Older callers can reach this ASGI app directly, bypassing Next middleware.
+    unscoped = ("/api/memory", "/api/synthesize", "/api/graph-rag", "/api/bhashini/translate")
+    if pathname in retired or any(pathname == prefix or pathname.startswith(prefix + "/") for prefix in unscoped):
         from fastapi.responses import JSONResponse
         return JSONResponse({"error": "Legacy path retired; use the tenant-scoped voice API."}, status_code=410)
     return await call_next(request)
@@ -139,16 +145,7 @@ def health_check():
     return {
         "status": "healthy",
         "service": "RevClaim AI Python FastAPI",
-        "integrations": {
-            "supabase": "connected" if supabase_service.client else "in_memory_mirror",
-            "groq_llm": "active (gsk_...)",
-            "gemini_llm": "active (AQ....)",
-            "deepgram_nova2": "ready",
-            "mem0_memory": "active",
-            "elevenlabs_voice": "active" if voice_service.elevenlabs_key else "offline",
-            "gnani_indic_voice": "active (vach_...)" if voice_service.gnani_key else "offline",
-            "livekit_webrtc": "active (API52...)"
-        }
+        "scope": "process_liveness",
     }
 
 @app.get("/api/invoices")

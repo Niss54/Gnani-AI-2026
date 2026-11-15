@@ -144,6 +144,11 @@ def validate_record(row: dict[str, Any], *, require_human: bool) -> list[str]:
         if not isinstance(turn.get("facts"), dict) or not isinstance(turn.get("allowed_actions"), list):
             errors.append(prefix + "typed_facts_and_action_allowlist_required")
             continue
+        # Legacy v2 seeded every allowlist with the correct answer before the
+        # same three fallback actions. Copied or reviewed v2 rows retain this leak.
+        action = (turn.get("target") or {}).get("proposed_action")
+        if row.get("example_id", "").startswith("SEED-") and turn["allowed_actions"] == list(dict.fromkeys([action, "clarify", "close", "reply"])):
+            errors.append(prefix + "target_derived_action_allowlist")
         if not isinstance(turn.get("state"), str):
             errors.append(prefix + "state_required")
         messages = turn.get("messages", [])

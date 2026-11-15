@@ -46,6 +46,7 @@ next-env.d.ts
 # Binary & logs
 *.log
 *.exe
+*.zip
 twilio_calls.log
 desktop.ini
 

@@ -99,14 +99,13 @@ class ConversationController:
         text = normalize_transcript(event.transcript)
         if event.language_mode:
             snapshot.language_mode = event.language_mode
+        intent = classify_control(text)
         if matches(text, r"\b(in english|english (please|mein|me|mai|bolo))\b|इंग्लिश में|अंग्रेजी में"):
             snapshot.language_mode = "en-IN"
-            intent = "language_switch"
+            intent = intent or "language_switch"
         elif matches(text, r"\b(in hinglish|hinglish (please|mein|me|mai|bolo)|hindi (mein|me|mai|bolo))\b|हिंदी में"):
             snapshot.language_mode = "hi-en"
-            intent = "language_switch"
-        else:
-            intent = classify_control(text)
+            intent = intent or "language_switch"
         model_used = None
         route = "policy"
         try:
@@ -308,7 +307,7 @@ class ConversationController:
             session.pending_ptp, session.pending_question = None, None
             reply = say("I won't treat that as a confirmed payment commitment.", "Main ise confirmed payment commitment nahi maanungi.")
         elif intent == "payment_proposal" or (session.pending_question == "ptp_details" and intent == "clarify"):
-            amount = parse_explicit_amount(text)
+            amount = parse_explicit_amount(text, currency=context.currency)
             planned_date = explicit_date(text, self.today())
             if amount is None or planned_date is None:
                 session.pending_ptp, session.pending_question = None, "ptp_details"

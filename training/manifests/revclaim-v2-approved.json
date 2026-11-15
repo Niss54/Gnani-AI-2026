@@ -1,0 +1,21 @@
+{
+  "dataset_version": "revclaim-v2-approved",
+  "policy_version": "negotiation-v1",
+  "purpose": "human_reviewed_seed",
+  "created_at": "2026-11-14T12:04:55.541598+00:00",
+  "reviewer": "Nishant Maurya",
+  "files": [
+    {
+      "path": "training/data/v2-full-approved/dialogues.jsonl",
+      "sha256": "6913fa9f4ed00a24625255552c75039c82b23c4921b8d052cdf196608ac73a2b"
+    }
+  ],
+  "production_ready": false,
+  "actual": {
+    "dialogues": 80,
+    "scenario_groups": 40,
+    "human_approved": 80
+  },
+  "note": "Human-reviewed and approved seed batch by Nishant Maurya with cryptographic attestation.",
+  "parent_manifest_sha256": "db0528a7edad83d6428046420df4b6a66409ffd5da08f6d4cc2b41e04ffe7a6a"
+}

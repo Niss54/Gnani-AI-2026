@@ -27,16 +27,16 @@ def classify_control(text: str) -> str | None:
         return "opt_out"
     if matches(text, r"\b(wrong (number|person)|galat number|not (the|your) (client|customer)|you have the wrong)\b|गलत नंबर"):
         return "wrong_number"
-    if matches(text, r"\b(driving|drive kar|hospital|emergency|accident)\b|गाड़ी चला|अस्पताल|इमरजेंसी") and not matches(text, r"\b(not driving|no emergency)\b"):
+    if matches(text, r"\b(driving|drive kar|(?:gaadi|gadi) chala|behind the wheel|hospital|emergency|accident)\b|गाड़ी चला|अस्पताल|इमरजेंसी") and not matches(text, r"\b(not driving|no emergency|(?:gaadi|gadi) (?:nahi|nhi) chala)\b"):
         return "safety_close"
     if matches(text, r"\b(hang up|end (the )?call|stop talking|bye|goodbye|call end|phone rakho|baat (nahi|nhi) karni|m[an]+ (nahi|nhi)|don't want to (talk|discuss))\b|बात नहीं करनी|फोन रख"):
         return "close"
-    if (matches(text, r"\b(dispute|invoice (is )?(wrong|incorrect)|wrong (amount|balance)|work (is )?(incomplete|bad)|incomplete work|not happy|bug|bugs|kaam (kharab|incomplete)|invoice galat|don't remember|dont remember|not remember|yaad nahi)\b|इनवॉइस गलत|काम अधूरा|डॉन'टी रिमेंबर|याद नहीं")
+    if (matches(text, r"\b(dispute|invoice (is )?(wrong|incorrect)|wrong (amount|balance)|work (is )?(incomplete|bad)|incomplete work|not happy|bug|bugs|kaam (kharab|incomplete)|(?:amount|balance|invoice) (?:galat|ghalat)|don't remember|dont remember|not remember|yaad nahi)\b|इनवॉइस गलत|काम अधूरा|डॉन'टी रिमेंबर|याद नहीं")
             and not matches(text, r"\b(no dispute|not disputing|no (issue|bugs))\b")):
         return "dispute"
     if matches(text, r"\b(let me (finish|speak|explain)|hear me out|listen to me|pehle meri baat|meri baat sun|ruko|ek minute|one moment)\b|पहले मेरी बात|मेरी बात सुन|रुको"):
         return "listen"
-    if matches(text, r"\b(maybe|perhaps|cannot commit|can't commit|not a promise|promise nahi|dekhte hain|not sure|take that back|changed my mind|don't record|do not record)\b|पक्का नहीं"):
+    if matches(text, r"\b(maybe|perhaps|shayad|promise mat samajhna|cannot commit|can't commit|not a promise|promise nahi|dekhte hain|not sure|take that back|changed my mind|don't record|do not record)\b|पक्का नहीं"):
         return "tentative"
     if matches(text, r"\b(are you (a )?(human|robot|bot|ai)|is this (a )?(human|robot|bot|ai))\b"):
         return "ai_identity"
@@ -54,10 +54,10 @@ def classify_control(text: str) -> str | None:
         return "channel_refusal"
     if matches(text, r"\b(already paid|payment (is )?done|paid already|pay kar diya|payment kar diya|ho gaya payment)\b|पेमेंट कर दिया|भुगतान कर दिया"):
         return "already_paid"
-    if matches(text, r"\b(ai|robot|bot|human|artificial intelligence)\b|एआई|रोबोट"):
-        return "ai_identity"
     if matches(text, r"\b(trust|believe|scam|fraud|bharosa|kaise maanu|verify)\b|भरोसा|विश्वास"):
         return "trust"
+    if matches(text, r"\b(ai|robot|bot|human|artificial intelligence)\b|एआई|रोबोट"):
+        return "ai_identity"
     if matches(text, r"\b(proof|evidence|invoice copy|work details|kya proof|saboot)\b|सबूत"):
         return "proof"
     if matches(text, r"\b(otp|pin|card number|cvv)\b|ओटीपी"):
@@ -68,7 +68,7 @@ def classify_control(text: str) -> str | None:
         return "discount"
     if matches(text, r"\b(no money|can't pay|cannot pay|cash flow|cash tight|paise nahi|paisa nahi|installment|instalment|split)\b|पैसे नहीं|किस्त"):
         return "hardship"
-    if matches(text, r"\b(maybe|perhaps|cannot commit|can't commit|not a promise|promise nahi|dekhte hain)\b|पक्का नहीं"):
+    if matches(text, r"\b(maybe|perhaps|shayad|promise mat samajhna|cannot commit|can't commit|not a promise|promise nahi|dekhte hain)\b|पक्का नहीं"):
         return "tentative"
     if matches(text, r"\b(email|whatsapp|sms|send (the )?(link|invoice)|link bhej|bhej do|whatsapp pe|mail pe)\b|ईमेल|व्हाट्सएप|लिंक भेज|भेज दो"):
         return "delivery_request"

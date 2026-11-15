@@ -1,0 +1,205 @@
+{
+  "corpus_metadata": {
+    "origin": "empirical_multi_issue_bargaining_research",
+    "total_dialogues_analyzed": 1030,
+    "strategy_annotated_dialogues": 396,
+    "total_annotated_turns": 5858,
+    "taxonomy_cardinality": 10
+  },
+  "strategy_distribution": {
+    "promote-coordination": 579,
+    "elicit-pref": 377,
+    "other-need": 409,
+    "non-strategic": 1455,
+    "small-talk": 1054,
+    "no-need": 196,
+    "vouch-fair": 439,
+    "self-need": 964,
+    "uv-part": 131,
+    "showing-empathy": 254
+  },
+  "transition_probability_matrix": {
+    "promote-coordination": {
+      "non-strategic": 0.2749,
+      "promote-coordination": 0.1809,
+      "self-need": 0.1496,
+      "vouch-fair": 0.1197,
+      "small-talk": 0.0755,
+      "other-need": 0.0613,
+      "elicit-pref": 0.0584,
+      "showing-empathy": 0.0356,
+      "no-need": 0.0299,
+      "uv-part": 0.0142
+    },
+    "elicit-pref": {
+      "self-need": 0.3442,
+      "non-strategic": 0.1594,
+      "other-need": 0.1268,
+      "elicit-pref": 0.1087,
+      "promote-coordination": 0.0743,
+      "no-need": 0.0707,
+      "small-talk": 0.0634,
+      "showing-empathy": 0.0236,
+      "vouch-fair": 0.0217,
+      "uv-part": 0.0072
+    },
+    "other-need": {
+      "self-need": 0.2006,
+      "other-need": 0.1573,
+      "non-strategic": 0.1541,
+      "showing-empathy": 0.1268,
+      "promote-coordination": 0.1172,
+      "vouch-fair": 0.0674,
+      "small-talk": 0.053,
+      "no-need": 0.0433,
+      "uv-part": 0.0433,
+      "elicit-pref": 0.0369
+    },
+    "non-strategic": {
+      "non-strategic": 0.4461,
+      "vouch-fair": 0.1092,
+      "self-need": 0.1092,
+      "small-talk": 0.0993,
+      "promote-coordination": 0.0872,
+      "elicit-pref": 0.0567,
+      "other-need": 0.0383,
+      "no-need": 0.0241,
+      "uv-part": 0.017,
+      "showing-empathy": 0.0128
+    },
+    "small-talk": {
+      "small-talk": 0.4628,
+      "self-need": 0.1602,
+      "elicit-pref": 0.0874,
+      "other-need": 0.0766,
+      "promote-coordination": 0.0628,
+      "non-strategic": 0.0552,
+      "showing-empathy": 0.0352,
+      "no-need": 0.0314,
+      "vouch-fair": 0.0207,
+      "uv-part": 0.0077
+    },
+    "no-need": {
+      "non-strategic": 0.2008,
+      "self-need": 0.189,
+      "promote-coordination": 0.122,
+      "no-need": 0.1102,
+      "showing-empathy": 0.0906,
+      "small-talk": 0.0669,
+      "other-need": 0.0669,
+      "vouch-fair": 0.063,
+      "elicit-pref": 0.0591,
+      "uv-part": 0.0315
+    },
+    "vouch-fair": {
+      "non-strategic": 0.3418,
+      "vouch-fair": 0.1603,
+      "promote-coordination": 0.1329,
+      "self-need": 0.097,
+      "small-talk": 0.0781,
+      "other-need": 0.0549,
+      "elicit-pref": 0.0422,
+      "uv-part": 0.038,
+      "showing-empathy": 0.0359,
+      "no-need": 0.019
+    },
+    "self-need": {
+      "self-need": 0.2413,
+      "non-strategic": 0.1604,
+      "promote-coordination": 0.1279,
+      "showing-empathy": 0.1163,
+      "other-need": 0.0954,
+      "small-talk": 0.065,
+      "no-need": 0.0592,
+      "vouch-fair": 0.0578,
+      "uv-part": 0.0397,
+      "elicit-pref": 0.0368
+    },
+    "uv-part": {
+      "self-need": 0.2235,
+      "non-strategic": 0.1899,
+      "promote-coordination": 0.1285,
+      "other-need": 0.1117,
+      "uv-part": 0.095,
+      "vouch-fair": 0.0894,
+      "no-need": 0.0503,
+      "small-talk": 0.0447,
+      "elicit-pref": 0.0335,
+      "showing-empathy": 0.0335
+    },
+    "showing-empathy": {
+      "self-need": 0.1994,
+      "non-strategic": 0.1815,
+      "promote-coordination": 0.1131,
+      "showing-empathy": 0.0982,
+      "vouch-fair": 0.0952,
+      "small-talk": 0.0804,
+      "no-need": 0.0744,
+      "elicit-pref": 0.0655,
+      "other-need": 0.0655,
+      "uv-part": 0.0268
+    }
+  },
+  "negotiation_taxonomy": {
+    "promote-coordination": {
+      "mapped_act": "collaborative_problem_solving",
+      "framework": "Harvard Principled Negotiation",
+      "description": "Joint problem-solving framing to align incentives and prevent adversarial conflict.",
+      "debt_collection_objective": "Frame balance settlement as a mutual objective before external escalation."
+    },
+    "elicit-pref": {
+      "mapped_act": "calibrated_questioning",
+      "framework": "Chris Voss Calibrated Questions",
+      "description": "Open-ended questioning focused on discovering constraints and payment capacity.",
+      "debt_collection_objective": "Ask how/what questions regarding manageable installment timeline."
+    },
+    "other-need": {
+      "mapped_act": "debtor_constraint_acknowledgment",
+      "framework": "Active Listening & Mirroring",
+      "description": "Validating counterparty constraints (cashflow, client delay, accounting cycles).",
+      "debt_collection_objective": "Explicitly acknowledge debtor operational bottlenecks."
+    },
+    "non-strategic": {
+      "mapped_act": "procedural_dispatch",
+      "framework": "Action Execution Protocol",
+      "description": "Logistical confirmation, payment link dispatch, timestamp recording.",
+      "debt_collection_objective": "Deliver Razorpay link or schedule authorized callback."
+    },
+    "small-talk": {
+      "mapped_act": "rapport_building",
+      "framework": "Professional Tone Alignment",
+      "description": "Respectful corporate greeting and recognition of business partnership.",
+      "debt_collection_objective": "Maintain long-term vendor-client relationship tone."
+    },
+    "no-need": {
+      "mapped_act": "waiver_flexibility",
+      "framework": "Non-Monetary Concessions",
+      "description": "Offering flexibility on secondary parameters to preserve core principal.",
+      "debt_collection_objective": "Offer interest or penalty fee waivers in exchange for prompt settlement."
+    },
+    "vouch-fair": {
+      "mapped_act": "objective_criteria",
+      "framework": "Harvard Objective Criteria",
+      "description": "Appealing to neutral, verifiable standards (GST portals, signed contracts).",
+      "debt_collection_objective": "Reference GST portal matching, signed purchase order, and standard 30-day terms."
+    },
+    "self-need": {
+      "mapped_act": "creditor_obligation_framing",
+      "framework": "Contractual Transparency",
+      "description": "Communicating vendor commitments, payroll obligations, and audit closure.",
+      "debt_collection_objective": "Explain vendor cash requirements without threats or hostility."
+    },
+    "uv-part": {
+      "mapped_act": "concession_tradeoff",
+      "framework": "Ackerman Concession Ladder",
+      "description": "Structured give-and-take: conditional discount within mandate limit (<= 10%).",
+      "debt_collection_objective": "Offer split installment (50% now / 50% in 15 days) with max 5-10% discount."
+    },
+    "showing-empathy": {
+      "mapped_act": "tactical_empathy",
+      "framework": "Chris Voss Tactical Empathy",
+      "description": "Labeling negative emotions and vocalizing the counterparty hardship.",
+      "debt_collection_objective": "Diffuse anger and defense mechanisms before negotiating numbers."
+    }
+  }
+}

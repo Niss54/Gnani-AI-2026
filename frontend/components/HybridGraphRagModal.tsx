@@ -29,12 +29,7 @@ interface HybridGraphRagModalProps {
   initialCompany?: string;
 }
 
-const PRESET_QUERIES = [
-  "Pierce corporate veil for TechFlow Solutions",
-  "Cross-directorship DIN 08921142 unadjudicated defaults",
-  "MSMED Act Section 16 3x RBI compound penal interest",
-  "Section 43B(h) tax disallowance on overdue payables",
-];
+const PRESET_QUERIES = ["TechFlow Solutions", "Sharma Logistics"];
 
 // Node Color & Icon Mapping (Dual Theme Adaptive)
 function getNodeStyle(type: GraphNode["type"]) {
@@ -158,7 +153,9 @@ export function HybridGraphRagModal({
         res.graph_topology.nodes[0];
       setSelectedNode(target);
     } catch {
-      toast.error("Failed to query Hybrid Graph RAG");
+      setResult(null);
+      setSelectedNode(null);
+      toast.error("Choose one of the listed sample companies.");
     } finally {
       setIsLoading(false);
     }
@@ -167,8 +164,8 @@ export function HybridGraphRagModal({
   if (!isOpen) return null;
 
   const currentResult = result;
-  const nodes = currentResult?.graph_topology.nodes || SOVEREIGN_GRAPH_TOPOLOGY.nodes;
-  const edges = currentResult?.graph_topology.edges || SOVEREIGN_GRAPH_TOPOLOGY.edges;
+  const nodes = currentResult?.graph_topology.nodes || [];
+  const edges = currentResult?.graph_topology.edges || [];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 md:p-6 bg-slate-900/50 dark:bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
@@ -190,7 +187,7 @@ export function HybridGraphRagModal({
                 </span>
               </div>
               <p className="text-xs text-slate-500 dark:text-zinc-400">
-                Corporate Veil Piercing, Common Directorships (DIN), Sister Defaulter Rings &amp; MSMED Act Enforcement
+                Synthetic sample companies, balances, relationships and risk scores.
               </p>
             </div>
           </div>
@@ -224,7 +221,7 @@ export function HybridGraphRagModal({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSearch(searchQuery)}
-                placeholder="Search Debtor Company, Director DIN, GSTIN, or Statutory Clause..."
+                placeholder="Choose or enter a sample company"
                 className="w-full pl-10 pr-4 py-2 text-sm bg-white dark:bg-[#111c30] border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50 shadow-xs"
               />
             </div>
@@ -240,7 +237,7 @@ export function HybridGraphRagModal({
 
           <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
             <span className="text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap">
-              Suggested Queries:
+              Sample companies:
             </span>
             {PRESET_QUERIES.map((q, idx) => (
               <button

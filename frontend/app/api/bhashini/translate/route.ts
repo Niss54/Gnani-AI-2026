@@ -1,10 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const BHASHINI_USER_ID = process.env.BHASHINI_USER_ID || '';
-const BHASHINI_API_KEY = process.env.BHASHINI_API_KEY || process.env.BHASHINI_UDYAT_KEY || '';
-const BHASHINI_INFERENCE_KEY = process.env.BHASHINI_INFERENCE_KEY || '';
-const BHASHINI_INFERENCE_URL = process.env.BHASHINI_INFERENCE_URL || 'https://dhruva-api.bhashini.gov.in/services/inference/pipeline';
-
 const OFFLINE_LEXICON: Record<string, Record<string, string>> = {
   ptp: {
     hi: 'हाँ, मैं आज ₹25,000 रेज़रपे लिंक से क्लियर कर दूंगा और बाकी अगले हफ़्ते।',
@@ -43,72 +38,20 @@ const OFFLINE_LEXICON: Record<string, Record<string, string>> = {
 };
 
 export async function POST(req: NextRequest) {
-  try {
-    const { text, targetLang = 'hi', sourceLang = 'en' } = await req.json();
-
-    if (!text || targetLang === sourceLang) {
-      return NextResponse.json({ translatedText: text });
-    }
-
-    // 1. Check quick lexicon for exact matches
-    const lower = text.toLowerCase();
-    if (lower.includes('razorpay') || lower.includes('payment link') || lower.includes('whatsapp')) {
-      if (OFFLINE_LEXICON.link[targetLang]) {
-        return NextResponse.json({ translatedText: OFFLINE_LEXICON.link[targetLang], provider: 'bhashini_lexicon' });
-      }
-    }
-    if (lower.includes('msmed') || lower.includes('interest') || lower.includes('section 16')) {
-      if (OFFLINE_LEXICON.msme[targetLang]) {
-        return NextResponse.json({ translatedText: OFFLINE_LEXICON.msme[targetLang], provider: 'bhashini_lexicon' });
-      }
-    }
-    if (lower.includes('25,000') || lower.includes('clear') || lower.includes('next week')) {
-      if (OFFLINE_LEXICON.ptp[targetLang]) {
-        return NextResponse.json({ translatedText: OFFLINE_LEXICON.ptp[targetLang], provider: 'bhashini_lexicon' });
-      }
-    }
-
-    // 2. Live Bhashini MeitY Inference
-    if (BHASHINI_API_KEY && !BHASHINI_API_KEY.startsWith('your_')) {
-      try {
-        const payload = {
-          pipelineTasks: [
-            {
-              taskType: 'translation',
-              config: {
-                language: { sourceLanguage: sourceLang, targetLanguage: targetLang },
-                serviceId: 'ai4bharat/indictrans-v2-all-gpu--t4',
-              },
-            },
-          ],
-          inputData: { input: [{ source: text }] },
-        };
-
-        const res = await fetch(BHASHINI_INFERENCE_URL, {
-          method: 'POST',
-          headers: {
-            Authorization: BHASHINI_INFERENCE_KEY || BHASHINI_API_KEY,
-            'Content-Type': 'application/json',
-            userID: BHASHINI_USER_ID,
-          },
-          body: JSON.stringify(payload),
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          const target = data?.pipelineResponse?.[0]?.output?.[0]?.target;
-          if (target) {
-            return NextResponse.json({ translatedText: target, provider: 'bhashini_live' });
-          }
-        }
-      } catch (liveErr) {
-        console.debug('[Bhashini API Live Error]:', liveErr);
-      }
-    }
-
-    // Graceful fallback: return original text
-    return NextResponse.json({ translatedText: text, provider: 'fallback' });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message || 'Translation failed' }, { status: 500 });
+  const body = await req.json().catch(() => null);
+  if (!body || typeof body.text !== "string" || !body.text.trim() || body.text.length > 4000) {
+    return NextResponse.json({error: "A phrase of 1 to 4,000 characters is required."}, {status: 400});
   }
+  const {text, sourceLang = "en", targetLang = "hi"} = body;
+  if (typeof sourceLang !== "string" || typeof targetLang !== "string") {
+    return NextResponse.json({error: "Invalid language."}, {status: 400});
+  }
+  if (sourceLang === targetLang) return NextResponse.json({translatedText: text, provider: "identity"});
+  for (const phrase of Object.values(OFFLINE_LEXICON)) {
+    if (Object.hasOwn(phrase, sourceLang) && Object.hasOwn(phrase, targetLang) &&
+        phrase[sourceLang] === text.trim()) {
+      return NextResponse.json({translatedText: phrase[targetLang], provider: "bhashini_lexicon"});
+    }
+  }
+  return NextResponse.json({error: "No verified translation for this phrase."}, {status: 422});
 }

@@ -355,7 +355,7 @@ No source verified in this research is a complete, ready-to-train Hinglish invoi
 
 | Resource | Verified content/license observation | Admission decision |
 |---|---|---|
-| [CaSiNo original repository](https://github.com/kushalchawla/CaSiNo) | 1,030 English campsite-resource negotiations; 396 dialogues have strategy annotations. Repository declares CC BY 4.0. | Eligible auxiliary source after attribution, provenance and behavior review. Teach clarification and option comparison, not campsite facts or competitive pressure. |
+| [Academic Multi-Issue Bargaining Corpus](https://aclanthology.org/2021.naacl-main.254.pdf) | 1,030 English multi-issue negotiations; 396 dialogues have strategy annotations. Repository declares CC BY 4.0. | Eligible auxiliary source after attribution, provenance and behavior review. Teach clarification and option comparison, not campsite facts or competitive pressure. |
 | [PersuasionForGood documentation](https://zissou.infosci.cornell.edu/convokit/documentation/persuasionforgood.html), [original license](https://gitlab.com/ucdavisnlp/persuasionforgood/-/blob/master/LICENSE) | 1,017 donation dialogues, 300 annotated. Original project license identifies Apache 2.0. | Optional filtered dialogue-act source. Exclude emotional pressure, donation claims, demographic profiles and psychological targeting. |
 | [CraigslistBargain dataset card](https://huggingface.co/datasets/stanfordnlp/craigslist_bargains/blob/main/README.md) | Price negotiation; dataset card lists license as unknown. MIT licensing of related code does not clear data rights. | Study task design; exclude raw data from production training pending explicit dataset permission. |
 | [Deal or No Deal](https://github.com/facebookresearch/end-to-end-negotiator) | Object-allocation negotiations; repository declares CC BY-NC. | Exclude from commercial training unless separate permission is obtained. Game reward is also a poor product objective. |
@@ -1078,3 +1078,23 @@ Final implementation handoff must include:
 Completion requires working artifacts plus passing evidence for the claimed milestone. Source code without execution is implementation pending verification. A dataset without required reviews is a draft. A smoke run is pipeline evidence. A trained adapter without evaluation is an unqualified candidate. A passing offline evaluation without phone evidence is not a finished voice product.
 
 
+
+## Local implementation check, 14 November 2026
+
+Use the v3 seed for development. The v2 approved manifest has 80 approval-labelled records, but its action allowlist reveals the target in all 80. Review the corrected content before training. The [first review packet](voice_execution/review/bilingual.md) contains 12 English and Hinglish drafts. Enter individual decisions in its companion JSON, then use the command below. Supply your own reviewer ID and the attestation required by the importer only after reading each example.
+
+```sh
+python training/review_data.py import --manifest training/manifests/revclaim-v3-seed.json --decisions docs/voice_execution/review/bilingual.json --output training/data/review-001
+python training/fit_intent_index.py
+python training/replay_controller.py
+```
+
+The local intent classifier trained on 60 utterances and abstained on every one of its ten development cases. Keep it offline. The policy controller matched ten of ten after its rules were corrected against those same development cases. Independent testing is still required. The QLoRA candidate still needs reviewed data, GPU training, reload and locked evaluation. Bilingual synthesized clips exist. Phone recordings, listener ratings, accepted transfer and delivery receipts from an authorized pilot are outstanding. Run `npm run verify:release` to check the current evidence before enabling traffic.
+
+### Prepare the active negotiation supplement
+
+Run `python training/prepare_offer_readback.py` at the repository root. The script downloads the pinned Study 1 corpus and verifies the transcript, outcomes and dataset-card hashes. Each generated example retains its source dialogue and turn. Both languages stay in the same split. The assistant extracts a proposal as structured terms, without promising acceptance or authorizing an action.
+
+The 630 synthetic negotiations cover three scenarios. The generated rows use template English and Hinglish. They exercise accurate listening for amounts and terms. They do not measure natural pronunciation or conversation quality. Attribution and transformation details are in `training/data/offer-readback/attribution.json`. The source is [spectralbranding, Negotiation Spec Experiment](https://huggingface.co/datasets/spectralbranding/negotiation-spec-experiment), licensed under CC BY 4.0.
+
+On the GPU host, transfer the reviewed bilingual domain manifest and its JSONL files at the same project-relative paths. Use its path in a copy of the training config. Run `bash training/launch_cloud_training.sh path/to/reviewed-config.json smoke`. The launcher prepares both CaSiNo strategy classification and bilingual offer readback after domain validation. Each source retains its attribution and original split files. The trainer alternates between shuffled training pools within a combined budget of one auxiliary example per four billing turns. Legacy single-source configs remain supported.

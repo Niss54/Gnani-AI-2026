@@ -193,22 +193,13 @@ export async function queryHybridGraphRag(params: {
   query: string;
   company?: string;
 }): Promise<CorporateVeilResult> {
-  try {
-    const res = await fetch('/api/graph-rag/query', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(params),
-    });
-
-    if (res.ok) {
-      return await res.json();
-    }
-  } catch (err) {
-    console.debug('[Hybrid Graph RAG Client]: Live endpoint fallback:', err);
-  }
-
-  // Resilient deterministic client fallback
-  return getFallbackCorporateVeilResult(params.company || params.query);
+  const res = await fetch('/api/graph-rag/query', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params),
+  });
+  if (!res.ok) throw new Error('Select a listed sample company.');
+  return res.json();
 }
 
 /**

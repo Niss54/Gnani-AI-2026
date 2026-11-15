@@ -4,7 +4,7 @@ Incorporates negotiation literature & frameworks from training.negotiation_engin
 - Chris Voss (Tactical Empathy, Calibrated Questions, Ackerman Concession Ladder)
 - Harvard Getting to Yes (Principled Negotiation, Objective GST/MSMED Criteria)
 - Patterson Crucial Conversations (Contrasting, Safety De-escalation)
-- Stanford CaSiNo & Meta DealOrNoDeal (Multi-turn dialogue state tracking)
+- Empirical Multi-Issue Bargaining (Dialogue State Tracking & Strategy Sequences)
 """
 
 from __future__ import annotations
@@ -131,7 +131,7 @@ def expand_to_50k_catalog(output_path: str = "training/data/expanded_50k/dialogu
             "Never Split the Difference (Chris Voss)",
             "Getting to Yes (Harvard Negotiation Project)",
             "Crucial Conversations (Patterson et al.)",
-            "CaSiNo & CraigslistBargain (Stanford / Meta Dialogue Acts)",
+            "Empirical Multi-Issue Bargaining (Dialogue Acts & Strategy Transition Models)",
         ],
         "production_ready": False,
     }

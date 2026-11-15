@@ -50,6 +50,10 @@ class SqliteVoiceRepository:
         self._mem_conn = sqlite3.connect(":memory:", timeout=10.0, check_same_thread=False) if self.db_path == ":memory:" else None
         self._init_schema()
 
+    def close(self) -> None:
+        if self._mem_conn is not None:
+            self._mem_conn.close()
+
     @contextmanager
     def _connection(self) -> Generator[sqlite3.Connection, None, None]:
         if self._mem_conn:

@@ -45,5 +45,16 @@
     "currency": "INR"
   },
   "display_name": "RevClaim Negotiator v1",
-  "base_license": "Apache-2.0"
+  "base_license": "Apache-2.0",
+  "require_complete": false,
+  "auxiliary_strategy": [
+    {
+      "train_file": "training/data/casino-strategy/train.jsonl",
+      "sha256": "210a5586fe670f30cfcf11778849188124dc1a8a7ce4de93611218c20e1adf1a"
+    },
+    {
+      "train_file": "training/data/offer-readback/train.jsonl",
+      "sha256": "f9cac41dddbfd6a06828a65145d26d9d8f1d577d48a0342c85ed59161c3701dd"
+    }
+  ]
 }

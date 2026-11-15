@@ -1389,6 +1389,7 @@ export function SamarDashboard() {
         <header className="clay-card mb-3 flex h-14 shrink-0 items-center justify-between px-4 md:px-5">
           {/* Left: Shadcn-style Router Breadcrumbs */}
           <div className="flex items-center gap-2">
+            <a href="/demo" className="rounded-lg bg-teal-800 px-3 py-2 text-xs font-semibold text-white hover:bg-teal-700">Try voice demo</a>
             {/* Breadcrumb Path */}
             <nav
               aria-label="Breadcrumb"

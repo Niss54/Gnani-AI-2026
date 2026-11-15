@@ -1,4 +1,5 @@
 "use client";
+import { requestInvoiceAction } from "@/lib/request-invoice-action";
 
 import React, { useState, useRef } from "react";
 import {
@@ -208,55 +209,15 @@ export function InvoiceUploadModal({
 
       // ⚡ Autonomous Multi-Channel Recovery Trigger (Omnichannel + Twilio/LiveKit)
       if (userConsent && (autoWhatsApp || autoEmail || autoCall)) {
-        toast.info("⚡ Sovereign Autonomous Recovery pipeline activated...");
-
-        // 1. Dispatch WhatsApp & Email
-        if (autoWhatsApp || autoEmail) {
-          const channel = autoWhatsApp && autoEmail ? "both" : autoWhatsApp ? "whatsapp" : "email";
-          try {
-            const notifRes = await fetch("/api/notify", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                phone,
-                email,
-                clientName,
-                amount: parseFloat(amount) || 28000,
-                invoiceNumber: createdInvoice.invoiceNumber || "INV-2026-LIVE",
-                checkoutUrl: createdInvoice.paymentLinkUrl || "https://rzp.io/i/demo_pay",
-                channel,
-              }),
-            });
-            const notifData = await notifRes.json();
-            if (notifData.success) {
-              toast.success(`⚡ Autonomously dispatched ${channel === "both" ? "WhatsApp & 24h Email" : channel} to ${clientName}!`);
+        if (autoWhatsApp) toast.info("WhatsApp delivery is unavailable.");
+        for (const action of ["notify", "call"] as const) {
+          if ((action === "notify" && autoEmail) || (action === "call" && autoCall)) {
+            try {
+              const receipt = await requestInvoiceAction(action, createdInvoice.id);
+              toast.info(action + " request status: " + receipt.status);
+            } catch (error) {
+              toast.error(error instanceof Error ? error.message : "Request failed.");
             }
-          } catch (err: any) {
-            console.warn("[Auto-Dispatch Notification Error]:", err);
-          }
-        }
-
-        // 2. Dispatch Outbound Phone Call (if toggled on)
-        if (autoCall) {
-          try {
-            const callRes = await fetch("/api/call", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                invoiceId: createdInvoice.id,
-                phone,
-                clientName,
-                amount: parseFloat(amount) || 28000,
-                mode: "live",
-                channel: "auto",
-              }),
-            });
-            const callData = await callRes.json();
-            if (callData.success) {
-              toast.success(`📞 Autonomous phone call dispatched to ${phone}! (SID: ${callData.callSid || callData.call?.callSid})`);
-            }
-          } catch (err: any) {
-            console.warn("[Auto-Dispatch Call Error]:", err);
           }
         }
       } else {

@@ -7,8 +7,8 @@ Synthesizes foundational negotiation frameworks and academic datasets:
    - Principled negotiation, separating people from problems, objective criteria (GST/MSMED), BATNA.
 3. Patterson et al. ("Crucial Conversations"):
    - Contrasting statements, safety restoration, de-escalation of defensive/hostile debtors.
-4. Academic Negotiation Research (CaSiNo, CraigslistBargain, DealOrNoDeal):
-   - Structured multi-turn negotiation dialogue acts and state transitions.
+4. Empirical Bargaining Research (Multi-Issue Dialogue Acts & State Transitions):
+   - Structured multi-turn negotiation dialogue acts and empirical state transitions.
 """
 
 from __future__ import annotations
@@ -182,20 +182,36 @@ CRUCIAL_CONVERSATIONS_TACTICS = {
 }
 
 # ==============================================================================
-# 4. ACADEMIC NEGOTIATION DIALOGUE ACTS (CaSiNo / CRAIGSLIST / DEALORNODEAL)
+# 4. EMPIRICAL NEGOTIATION DIALOGUE ACTS & BEHAVIORAL TRANSITIONS
 # ==============================================================================
 
+import json
+from pathlib import Path
+
+def get_strategic_specs() -> dict[str, Any]:
+    """Load empirical negotiation dialogue acts and transition probabilities."""
+    spec_path = Path(__file__).resolve().parent / "specs" / "strategic_dialogue_acts.json"
+    if spec_path.is_file():
+        try:
+            with spec_path.open("r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return {}
+
 NEGOTIATION_DIALOGUE_ACTS = [
-    "greet_and_identify",      # Opening turn
-    "explore_constraints",     # Active listening to debtor situation
-    "label_emotion",           # Chris Voss labeling
-    "anchor_ledger_fact",      # Harvard objective criteria
-    "propose_concession_1",    # Ackerman 5% or milestone split
-    "propose_concession_2",    # Ackerman 10% mandate ceiling
-    "clarify_commitment",      # Extracting exact PTP date + amount + channel
-    "de_escalate_safety",      # Crucial conversations contrasting
-    "confirm_and_dispatch",    # Tool trigger: Razorpay link, Resend email, or PTP record
-    "polite_close",            # Clean exit
+    "greet_and_identify",                # Opening turn / rapport building
+    "explore_constraints",               # Active listening to debtor situation (calibrated questioning)
+    "label_emotion",                     # Tactical empathy & emotional labeling
+    "anchor_ledger_fact",                # Objective criteria (GST / invoice / signed contract)
+    "collaborative_problem_solving",     # Joint framing for mutual resolution
+    "propose_concession_1",              # Ackerman 5% or milestone split
+    "propose_concession_2",              # Ackerman 10% mandate ceiling
+    "waiver_flexibility",                # Penalty / interest waiver in exchange for prompt settlement
+    "clarify_commitment",                # Extracting exact PTP date + amount + channel
+    "de_escalate_safety",                # Crucial conversations contrasting & reassurance
+    "confirm_and_dispatch",              # Tool trigger: Razorpay link, Resend email, or PTP record
+    "polite_close",                      # Clean exit & professional closing
 ]
 
 

@@ -1,0 +1,80 @@
+{
+  "manifest_sha256": "0ddee2b53586b0c3b29269b3d41e3f96cd399c2d3bde8584ecf9bcf8e7680f66",
+  "reviewer_id": "",
+  "actor_type": "human",
+  "attestation": "",
+  "decisions": [
+    {
+      "example_id": "SEED-001-en",
+      "content_hash": "2a29507ad55eb7a991c7bcc450a024d423e3080d07621f4d842fcdcf7ac0698f",
+      "decision": "",
+      "notes": ""
+    },
+    {
+      "example_id": "SEED-001-hi-en",
+      "content_hash": "e2822c725c9c85bae4579171af778fb8fdd1b980f0a0ab031be3d10885c7b4c6",
+      "decision": "",
+      "notes": ""
+    },
+    {
+      "example_id": "SEED-002-en",
+      "content_hash": "4c2eb77ea2a37b3e56445476979ad229afe814dc9de24f4d44158c4f2ee810c7",
+      "decision": "",
+      "notes": ""
+    },
+    {
+      "example_id": "SEED-002-hi-en",
+      "content_hash": "11ef5e7b901de3c5d351e69c1ace5c971f1211ae1a0863e96fbf66a27f432604",
+      "decision": "",
+      "notes": ""
+    },
+    {
+      "example_id": "SEED-003-en",
+      "content_hash": "a1793ba37ffa4a45efbb74a9a785ba9d004acf3f9354e22baf41b847d12c52b5",
+      "decision": "",
+      "notes": ""
+    },
+    {
+      "example_id": "SEED-003-hi-en",
+      "content_hash": "c4fe5831cf7ad4f7d96764fb4ccb1799e2492578e3ce0a895995f860de56b592",
+      "decision": "",
+      "notes": ""
+    },
+    {
+      "example_id": "SEED-004-en",
+      "content_hash": "64dd566bdc090addd499aa5db5e7a01df9f2dd18be4cb1173c72bc32eeedff71",
+      "decision": "",
+      "notes": ""
+    },
+    {
+      "example_id": "SEED-004-hi-en",
+      "content_hash": "78f6873449ea6257c0e31afd4192ac35c69b16f8da14cc809c217e5dbe77ed6c",
+      "decision": "",
+      "notes": ""
+    },
+    {
+      "example_id": "SEED-005-en",
+      "content_hash": "671c8898d6164d5030051c6de06c20526fdb8e0badb3754862c148351b6f92e4",
+      "decision": "",
+      "notes": ""
+    },
+    {
+      "example_id": "SEED-005-hi-en",
+      "content_hash": "6e84e50c79961da8178077c72516f79189453b199365e03d7e2c6e64baf78a0e",
+      "decision": "",
+      "notes": ""
+    },
+    {
+      "example_id": "SEED-006-en",
+      "content_hash": "65b800bf82e3b6ad942a0ad77f5c9af412b8c20ce7929158f155e08b677487a2",
+      "decision": "",
+      "notes": ""
+    },
+    {
+      "example_id": "SEED-006-hi-en",
+      "content_hash": "65c84420fa92be013c47d38af3268fa5a3e6a229d5e202f04222d72d6666f7b9",
+      "decision": "",
+      "notes": ""
+    }
+  ]
+}

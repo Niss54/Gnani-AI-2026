@@ -23,7 +23,6 @@
     "test:voice-transport": "node --test tests/voice-transport.test.cjs",
     "test:routes": "node --test tests/integration_routes.test.cjs",
     "verify:pilot": "node scripts/run-python.js scripts/verify_controlled_pilot.py",
-    "demo": "node scripts/run-python.js scripts/demo_launch.py",
-    "demo:export": "node scripts/run-python.js scripts/demo_export.py"
+    "demo": "node scripts/run-python.js scripts/demo_launch.py"
   }
 }

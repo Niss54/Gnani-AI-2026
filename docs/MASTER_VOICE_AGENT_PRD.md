@@ -1,5 +1,16 @@
 # RevClaim AI: Master Voice Agent PRD
 
+## Hackathon demonstration and release status, 15 November 2026
+
+Run `.venv-voice-win\Scripts\python.exe scripts/demo_launch.py --web-port 3044 --api-port 8044` from the project root and open `http://127.0.0.1:3044/demo`. The page and its Next.js proxy were exercised against the real conversation controller using an isolated fictional invoice. A browser submission of a tentative Hinglish proposal produced zero action receipts. An invoice dispute entered DISPUTED and ended the session. Microphone dictation and playback depend on browser and device support.
+
+For offline judging, open `artifacts/demo/RevClaim-walkthrough.html`. Rebuild it with `python scripts/demo_export.py` using the voice environment. It embeds five controller replays and two separately synthesized WAV samples. The local address is for the presenter's laptop. Judges elsewhere can open the HTML file if the portal accepts attachments.
+
+The Kaggle seed run trained on 75 examples for 10 steps. The locally recomputed adapter checksum matches its training receipt, and its package receipt records a successful reload. This demo runs the conversation policy. It does not serve the Kaggle adapter. Its effectiveness on independent callers remains unverified.
+
+The authenticated call route, Twilio webhook validation and speech-turn transport exist. An authorized connected PSTN call, human-accepted handoff, recorded far-end acoustic checks and production release evidence are still pending. Release verification remains blocked. Do not claim customer-call or production qualification from the sandbox.
+
+
 > Implementation audit update, 2026-11-14: this PRD is **not complete**. Previous passing status and fixed evaluation scores were invalidated. See [current audit and verified limits](voice_execution/AUDIT_2026-11-14.md) and [status ledger](voice_execution/status.json). Local remediation is not trained-model, acoustic or production qualification. Unsafe legacy live routes are unavailable pending authoritative integrations.
 
 

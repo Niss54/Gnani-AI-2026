@@ -30,8 +30,11 @@ def launch(api_port, web_port):
     for port in (api_port, web_port):
         free_port(port)
     node = shutil.which("node")
-    next_bin = ROOT / "node_modules/next/dist/bin/next"
-    if not node or not next_bin.is_file():
+    # Resolve Next from the frontend workspace so the compiler and renderer match.
+    next_bin = Path(subprocess.check_output(
+        [node, "-p", "require.resolve('next/dist/bin/next')"], cwd=ROOT / "frontend", text=True
+    ).strip()) if node else None
+    if not next_bin or not next_bin.is_file():
         raise SystemExit("Install project Node dependencies with npm ci at the repository root.")
     api_url = f"http://127.0.0.1:{api_port}"
     env = dict(os.environ, VOICE_BACKEND_URL=api_url, NEXT_PUBLIC_BACKEND_URL=api_url,

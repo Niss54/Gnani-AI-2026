@@ -23,6 +23,8 @@ Built for **The Great Indian AI Challenge & Agentic AI Hackathon by Gnani.ai** |
 <div align="center">
 
 [![1-Page Solution Pitch](https://img.shields.io/badge/🏆_Judge_Executive_Brief-1--Page_Solution_Pitch-FF5722?style=for-the-badge&logo=googledocs&logoColor=white)](./docs/ONE_PAGE_SOLUTION_PITCH.md)
+[![Kaggle Dataset](https://img.shields.io/badge/Kaggle-Dataset_DOI-20BEFF?style=for-the-badge&logo=kaggle&logoColor=white)](https://www.kaggle.com/datasets/nisshmaurya/revclaim-training-seed)
+[![DOI](https://img.shields.io/badge/DOI-10.34740%2Fkaggle%2Fdsv%2F22202085-blue?style=for-the-badge&logo=doi&logoColor=white)](https://doi.org/10.34740/kaggle/dsv/22202085)
 [![GitHub Repo](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Niss54/Gnani-AI-2026)
 [![Gnani.ai](https://img.shields.io/badge/Gnani.ai-10%2F10_Sovereign_Voice-orange?style=for-the-badge&logo=googlepodcasts&logoColor=white)](https://vachana.ai)
 [![Hybrid Graph RAG](https://img.shields.io/badge/Hybrid_Graph_RAG-Corporate_Veil_Piercing-8A2BE2?style=for-the-badge&logo=neo4j&logoColor=white)](#-sovereign-hybrid-graph-rag--corporate-veil-piercing)
@@ -423,10 +425,35 @@ Open [http://localhost:3000](http://localhost:3000) to access the **RevClaim AI 
 
 ---
 
+## 📚 Dataset & Academic Citation
+
+The official training dataset powering RevClaim AI's sovereign negotiation policies is registered on Kaggle with a permanent Digital Object Identifier (DOI):
+
+* **Kaggle Dataset:** [RevClaim: Indic Debt Recovery & Negotiation Dialog](https://www.kaggle.com/datasets/nisshmaurya/revclaim-training-seed)
+* **Permanent DOI:** [`10.34740/kaggle/dsv/22202085`](https://doi.org/10.34740/kaggle/dsv/22202085)
+* **License:** Creative Commons Attribution 4.0 International (CC BY 4.0)
+
+### APA Citation
+> Nishant Maurya. (2026). *RevClaim: Indic Debt Recovery & Negotiation Dialog* [Dataset]. Kaggle. https://doi.org/10.34740/KAGGLE/DSV/22202085
+
+### BibTeX
+```bibtex
+@misc{nishant_maurya_2026,
+    title={RevClaim: Indic Debt Recovery & Negotiation Dialog},
+    url={https://www.kaggle.com/dsv/22202085},
+    DOI={10.34740/KAGGLE/DSV/22202085},
+    publisher={Kaggle},
+    author={Nishant Maurya},
+    year={2026}
+}
+```
+
+---
+
 ## 📄 License & Team
 
-Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for complete terms.
+Distributed under the **MIT License** for software and **CC BY 4.0** for dataset artifacts. See [`LICENSE`](LICENSE) for complete terms.
 
-### 👥 Engineering :
-* **Nishant Maurya** — *Lead Architect & Full-Stack AI Engineer* ([GitHub](https://github.com/Niss54) · [X / Twitter (@NMaurya26722)](https://x.com/NMaurya26722))
+### 👥 Engineering:
+* **Nishant Maurya** — *Lead Architect & Full-Stack AI Engineer* ([Portfolio: nissh.info](https://nissh.info) · [GitHub: @Niss54](https://github.com/Niss54) · [X / Twitter: @NMaurya26722](https://x.com/NMaurya26722))
 * **Built for:** The Great Indian AI Challenge & Agentic AI Hackathon by Gnani.ai, India 🇮🇳

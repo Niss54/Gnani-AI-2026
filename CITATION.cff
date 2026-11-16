@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "If you use this dataset or model in your research or application, please cite it as below."
+authors:
+  - family-names: "Maurya"
+    given-names: "Nishant"
+    website: "https://nissh.info"
+title: "RevClaim: Indic Debt Recovery & Negotiation Dialogues"
+version: "1.0.0"
+doi: "10.34740/kaggle/dsv/22202085"
+date-released: 2026-11-16
+url: "https://www.kaggle.com/datasets/nisshmaurya/revclaim-training-seed"
+identifiers:
+  - type: doi
+    value: "10.34740/kaggle/dsv/22202085"
+keywords:
+  - "indic-nlp"
+  - "debt-recovery"
+  - "negotiation"
+  - "dialogue-systems"
+  - "conversational-ai"
+  - "msme-finance"
+license: CC-BY-4.0
